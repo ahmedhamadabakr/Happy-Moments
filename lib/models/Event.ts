@@ -4,12 +4,21 @@ export type EventStatus = 'draft' | 'active' | 'closed'
 
 export interface IEvent extends Document {
   companyId: mongoose.Types.ObjectId
+  clientId?: mongoose.Types.ObjectId // العميل المرتبط بالفعالية
   title: string
   description?: string
   eventDate: Date
   eventTime?: string
   location?: string
+  locationUrl?: string // رابط Google Maps
   maxGuests?: number
+  invitationImage?: string // صورة الدعوة الأساسية
+  qrCoordinates?: {
+    x: number
+    y: number
+    width: number
+    height: number
+  } // إحداثيات وضع QR على الصورة
   status: EventStatus
   createdBy: mongoose.Types.ObjectId
   createdAt: Date
@@ -23,6 +32,11 @@ const eventSchema = new Schema<IEvent>(
       type: Schema.Types.ObjectId,
       ref: 'Company',
       required: true,
+      index: true,
+    },
+    clientId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Client',
       index: true,
     },
     title: {
@@ -48,9 +62,22 @@ const eventSchema = new Schema<IEvent>(
       trim: true,
       maxlength: [255, 'الموقع يجب أن لا يتجاوز 255 حرف'],
     },
+    locationUrl: {
+      type: String,
+      trim: true,
+    },
     maxGuests: {
       type: Number,
       min: [1, 'الحد الأقصى للضيوف يجب أن يكون أكثر من 1'],
+    },
+    invitationImage: {
+      type: String,
+    },
+    qrCoordinates: {
+      x: { type: Number, default: 50 },
+      y: { type: Number, default: 50 },
+      width: { type: Number, default: 150 },
+      height: { type: Number, default: 150 },
     },
     status: {
       type: String,

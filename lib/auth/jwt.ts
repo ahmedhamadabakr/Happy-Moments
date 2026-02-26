@@ -1,12 +1,15 @@
 import { jwtVerify, SignJWT } from 'jose';
 import { cookies } from 'next/headers';
+import { UserRole, EmployeePermission } from '../types/roles';
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'your-secret-key');
 
 export interface JWTPayload {
   userId: string;
   email: string;
-  role: 'admin' | 'user';
+  role: UserRole;
+  permissions: EmployeePermission[];
+  companyId: string;
   iat?: number;
   exp?: number;
 }
@@ -30,12 +33,16 @@ export async function verifyJWT(token: string): Promise<JWTPayload | null> {
     if (
       typeof payload.userId === 'string' &&
       typeof payload.email === 'string' &&
-      (payload.role === 'admin' || payload.role === 'user')
+      typeof payload.role === 'string' &&
+      typeof payload.companyId === 'string' &&
+      Array.isArray(payload.permissions)
     ) {
       return {
         userId: payload.userId,
         email: payload.email,
-        role: payload.role,
+        role: payload.role as UserRole,
+        permissions: payload.permissions as EmployeePermission[],
+        companyId: payload.companyId,
         iat: payload.iat,
         exp: payload.exp,
       };

@@ -15,10 +15,16 @@ export interface IEventGuest extends Document {
   invitationSentAt?: Date | null
   rsvpStatus: RSVPStatus
   rsvpConfirmedAt?: Date | null
+  rsvpMessage?: string // رسالة من الضيف
   checkInStatus: CheckInStatus
   checkedInAt?: Date | null
-  invitationToken: string
-  qrCodeUrl?: string
+  invitationToken: string // Token فريد للدعوة
+  qrToken: string // Token فريد لـ QR
+  qrImagePath?: string // مسار صورة QR
+  finalInvitationImagePath?: string // مسار الصورة النهائية (صورة الدعوة + QR)
+  scanCount: number // عدد مرات المسح
+  firstCheckInAt?: Date | null
+  lastCheckInAt?: Date | null
   createdAt: Date
   updatedAt: Date
 }
@@ -75,6 +81,10 @@ const eventGuestSchema = new Schema<IEventGuest>(
       type: Date,
       default: null,
     },
+    rsvpMessage: {
+      type: String,
+      trim: true,
+    },
     checkInStatus: {
       type: String,
       enum: ['pending', 'checked_in', 'no_show'],
@@ -90,8 +100,30 @@ const eventGuestSchema = new Schema<IEventGuest>(
       unique: true,
       index: true,
     },
-    qrCodeUrl: {
+    qrToken: {
       type: String,
+      required: true,
+      unique: true,
+      index: true,
+    },
+    qrImagePath: {
+      type: String,
+    },
+    finalInvitationImagePath: {
+      type: String,
+    },
+    scanCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    firstCheckInAt: {
+      type: Date,
+      default: null,
+    },
+    lastCheckInAt: {
+      type: Date,
+      default: null,
     },
   },
   {
@@ -104,10 +136,12 @@ eventGuestSchema.index({ eventId: 1, contactId: 1 }, { unique: true })
 
 // Index for invitation lookup by token
 eventGuestSchema.index({ invitationToken: 1 })
+eventGuestSchema.index({ qrToken: 1 })
 
 // Index for event guest statistics
 eventGuestSchema.index({ eventId: 1, rsvpStatus: 1 })
 eventGuestSchema.index({ eventId: 1, checkInStatus: 1 })
+eventGuestSchema.index({ companyId: 1, checkInStatus: 1 })
 
 export const EventGuest: Model<IEventGuest> = 
   mongoose.models.EventGuest || mongoose.model<IEventGuest>('EventGuest', eventGuestSchema)

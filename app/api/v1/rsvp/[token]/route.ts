@@ -1,164 +1,155 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { EventGuest } from '@/lib/models/EventGuest'
-import { Event } from '@/lib/models/Event'
-import { RSVP } from '@/lib/models/RSVP'
-import { ActivityLog } from '@/lib/models/ActivityLog'
-import { submitRsvpSchema } from '@/lib/validations/rsvp'
-import { handleApiError } from '@/lib/api/errors'
-import { connectDB } from '@/lib/db'
+import { NextRequest, NextResponse } from 'next/server';
+import { connectDB } from '@/lib/db';
+import { EventGuest } from '@/lib/models/EventGuest';
+import { Event } from '@/lib/models/Event';
+import { RSVP } from '@/lib/models/RSVP';
 
+/**
+ * GET /api/v1/rsvp/[token]
+ * الحصول على بيانات الدعوة (صفحة عامة)
+ */
 export async function GET(
-  req: NextRequest,
+  request: NextRequest,
   { params }: { params: { token: string } }
 ) {
   try {
-    await connectDB()
+    await connectDB();
 
     const eventGuest = await EventGuest.findOne({
       invitationToken: params.token,
-    }).lean()
+    }).populate('eventId');
 
     if (!eventGuest) {
       return NextResponse.json(
-        { error: 'دعوة غير صحيحة أو منتهية' },
+        { error: 'الدعوة غير موجودة' },
         { status: 404 }
-      )
+      );
     }
 
-    // Get event details
-    const event = await Event.findById(eventGuest.eventId).lean()
+    const event = eventGuest.eventId as any;
 
-    if (!event) {
-      return NextResponse.json(
-        { error: 'الفعالية غير موجودة' },
-        { status: 404 }
-      )
-    }
-
-    // Check if event is closed
     if (event.status === 'closed') {
       return NextResponse.json(
-        { error: 'انتهت فترة التأكيد للفعالية' },
-        { status: 410 }
-      )
+        { error: 'الفعالية مغلقة' },
+        { status: 400 }
+      );
     }
 
     return NextResponse.json({
       success: true,
-      data: {
+      invitation: {
         guestName: eventGuest.snapshotName,
         eventTitle: event.title,
+        eventDescription: event.description,
         eventDate: event.eventDate,
         eventTime: event.eventTime,
-        eventLocation: event.location,
+        location: event.location,
+        locationUrl: event.locationUrl,
+        invitationImage: eventGuest.finalInvitationImagePath,
         rsvpStatus: eventGuest.rsvpStatus,
+        rsvpMessage: eventGuest.rsvpMessage,
       },
-    })
-  } catch (error) {
-    return handleApiError(error)
+    });
+  } catch (error: any) {
+    console.error('Error fetching invitation:', error);
+    return NextResponse.json(
+      { error: 'فشل في جلب بيانات الدعوة' },
+      { status: 500 }
+    );
   }
 }
 
+/**
+ * POST /api/v1/rsvp/[token]
+ * الرد على الدعوة (قبول/رفض/رسالة)
+ */
 export async function POST(
-  req: NextRequest,
+  request: NextRequest,
   { params }: { params: { token: string } }
 ) {
   try {
-    await connectDB()
+    const body = await request.json();
+    const { action, message } = body; // action: 'accept' | 'decline' | 'message'
 
-    // Find event guest by token
+    if (!action) {
+      return NextResponse.json(
+        { error: 'نوع الرد مطلوب' },
+        { status: 400 }
+      );
+    }
+
+    await connectDB();
+
     const eventGuest = await EventGuest.findOne({
       invitationToken: params.token,
-    })
+    }).populate('eventId');
 
     if (!eventGuest) {
       return NextResponse.json(
-        { error: 'دعوة غير صحيحة أو منتهية' },
+        { error: 'الدعوة غير موجودة' },
         { status: 404 }
-      )
+      );
     }
 
-    // Get event to check status
-    const event = await Event.findById(eventGuest.eventId)
-
-    if (!event) {
-      return NextResponse.json(
-        { error: 'الفعالية غير موجودة' },
-        { status: 404 }
-      )
-    }
+    const event = eventGuest.eventId as any;
 
     if (event.status === 'closed') {
       return NextResponse.json(
-        { error: 'انتهت فترة التأكيد للفعالية' },
-        { status: 410 }
-      )
+        { error: 'الفعالية مغلقة' },
+        { status: 400 }
+      );
     }
 
-    // Check if already responded
-    const existingRsvp = await RSVP.findOne({
-      eventGuestId: eventGuest._id,
-    })
-
-    if (existingRsvp) {
-      return NextResponse.json(
-        { error: 'تم تسجيل ردك بالفعل' },
-        { status: 409 }
-      )
+    // معالجة الرد
+    if (action === 'accept') {
+      eventGuest.rsvpStatus = 'confirmed';
+      eventGuest.rsvpConfirmedAt = new Date();
+      
+      // تحديث أو إنشاء RSVP
+      await RSVP.findOneAndUpdate(
+        { eventGuestId: eventGuest._id },
+        {
+          eventGuestId: eventGuest._id,
+          eventId: event._id,
+          companyId: eventGuest.companyId,
+          response: 'confirmed',
+          respondedAt: new Date(),
+        },
+        { upsert: true }
+      );
+    } else if (action === 'decline') {
+      eventGuest.rsvpStatus = 'declined';
+      eventGuest.rsvpConfirmedAt = new Date();
+      
+      await RSVP.findOneAndUpdate(
+        { eventGuestId: eventGuest._id },
+        {
+          eventGuestId: eventGuest._id,
+          eventId: event._id,
+          companyId: eventGuest.companyId,
+          response: 'declined',
+          respondedAt: new Date(),
+        },
+        { upsert: true }
+      );
+    } else if (action === 'message' && message) {
+      eventGuest.rsvpMessage = message;
     }
 
-    // Validate input
-    const body = await req.json()
-    const { response, notes } = submitRsvpSchema.parse(body)
+    await eventGuest.save();
 
-    // Get client IP and user agent
-    const ipAddress = req.headers.get('x-forwarded-for') || 
-                      req.headers.get('x-real-ip') || 
-                      'unknown'
-    const userAgent = req.headers.get('user-agent') || 'unknown'
-
-    // Create RSVP record
-    const rsvp = await RSVP.create({
-      eventGuestId: eventGuest._id,
-      eventId: eventGuest.eventId,
-      companyId: eventGuest.companyId,
-      response,
-      notes: notes || undefined,
-      ipAddress,
-      userAgent,
-      respondedAt: new Date(),
-    })
-
-    // Update event guest status
-    eventGuest.rsvpStatus = response
-    eventGuest.rsvpConfirmedAt = new Date()
-    await eventGuest.save()
-
-    // Log activity (public, no user auth)
-    await ActivityLog.create({
-      companyId: eventGuest.companyId,
-      userId: new (require('mongoose').Types.ObjectId)(),
-      activityType: 'rsvp_response',
-      resourceType: 'EventGuest',
-      resourceId: eventGuest._id,
-      details: {
-        response,
-        guestName: eventGuest.snapshotName,
-        eventTitle: event.title,
-      },
-      ipAddress,
-      userAgent,
-    })
+    // TODO: إرسال تحديث Real-time لصفحة العميل
 
     return NextResponse.json({
       success: true,
-      message: 'شكراً لتأكيدك',
-      data: {
-        response,
-        confirmedAt: new Date(),
-      },
-    })
-  } catch (error) {
-    return handleApiError(error)
+      message: 'تم تسجيل ردك بنجاح',
+      rsvpStatus: eventGuest.rsvpStatus,
+    });
+  } catch (error: any) {
+    console.error('Error processing RSVP:', error);
+    return NextResponse.json(
+      { error: 'فشل في تسجيل الرد' },
+      { status: 500 }
+    );
   }
 }

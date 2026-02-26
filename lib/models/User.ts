@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import { UserRole, EmployeePermission } from '../types/roles';
 
 export interface IUser extends Document {
   firstName: string;
@@ -6,8 +7,10 @@ export interface IUser extends Document {
   email: string;
   password: string;
   phone?: string;
-  role: 'admin' | 'user';
+  role: UserRole;
+  permissions: EmployeePermission[];
   company: mongoose.Types.ObjectId;
+  createdBy?: mongoose.Types.ObjectId; // المدير الذي أنشأ الموظف
   isActive: boolean;
   refreshTokens: {
     token: string;
@@ -50,8 +53,16 @@ const UserSchema = new Schema<IUser>(
     },
     role: {
       type: String,
-      enum: ['admin', 'user'],
-      default: 'user',
+      enum: Object.values(UserRole),
+      default: UserRole.EMPLOYEE,
+    },
+    permissions: [{
+      type: String,
+      enum: Object.values(EmployeePermission),
+    }],
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
     },
     company: {
       type: mongoose.Schema.Types.ObjectId,
