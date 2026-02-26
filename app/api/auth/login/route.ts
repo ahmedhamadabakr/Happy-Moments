@@ -9,14 +9,18 @@ import { handleApiError, createErrorResponse, createSuccessResponse } from '@/li
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    console.log('Login attempt for:', body.email);
 
     // Validate input
     const validatedData = loginSchema.parse(body);
+    console.log('Validation passed');
 
     await connectDB();
+    console.log('DB connected');
 
     // Find user by email and select password
-    const user = await User.findOne({ email: validatedData.email }).select('+password');
+    const user = await User.findOne({ email: validatedData.email }).select('+password').populate('company');
+    console.log('User found:', user ? 'Yes' : 'No');
 
     if (!user) {
       return NextResponse.json(
@@ -33,8 +37,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log('Comparing passwords...');
     // Compare passwords
     const isPasswordValid = await comparePassword(validatedData.password, user.password);
+    console.log('Password valid:', isPasswordValid);
 
     if (!isPasswordValid) {
       return NextResponse.json(
@@ -59,17 +65,23 @@ export async function POST(request: NextRequest) {
       user.refreshTokens = user.refreshTokens.slice(-5);
     }
 
+    console.log('Saving user...');
     await user.save();
+    console.log('User saved');
 
     // Create access token
     const accessToken = await signJWT({
       userId: user._id.toString(),
       email: user.email,
       role: user.role,
+      permissions: user.permissions || [],
+      companyId: user.company.toString(),
     });
+    console.log('Access token created');
 
     // Set auth cookies
     await setAuthCookies(accessToken, refreshTokenString);
+    console.log('Cookies set');
 
     return NextResponse.json(
       createSuccessResponse({
@@ -85,6 +97,9 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error: any) {
+    console.error('Login error:', error);
+    console.error('Error stack:', error.stack);
+    
     if (error.name === 'ZodError') {
       return NextResponse.json(
         createErrorResponse(400, 'Validation failed', 'VALIDATION_ERROR'),

@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx';
+import XLSX from 'xlsx';
 import { normalizePhoneNumber, validatePhoneNumber } from './phoneNormalizer';
 
 export interface ParsedContact {

@@ -6,6 +6,7 @@ import { registerCompanySchema } from '@/lib/validations/auth';
 import { hashPassword, generateRefreshToken, calculateTokenExpiry, hashRefreshToken } from '@/lib/auth/helpers';
 import { signJWT, setAuthCookies } from '@/lib/auth/jwt';
 import { handleApiError, createErrorResponse, createSuccessResponse } from '@/lib/api/errors';
+import { EmployeePermission } from '@/lib/types/roles';
 
 export async function POST(request: NextRequest) {
   try {
@@ -49,14 +50,15 @@ export async function POST(request: NextRequest) {
     const refreshTokenHash = hashRefreshToken(refreshTokenString);
     const refreshTokenExpiry = calculateTokenExpiry(7);
 
-    // Create user as admin (first user of the company)
+    // Create user as manager (first user of the company)
     const user = new User({
       firstName: validatedData.firstName,
       lastName: validatedData.lastName,
       email: validatedData.email,
       password: hashedPassword,
       company: company._id,
-      role: 'admin',
+      role: 'manager',
+      permissions: Object.values(EmployeePermission),
       refreshTokens: [
         {
           token: refreshTokenHash,
@@ -71,6 +73,8 @@ export async function POST(request: NextRequest) {
       userId: user._id.toString(),
       email: user.email,
       role: user.role,
+      permissions: user.permissions,
+      companyId: company._id.toString(),
     });
 
     // Set auth cookies
@@ -94,6 +98,8 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error: any) {
+    console.error('Register error:', error);
+    
     if (error.name === 'ZodError') {
       return NextResponse.json(
         createErrorResponse(400, 'Validation failed', 'VALIDATION_ERROR'),
