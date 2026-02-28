@@ -1,4 +1,8 @@
 import mongoose, { Schema, Document } from 'mongoose';
+// Fix for model overwrite in dev mode
+if (mongoose.models.Company) {
+  delete mongoose.models.Company;
+}
 
 export interface ICompany extends Document {
   name: string;

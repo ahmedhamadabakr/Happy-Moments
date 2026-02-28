@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import { User } from '@/lib/models/User';
+import { Company } from '@/lib/models/Company';
 import { loginSchema } from '@/lib/validations/auth';
-import { comparePassword, generateRefreshToken, calculateTokenExpiry, hashRefreshToken } from '@/lib/auth/helpers';
+import {
+  comparePassword,
+  generateRefreshToken,
+  calculateTokenExpiry,
+  hashRefreshToken,
+} from '@/lib/auth/helpers';
 import { signJWT, setAuthCookies } from '@/lib/auth/jwt';
-import { handleApiError, createErrorResponse, createSuccessResponse } from '@/lib/api/errors';
+import {
+  handleApiError,
+  createErrorResponse,
+  createSuccessResponse,
+} from '@/lib/api/errors';
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,14 +23,13 @@ export async function POST(request: NextRequest) {
 
     // Validate input
     const validatedData = loginSchema.parse(body);
-    console.log('Validation passed');
 
     await connectDB();
-    console.log('DB connected');
 
-    // Find user by email and select password
-    const user = await User.findOne({ email: validatedData.email }).select('+password').populate('company');
-    console.log('User found:', user ? 'Yes' : 'No');
+    // Find user
+    const user = await User.findOne({
+      email: validatedData.email,
+    }).select('+password');
 
     if (!user) {
       return NextResponse.json(
@@ -29,7 +38,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user is active
     if (!user.isActive) {
       return NextResponse.json(
         createErrorResponse(403, 'User account is inactive', 'USER_INACTIVE'),
@@ -37,10 +45,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Comparing passwords...');
-    // Compare passwords
-    const isPasswordValid = await comparePassword(validatedData.password, user.password);
-    console.log('Password valid:', isPasswordValid);
+    // Compare password
+    const isPasswordValid = await comparePassword(
+      validatedData.password,
+      user.password
+    );
 
     if (!isPasswordValid) {
       return NextResponse.json(
@@ -49,57 +58,73 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate new refresh token
+    // Ensure refreshTokens exists
+    if (!Array.isArray(user.refreshTokens)) {
+      user.refreshTokens = [];
+    }
+
+    // Generate refresh token
     const refreshTokenString = generateRefreshToken();
     const refreshTokenHash = hashRefreshToken(refreshTokenString);
     const refreshTokenExpiry = calculateTokenExpiry(7);
 
-    // Add new refresh token and keep only last 5 tokens (for security)
     user.refreshTokens.push({
       token: refreshTokenHash,
       expiresAt: refreshTokenExpiry,
       createdAt: new Date(),
     });
 
+    // Keep only last 5 tokens
     if (user.refreshTokens.length > 5) {
       user.refreshTokens = user.refreshTokens.slice(-5);
     }
 
-    console.log('Saving user...');
     await user.save();
-    console.log('User saved');
 
-    // Create access token
-    const accessToken = await signJWT({
-      userId: user._id.toString(),
-      email: user.email,
-      role: user.role,
-      permissions: user.permissions || [],
-      companyId: user.company.toString(),
-    });
-    console.log('Access token created');
+    // Get company safely
+    let company = null;
+    if (user.company) {
+      company = await Company.findById(user.company);
+    }
 
-    // Set auth cookies
+    // Create access token safely
+const accessToken = await signJWT({
+  userId: user._id.toString(),
+  email: user.email,
+  role: user.role,
+  permissions: user.permissions
+    ? JSON.parse(JSON.stringify(user.permissions))
+    : [],
+  companyId: user.company ? user.company.toString() : undefined,
+});
+    // Set cookies
     await setAuthCookies(accessToken, refreshTokenString);
-    console.log('Cookies set');
 
     return NextResponse.json(
-      createSuccessResponse({
-        user: {
-          id: user._id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          role: user.role,
-          company: user.company,
+      createSuccessResponse(
+        {
+          user: {
+            id: user._id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            role: user.role,
+            company: company
+              ? {
+                  id: company._id,
+                  name: company.name,
+                  email: company.email,
+                }
+              : null,
+          },
         },
-      }, 'Login successful'),
+        'Login successful'
+      ),
       { status: 200 }
     );
   } catch (error: any) {
     console.error('Login error:', error);
-    console.error('Error stack:', error.stack);
-    
+
     if (error.name === 'ZodError') {
       return NextResponse.json(
         createErrorResponse(400, 'Validation failed', 'VALIDATION_ERROR'),
