@@ -58,7 +58,6 @@ const UserSchema = new Schema<IUser>(
     },
     permissions: [{
       type: String,
-      enum: Object.values(EmployeePermission),
     }],
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
@@ -97,4 +96,9 @@ const UserSchema = new Schema<IUser>(
 UserSchema.index({ email: 1 }, { unique: true });
 UserSchema.index({ company: 1 });
 
-export const User = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
+// Clear the model from cache if it exists to avoid schema conflicts
+if (mongoose.models.User) {
+  delete mongoose.models.User;
+}
+
+export const User = mongoose.model<IUser>('User', UserSchema);

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession } from '../auth/jwt';
-import { UserRole, EmployeePermission, hasPermission, hasAnyPermission } from '../types/roles';
+  import { getSession } from '@/lib/auth/jwt';
+import { connectDB } from '@/lib/db';
+import { User } from '@/lib/models/User';
+import { UserRole, EmployeePermission } from '@/lib/types/roles';
+import { createErrorResponse } from '@/lib/api/errors';
 
 export interface AuthenticatedRequest extends NextRequest {
   user?: {
@@ -13,103 +16,155 @@ export interface AuthenticatedRequest extends NextRequest {
 }
 
 /**
- * Middleware للتحقق من تسجيل الدخول
+ * Middleware to check if user is authenticated
  */
 export async function requireAuth(request: NextRequest) {
   const session = await getSession();
 
   if (!session) {
     return NextResponse.json(
-      { error: 'غير مصرح. يرجى تسجيل الدخول.' },
+      createErrorResponse(401, 'Unauthorized - Please login', 'UNAUTHORIZED'),
       { status: 401 }
     );
   }
 
-  return session;
+  await connectDB();
+  const user = await User.findById(session.userId).select('+permissions');
+
+  if (!user || !user.isActive) {
+    return NextResponse.json(
+      createErrorResponse(401, 'User not found or inactive', 'USER_INACTIVE'),
+      { status: 401 }
+    );
+  }
+
+  return {
+    user: {
+      userId: user._id.toString(),
+      email: user.email,
+      role: user.role,
+      permissions: user.permissions || [],
+      companyId: user.company.toString(),
+    },
+  };
 }
 
 /**
- * Middleware للتحقق من أن المستخدم مدير
+ * Middleware to check if user is a manager
  */
 export async function requireManager(request: NextRequest) {
-  const session = await requireAuth(request);
-  
-  if (session instanceof NextResponse) {
-    return session;
+  const authResult = await requireAuth(request);
+
+  if (authResult instanceof NextResponse) {
+    return authResult;
   }
 
-  if (session.role !== UserRole.MANAGER) {
+  if (authResult.user.role !== UserRole.MANAGER) {
     return NextResponse.json(
-      { error: 'غير مصرح. هذه العملية متاحة للمديرين فقط.' },
+      createErrorResponse(403, 'Access denied - Manager role required', 'FORBIDDEN'),
       { status: 403 }
     );
   }
 
-  return session;
+  return authResult;
 }
 
 /**
- * Middleware للتحقق من صلاحية واحدة محددة
+ * Middleware to check if user has specific permission
  */
 export async function requirePermission(
   request: NextRequest,
   permission: EmployeePermission
 ) {
-  const session = await requireAuth(request);
-  
-  if (session instanceof NextResponse) {
-    return session;
+  const authResult = await requireAuth(request);
+
+  if (authResult instanceof NextResponse) {
+    return authResult;
   }
 
-  // المدير لديه كل الصلاحيات
-  if (session.role === UserRole.MANAGER) {
-    return session;
+  const { user } = authResult;
+
+  // Managers have all permissions
+  if (user.role === UserRole.MANAGER) {
+    return authResult;
   }
 
-  if (!hasPermission(session.permissions, permission)) {
+  // Check if employee has the required permission
+  if (!user.permissions.includes(permission)) {
     return NextResponse.json(
-      { error: 'غير مصرح. ليس لديك الصلاحية لتنفيذ هذه العملية.' },
+      createErrorResponse(
+        403,
+        `Access denied - ${permission} permission required`,
+        'FORBIDDEN'
+      ),
       { status: 403 }
     );
   }
 
-  return session;
+  return authResult;
 }
 
 /**
- * Middleware للتحقق من أي صلاحية من مجموعة صلاحيات
+ * Middleware to check if user has any of the specified permissions
  */
 export async function requireAnyPermission(
   request: NextRequest,
   permissions: EmployeePermission[]
 ) {
-  const session = await requireAuth(request);
-  
-  if (session instanceof NextResponse) {
-    return session;
+  const authResult = await requireAuth(request);
+
+  if (authResult instanceof NextResponse) {
+    return authResult;
   }
 
-  // المدير لديه كل الصلاحيات
-  if (session.role === UserRole.MANAGER) {
-    return session;
+  const { user } = authResult;
+
+  // Managers have all permissions
+  if (user.role === UserRole.MANAGER) {
+    return authResult;
   }
 
-  if (!hasAnyPermission(session.permissions, permissions)) {
+  // Check if employee has any of the required permissions
+  const hasPermission = permissions.some((p) => user.permissions.includes(p));
+
+  if (!hasPermission) {
     return NextResponse.json(
-      { error: 'غير مصرح. ليس لديك الصلاحية لتنفيذ هذه العملية.' },
+      createErrorResponse(
+        403,
+        `Access denied - One of these permissions required: ${permissions.join(', ')}`,
+        'FORBIDDEN'
+      ),
       { status: 403 }
     );
   }
 
-  return session;
+  return authResult;
 }
 
 /**
- * دالة مساعدة للتحقق من أن المستخدم ينتمي لنفس الشركة
+ * Helper to check permissions in components
  */
-export function verifyCompanyAccess(
-  session: { companyId: string },
-  resourceCompanyId: string
+export function hasPermission(
+  userRole: UserRole,
+  userPermissions: EmployeePermission[],
+  requiredPermission: EmployeePermission
 ): boolean {
-  return session.companyId === resourceCompanyId;
+  if (userRole === UserRole.MANAGER) {
+    return true;
+  }
+  return userPermissions.includes(requiredPermission);
+}
+
+/**
+ * Helper to check if user has any of the permissions
+ */
+export function hasAnyPermission(
+  userRole: UserRole,
+  userPermissions: EmployeePermission[],
+  requiredPermissions: EmployeePermission[]
+): boolean {
+  if (userRole === UserRole.MANAGER) {
+    return true;
+  }
+  return requiredPermissions.some((p) => userPermissions.includes(p));
 }

@@ -88,15 +88,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Create access token safely
-const accessToken = await signJWT({
-  userId: user._id.toString(),
-  email: user.email,
-  role: user.role,
-  permissions: user.permissions
-    ? JSON.parse(JSON.stringify(user.permissions))
-    : [],
-  companyId: user.company ? user.company.toString() : undefined,
-});
+    const accessToken = await signJWT({
+      userId: user._id.toString(),
+      email: user.email,
+      role: user.role,
+      permissions: user.permissions ? [...user.permissions] : [],
+      companyId: user.company ? user.company.toString() : '',
+    });
+    
     // Set cookies
     await setAuthCookies(accessToken, refreshTokenString);
 

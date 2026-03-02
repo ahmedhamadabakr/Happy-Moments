@@ -19,32 +19,45 @@ export function DashboardSidebar({ user, company }: DashboardSidebarProps) {
       label: 'Overview',
       href: '/dashboard',
       icon: Home,
-      role: ['admin', 'user'],
+      role: ['manager', 'admin', 'user'],
     },
     {
       label: 'Events',
       href: '/dashboard/events',
       icon: Calendar,
-      role: ['admin', 'user'],
+      role: ['manager', 'admin', 'user'],
     },
     {
       label: 'Contacts',
       href: '/dashboard/contacts',
       icon: Users,
-      role: ['admin', 'user'],
+      role: ['manager', 'admin'],
     },
     {
       label: 'Analytics',
       href: '/dashboard/analytics',
       icon: BarChart3,
-      role: ['admin'],
+      role: ['manager', 'admin'],
     },
     {
       label: 'Settings',
       href: '/dashboard/settings',
       icon: Settings,
-      role: ['admin', 'user'],
+      role: ['manager', 'admin', ],
     },
+    {
+      label: 'v2',
+      href: '/dashboard/v2',
+      icon: Settings,
+      role: ['manager', 'admin', 'user'],
+    },
+    {
+      label: 'whatsapp',
+      href: '/dashboard/whatsapp',
+      icon: Settings,
+      role: ['manager', 'admin', 'user'],
+    },
+
   ];
 
   const visibleItems = navigationItems.filter((item) => item.role.includes(user.role));

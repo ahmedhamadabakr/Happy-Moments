@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       userId: user._id.toString(),
       email: user.email,
       role: user.role,
-      permissions: user.permissions,
+      permissions: [...user.permissions], // Convert to plain array
       companyId: company._id.toString(),
     });
 

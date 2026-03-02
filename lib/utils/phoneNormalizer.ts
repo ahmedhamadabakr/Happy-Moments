@@ -1,164 +1,102 @@
 /**
- * تطبيع أرقام الهواتف
- * يدعم الأرقام مع أو بدون كود الدولة
+ * Phone number normalization utilities
  */
 
-// أكواد الدول الشائعة
-const COUNTRY_CODES = [
-  '+20',  // مصر
-  '+966', // السعودية
-  '+971', // الإمارات
-  '+965', // الكويت
-  '+968', // عمان
-  '+974', // قطر
-  '+973', // البحرين
-  '+962', // الأردن
-  '+961', // لبنان
-  '+963', // سوريا
-  '+964', // العراق
-  '+967', // اليمن
-  '+212', // المغرب
-  '+213', // الجزائر
-  '+216', // تونس
-  '+218', // ليبيا
-  '+249', // السودان
-  '+1',   // أمريكا/كندا
-  '+44',  // بريطانيا
-];
-
 /**
- * تنظيف رقم الهاتف من الرموز غير الضرورية
- */
-export function cleanPhoneNumber(phone: string): string {
-  // إزالة المسافات والشرطات والأقواس
-  return phone.replace(/[\s\-\(\)\.]/g, '');
-}
-
-/**
- * التحقق من وجود كود دولة
- */
-export function hasCountryCode(phone: string): boolean {
-  const cleaned = cleanPhoneNumber(phone);
-  return cleaned.startsWith('+') || cleaned.startsWith('00');
-}
-
-/**
- * استخراج كود الدولة من الرقم
- */
-export function extractCountryCode(phone: string): string | null {
-  const cleaned = cleanPhoneNumber(phone);
-  
-  // إذا كان يبدأ بـ 00، استبدله بـ +
-  let normalized = cleaned;
-  if (normalized.startsWith('00')) {
-    normalized = '+' + normalized.substring(2);
-  }
-  
-  // البحث عن كود الدولة
-  for (const code of COUNTRY_CODES) {
-    if (normalized.startsWith(code)) {
-      return code;
-    }
-  }
-  
-  return null;
-}
-
-/**
- * تطبيع رقم الهاتف
- * إذا لم يكن هناك كود دولة، يضيف الكود الافتراضي
+ * Normalize phone number with country code
  */
 export function normalizePhoneNumber(
   phone: string,
-  defaultCountryCode: string = '+20'
+  defaultCountryCode: string = '+966'
 ): string {
-  const cleaned = cleanPhoneNumber(phone);
-  
-  // إذا كان فارغاً
-  if (!cleaned) {
-    throw new Error('رقم الهاتف فارغ');
-  }
-  
-  // إذا كان يبدأ بـ 00، استبدله بـ +
-  let normalized = cleaned;
+  // Remove all non-digit characters except +
+  let normalized = phone.replace(/[^\d+]/g, '');
+
+  // If starts with 00, replace with +
   if (normalized.startsWith('00')) {
     normalized = '+' + normalized.substring(2);
   }
-  
-  // إذا كان يبدأ بـ +، تحقق من صحة كود الدولة
-  if (normalized.startsWith('+')) {
-    const countryCode = extractCountryCode(normalized);
-    if (countryCode) {
-      return normalized;
+
+  // If doesn't start with +, add default country code
+  if (!normalized.startsWith('+')) {
+    // Remove leading zero if exists
+    if (normalized.startsWith('0')) {
+      normalized = normalized.substring(1);
     }
-    // إذا كان + موجود لكن كود الدولة غير صحيح
-    throw new Error('كود الدولة غير صحيح');
+    normalized = defaultCountryCode + normalized;
   }
-  
-  // إذا كان يبدأ بـ 0، أزله وأضف كود الدولة
-  if (normalized.startsWith('0')) {
-    normalized = normalized.substring(1);
-  }
-  
-  // أضف كود الدولة الافتراضي
-  return defaultCountryCode + normalized;
+
+  return normalized;
 }
 
 /**
- * التحقق من صحة رقم الهاتف
+ * Validate phone number format
  */
-export function validatePhoneNumber(phone: string): boolean {
-  const cleaned = cleanPhoneNumber(phone);
-  
-  // يجب أن يحتوي على أرقام فقط (مع + اختياري في البداية)
-  const phoneRegex = /^\+?[0-9]{8,15}$/;
-  
-  return phoneRegex.test(cleaned);
+export function isValidPhoneNumber(phone: string): boolean {
+  // Should start with + and have 10-15 digits
+  const phoneRegex = /^\+\d{10,15}$/;
+  return phoneRegex.test(phone);
 }
 
 /**
- * تنسيق رقم الهاتف للعرض
+ * Format phone number for display
  */
 export function formatPhoneNumber(phone: string): string {
-  const cleaned = cleanPhoneNumber(phone);
-  
-  // إذا كان يبدأ بكود دولة
-  const countryCode = extractCountryCode(cleaned);
-  if (countryCode) {
-    const number = cleaned.substring(countryCode.length);
-    // تنسيق الرقم بمسافات كل 3 أرقام
-    const formatted = number.replace(/(\d{3})(?=\d)/g, '$1 ');
-    return `${countryCode} ${formatted}`;
+  // Remove + for formatting
+  const digits = phone.replace(/\+/g, '');
+
+  // Saudi format: +966 5X XXX XXXX
+  if (phone.startsWith('+966') && digits.length === 12) {
+    return `+966 ${digits.substring(3, 5)} ${digits.substring(5, 8)} ${digits.substring(8)}`;
   }
-  
-  // تنسيق بدون كود دولة
-  return cleaned.replace(/(\d{3})(?=\d)/g, '$1 ');
+
+  // Generic format: +XXX XXX XXX XXXX
+  if (digits.length >= 10) {
+    const countryCode = digits.substring(0, digits.length - 9);
+    const rest = digits.substring(digits.length - 9);
+    return `+${countryCode} ${rest.substring(0, 3)} ${rest.substring(3, 6)} ${rest.substring(6)}`;
+  }
+
+  return phone;
 }
 
 /**
- * تطبيع مجموعة من الأرقام وإزالة المكررات
+ * Extract country code from phone number
  */
-export function normalizeAndDeduplicatePhones(
+export function extractCountryCode(phone: string): string | null {
+  const match = phone.match(/^\+(\d{1,4})/);
+  return match ? `+${match[1]}` : null;
+}
+
+/**
+ * Batch normalize phone numbers from Excel import
+ */
+export function batchNormalizePhones(
   phones: string[],
-  defaultCountryCode: string = '+20'
-): { normalized: string; original: string }[] {
-  const seen = new Set<string>();
-  const result: { normalized: string; original: string }[] = [];
-  
+  defaultCountryCode: string = '+966'
+): { normalized: string[]; invalid: string[] } {
+  const normalized: string[] = [];
+  const invalid: string[] = [];
+
   for (const phone of phones) {
     try {
-      const normalized = normalizePhoneNumber(phone, defaultCountryCode);
-      
-      // تجاهل المكررات
-      if (!seen.has(normalized)) {
-        seen.add(normalized);
-        result.push({ normalized, original: phone });
+      const normalizedPhone = normalizePhoneNumber(phone, defaultCountryCode);
+      if (isValidPhoneNumber(normalizedPhone)) {
+        normalized.push(normalizedPhone);
+      } else {
+        invalid.push(phone);
       }
     } catch (error) {
-      // تجاهل الأرقام غير الصحيحة
-      console.warn(`Invalid phone number: ${phone}`, error);
+      invalid.push(phone);
     }
   }
-  
-  return result;
+
+  return { normalized, invalid };
+}
+
+/**
+ * Deduplicate phone numbers
+ */
+export function deduplicatePhones(phones: string[]): string[] {
+  return Array.from(new Set(phones));
 }

@@ -1,134 +1,75 @@
-// نظام الأدوار والصلاحيات الشامل
+// Role-Based Access Control Types
+
 export enum UserRole {
   MANAGER = 'manager',
   EMPLOYEE = 'employee',
-  CLIENT = 'client', // للعرض فقط
 }
 
 export enum EmployeePermission {
-  // Event Permissions
-  EVENT_CREATE = 'event:create',
-  EVENT_VIEW = 'event:view',
-  EVENT_UPDATE = 'event:update',
-  EVENT_DELETE = 'event:delete',
-  EVENT_CLOSE = 'event:close',
+  EVENT_CREATE = 'event_create',
+  EVENT_EDIT = 'event_edit',
+  EVENT_DELETE = 'event_delete',
+  EVENT_VIEW = 'event_view',
   
-  // Contact Permissions
-  CONTACT_CREATE = 'contact:create',
-  CONTACT_VIEW = 'contact:view',
-  CONTACT_UPDATE = 'contact:update',
-  CONTACT_DELETE = 'contact:delete',
-  CONTACT_UPLOAD = 'contact:upload',
+  CONTACT_CREATE = 'contact_create',
+  CONTACT_EDIT = 'contact_edit',
+  CONTACT_DELETE = 'contact_delete',
+  CONTACT_VIEW = 'contact_view',
+  CONTACT_IMPORT = 'contact_import',
   
-  // Invitation Permissions
-  INVITATION_SEND = 'invitation:send',
-  INVITATION_VIEW = 'invitation:view',
+  INVITATION_SEND = 'invitation_send',
+  INVITATION_VIEW = 'invitation_view',
   
-  // Guest Permissions
-  GUEST_VIEW = 'guest:view',
-  GUEST_UPDATE = 'guest:update',
+  GUEST_VIEW = 'guest_view',
+  GUEST_EDIT = 'guest_edit',
   
-  // Check-in Permissions
-  CHECKIN_SCAN = 'checkin:scan',
-  CHECKIN_VIEW = 'checkin:view',
+  CHECKIN_SCAN = 'checkin_scan',
+  CHECKIN_VIEW = 'checkin_view',
   
-  // Analytics Permissions
-  ANALYTICS_VIEW = 'analytics:view',
+  ANALYTICS_VIEW = 'analytics_view',
   
-  // Export Permissions
-  EXPORT_CSV = 'export:csv',
-  EXPORT_PDF = 'export:pdf',
+  USER_MANAGE = 'user_manage',
   
-  // WhatsApp Permissions
-  WHATSAPP_SETTINGS = 'whatsapp:settings',
-  WHATSAPP_SEND = 'whatsapp:send',
+  SETTINGS_VIEW = 'settings_view',
+  SETTINGS_EDIT = 'settings_edit',
 }
 
-// أدوار الموظفين المحددة مسبقاً
-export const PREDEFINED_ROLES = {
-  EVENT_CREATOR: {
-    name: 'Event Creator',
-    nameAr: 'منشئ الفعاليات',
-    permissions: [
-      EmployeePermission.EVENT_CREATE,
-      EmployeePermission.EVENT_VIEW,
-      EmployeePermission.EVENT_UPDATE,
-      EmployeePermission.CONTACT_VIEW,
-      EmployeePermission.GUEST_VIEW,
-      EmployeePermission.ANALYTICS_VIEW,
-    ],
-  },
-  CONTACT_MANAGER: {
-    name: 'Contact Manager',
-    nameAr: 'مدير جهات الاتصال',
-    permissions: [
-      EmployeePermission.CONTACT_CREATE,
-      EmployeePermission.CONTACT_VIEW,
-      EmployeePermission.CONTACT_UPDATE,
-      EmployeePermission.CONTACT_DELETE,
-      EmployeePermission.CONTACT_UPLOAD,
-      EmployeePermission.EVENT_VIEW,
-    ],
-  },
-  INVITATION_SENDER: {
-    name: 'Invitation Sender',
-    nameAr: 'مرسل الدعوات',
-    permissions: [
-      EmployeePermission.EVENT_VIEW,
-      EmployeePermission.CONTACT_VIEW,
-      EmployeePermission.INVITATION_SEND,
-      EmployeePermission.INVITATION_VIEW,
-      EmployeePermission.GUEST_VIEW,
-      EmployeePermission.WHATSAPP_SEND,
-    ],
-  },
-  VIEWER: {
-    name: 'Viewer',
-    nameAr: 'مشاهد',
-    permissions: [
-      EmployeePermission.EVENT_VIEW,
-      EmployeePermission.CONTACT_VIEW,
-      EmployeePermission.GUEST_VIEW,
-      EmployeePermission.ANALYTICS_VIEW,
-    ],
-  },
-  CHECKIN_STAFF: {
-    name: 'Check-in Staff',
-    nameAr: 'موظف التسجيل',
-    permissions: [
-      EmployeePermission.EVENT_VIEW,
-      EmployeePermission.GUEST_VIEW,
-      EmployeePermission.CHECKIN_SCAN,
-      EmployeePermission.CHECKIN_VIEW,
-    ],
-  },
-  FULL_ACCESS: {
-    name: 'Full Access',
-    nameAr: 'صلاحيات كاملة',
-    permissions: Object.values(EmployeePermission),
-  },
-} as const;
+// Permission groups for easy assignment
+export const PERMISSION_GROUPS = {
+  event_creator: [
+    EmployeePermission.EVENT_CREATE,
+    EmployeePermission.EVENT_EDIT,
+    EmployeePermission.EVENT_VIEW,
+    EmployeePermission.GUEST_VIEW,
+    EmployeePermission.ANALYTICS_VIEW,
+  ],
+  contact_manager: [
+    EmployeePermission.CONTACT_CREATE,
+    EmployeePermission.CONTACT_EDIT,
+    EmployeePermission.CONTACT_DELETE,
+    EmployeePermission.CONTACT_VIEW,
+    EmployeePermission.CONTACT_IMPORT,
+  ],
+  invitation_sender: [
+    EmployeePermission.INVITATION_SEND,
+    EmployeePermission.INVITATION_VIEW,
+    EmployeePermission.EVENT_VIEW,
+    EmployeePermission.GUEST_VIEW,
+  ],
+  viewer: [
+    EmployeePermission.EVENT_VIEW,
+    EmployeePermission.GUEST_VIEW,
+    EmployeePermission.CONTACT_VIEW,
+    EmployeePermission.INVITATION_VIEW,
+    EmployeePermission.ANALYTICS_VIEW,
+  ],
+  checkin_staff: [
+    EmployeePermission.CHECKIN_SCAN,
+    EmployeePermission.CHECKIN_VIEW,
+    EmployeePermission.EVENT_VIEW,
+    EmployeePermission.GUEST_VIEW,
+  ],
+};
 
-export type PredefinedRoleKey = keyof typeof PREDEFINED_ROLES;
-
-// دالة للتحقق من الصلاحيات
-export function hasPermission(
-  userPermissions: EmployeePermission[],
-  requiredPermission: EmployeePermission
-): boolean {
-  return userPermissions.includes(requiredPermission);
-}
-
-export function hasAnyPermission(
-  userPermissions: EmployeePermission[],
-  requiredPermissions: EmployeePermission[]
-): boolean {
-  return requiredPermissions.some(permission => userPermissions.includes(permission));
-}
-
-export function hasAllPermissions(
-  userPermissions: EmployeePermission[],
-  requiredPermissions: EmployeePermission[]
-): boolean {
-  return requiredPermissions.every(permission => userPermissions.includes(permission));
-}
+// Manager has all permissions
+export const MANAGER_PERMISSIONS = Object.values(EmployeePermission);

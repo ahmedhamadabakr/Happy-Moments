@@ -65,44 +65,15 @@ export const useAuthStore = create<AuthState>()(
       checkAuth: async () => {
         const currentState = get();
         
-        // If we already have a user in state, consider them authenticated initially
-        if (currentState.user && currentState.isAuthenticated) {
-          set({ isLoading: false });
-          
-          // Verify in background without blocking UI
-          fetch('/api/auth/profile', {
-            credentials: 'include',
-          })
-            .then(async (response) => {
-              if (response.ok) {
-                const data = await response.json();
-                if (data.success && data.data) {
-                  set({
-                    user: data.data.user,
-                    company: data.data.user.company,
-                    isAuthenticated: true,
-                  });
-                }
-              } else {
-                // Only logout if token is actually invalid
-                if (response.status === 401) {
-                  set({ user: null, company: null, isAuthenticated: false });
-                }
-              }
-            })
-            .catch(() => {
-              // Keep user logged in on network errors
-            });
-          
-          return;
-        }
-        
-        // No user in state, check with API
+        // Always check with API first
         set({ isLoading: true });
+        
         try {
           const response = await fetch('/api/auth/profile', {
             credentials: 'include',
+            cache: 'no-store',
           });
+          
           if (response.ok) {
             const data = await response.json();
             if (data.success && data.data) {
@@ -110,15 +81,27 @@ export const useAuthStore = create<AuthState>()(
                 user: data.data.user,
                 company: data.data.user.company,
                 isAuthenticated: true,
+                isLoading: false,
               });
+              return;
             }
-          } else {
-            set({ user: null, company: null, isAuthenticated: false });
           }
+          
+          // If API call fails, clear auth state
+          set({ 
+            user: null, 
+            company: null, 
+            isAuthenticated: false,
+            isLoading: false,
+          });
         } catch (error) {
-          set({ user: null, company: null, isAuthenticated: false });
-        } finally {
-          set({ isLoading: false });
+          console.error('Auth check error:', error);
+          set({ 
+            user: null, 
+            company: null, 
+            isAuthenticated: false,
+            isLoading: false,
+          });
         }
       },
     }),

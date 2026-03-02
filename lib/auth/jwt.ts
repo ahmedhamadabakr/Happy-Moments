@@ -14,7 +14,7 @@ export interface JWTPayload {
   exp?: number;
 }
 
-export async function signJWT(payload: Omit<JWTPayload, 'iat' | 'exp'>, expiresIn: string = '1h') {
+export async function signJWT(payload: Omit<JWTPayload, 'iat' | 'exp'>, expiresIn: string = '24h') {
   const token = await new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
@@ -71,16 +71,22 @@ export const auth = getSession;
 export async function setAuthCookies(
   accessToken: string,
   refreshToken: string,
-  accessTokenExpiresIn: number = 3600 // 1 hour in seconds
+  accessTokenExpiresIn: number = 86400 // 24 hours in seconds
 ) {
   const cookieStore = await cookies();
+
+  const accessTokenExpiry = new Date();
+  accessTokenExpiry.setSeconds(accessTokenExpiry.getSeconds() + accessTokenExpiresIn);
+
+  const refreshTokenExpiry = new Date();
+  refreshTokenExpiry.setDate(refreshTokenExpiry.getDate() + 7); // 7 days
 
   cookieStore.set('accessToken', accessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
-    maxAge: accessTokenExpiresIn,
+    expires: accessTokenExpiry,
   });
 
   cookieStore.set('refreshToken', refreshToken, {
@@ -88,7 +94,7 @@ export async function setAuthCookies(
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
-    maxAge: 7 * 24 * 60 * 60, // 7 days
+    expires: refreshTokenExpiry,
   });
 }
 

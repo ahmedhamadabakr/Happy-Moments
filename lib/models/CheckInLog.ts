@@ -1,85 +1,65 @@
-import mongoose, { Schema, Document, Model } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 
-export type ScanType = 'first' | 'repeated';
-
-/**
- * سجل كل عملية مسح QR
- * يسمح بتسجيل المسح المتكرر
- */
 export interface ICheckInLog extends Document {
-  eventGuestId: mongoose.Types.ObjectId;
-  eventId: mongoose.Types.ObjectId;
-  companyId: mongoose.Types.ObjectId;
-  scannedBy: mongoose.Types.ObjectId; // الموظف الذي قام بالمسح
+  event: mongoose.Types.ObjectId;
+  guest: mongoose.Types.ObjectId;
+  scannedBy: mongoose.Types.ObjectId;
   scannedAt: Date;
-  scanType: ScanType; // first أو repeated
-  scanNumber: number; // رقم المسح (1, 2, 3, ...)
-  ipAddress?: string;
-  userAgent?: string;
-  notes?: string;
+  scanType: 'first' | 'repeated';
+  scanMethod: 'qr' | 'manual';
+  location?: {
+    latitude: number;
+    longitude: number;
+  };
+  deviceInfo?: string;
   createdAt: Date;
 }
 
-const checkInLogSchema = new Schema<ICheckInLog>(
+const CheckInLogSchema = new Schema<ICheckInLog>(
   {
-    eventGuestId: {
-      type: Schema.Types.ObjectId,
-      ref: 'EventGuest',
-      required: true,
-      index: true,
-    },
-    eventId: {
-      type: Schema.Types.ObjectId,
+    event: {
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'Event',
       required: true,
-      index: true,
     },
-    companyId: {
-      type: Schema.Types.ObjectId,
-      ref: 'Company',
+    guest: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'EventGuest',
       required: true,
-      index: true,
     },
     scannedBy: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
     },
     scannedAt: {
       type: Date,
-      required: true,
       default: Date.now,
+      required: true,
     },
     scanType: {
       type: String,
       enum: ['first', 'repeated'],
       required: true,
     },
-    scanNumber: {
-      type: Number,
-      required: true,
-      min: 1,
-    },
-    ipAddress: {
+    scanMethod: {
       type: String,
+      enum: ['qr', 'manual'],
+      default: 'qr',
     },
-    userAgent: {
-      type: String,
+    location: {
+      latitude: Number,
+      longitude: Number,
     },
-    notes: {
-      type: String,
-      trim: true,
-    },
+    deviceInfo: String,
   },
-  {
-    timestamps: { createdAt: true, updatedAt: false },
-  }
+  { timestamps: true }
 );
 
-// Index للاستعلامات السريعة
-checkInLogSchema.index({ eventId: 1, scannedAt: -1 });
-checkInLogSchema.index({ eventGuestId: 1, scannedAt: -1 });
-checkInLogSchema.index({ companyId: 1, scannedAt: -1 });
+// Indexes for efficient queries
+CheckInLogSchema.index({ event: 1, guest: 1 });
+CheckInLogSchema.index({ event: 1, scannedAt: -1 });
+CheckInLogSchema.index({ scannedBy: 1, scannedAt: -1 });
 
-export const CheckInLog: Model<ICheckInLog> =
-  mongoose.models.CheckInLog || mongoose.model<ICheckInLog>('CheckInLog', checkInLogSchema);
+export const CheckInLog =
+  mongoose.models.CheckInLog || mongoose.model<ICheckInLog>('CheckInLog', CheckInLogSchema);

@@ -4,21 +4,22 @@ export type EventStatus = 'draft' | 'active' | 'closed'
 
 export interface IEvent extends Document {
   companyId: mongoose.Types.ObjectId
-  clientId?: mongoose.Types.ObjectId // العميل المرتبط بالفعالية
+  clientId?: mongoose.Types.ObjectId
   title: string
   description?: string
   eventDate: Date
   eventTime?: string
   location?: string
-  locationUrl?: string // رابط Google Maps
+  locationUrl?: string
   maxGuests?: number
-  invitationImage?: string // صورة الدعوة الأساسية
+  invitationImage?: string
   qrCoordinates?: {
     x: number
     y: number
     width: number
     height: number
-  } // إحداثيات وضع QR على الصورة
+  }
+  clientViewToken: string // Token للعرض العام بدون تسجيل دخول
   status: EventStatus
   createdBy: mongoose.Types.ObjectId
   createdAt: Date
@@ -78,6 +79,12 @@ const eventSchema = new Schema<IEvent>(
       y: { type: Number, default: 50 },
       width: { type: Number, default: 150 },
       height: { type: Number, default: 150 },
+    },
+    clientViewToken: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
     },
     status: {
       type: String,

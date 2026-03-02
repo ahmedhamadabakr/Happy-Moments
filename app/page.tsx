@@ -2,123 +2,120 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/lib/store/authStore';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Calendar, Users, Zap } from 'lucide-react';
+import { ArrowRight, Calendar, Users, Zap, CheckCircle, LogInIcon } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import EventGrid from '@/components/ui/EventGrid';
 
 export default function HomePage() {
   const router = useRouter();
-  const { user, isLoading, checkAuth } = useAuthStore();
-
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
-
-  useEffect(() => {
-    if (!isLoading && user) {
-      router.push('/dashboard');
-    }
-  }, [user, isLoading, router]);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      {/* Navigation */}
-      <nav className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-white/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold">
-            EM
-          </div>
-          <span className="text-xl font-bold text-slate-900">Event Manager</span>
-        </div>
-        <div className="flex gap-3">
-          <Button variant="outline" onClick={() => router.push('/login')}>
-            Sign In
-          </Button>
-          <Button onClick={() => router.push('/register')}>
-            Get Started
-          </Button>
-        </div>
-      </nav>
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
 
-      {/* Hero Section */}
-      <section className="px-6 py-20 sm:py-32">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-5xl sm:text-6xl font-bold text-slate-900 mb-6">
-            Smart Event <span className="text-blue-600">Invitation</span> & <span className="text-purple-600">Guest Management</span>
-          </h1>
-          <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
-            Streamline your event planning with powerful invitation management, contact organization, and real-time RSVP tracking.
-          </p>
-          <div className="flex gap-4 justify-center">
-            <Button size="lg" onClick={() => router.push('/register')} className="gap-2">
-              Start Free <ArrowRight className="h-4 w-4" />
-            </Button>
-            <Button size="lg" variant="outline" onClick={() => router.push('/login')}>
-              Sign In
-            </Button>
-          </div>
+      {/* Navbar */}
+      <nav className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-white/50 backdrop-blur-sm sticky top-0 z-50"> <div className="flex items-center gap-2"> <Image src="/logo2.png" alt="Event Manager" width={96} height={96} priority /> </div> <div className="flex gap-3"> <Link href="/login"> <LogInIcon /> </Link> </div> </nav>
+
+      {/* Hero */}
+      <section className="text-center px-6 py-28">
+        <h1 className="text-6xl font-bold text-slate-900 mb-6 leading-tight">
+          Create Stunning <span className="text-blue-600">Invitations</span><br />
+          Manage Guests Effortlessly
+        </h1>
+
+        <p className="text-lg text-slate-600 max-w-2xl mx-auto mb-10">
+          Everything you need to create, send, and track event invitations —
+          all in one powerful platform.
+        </p>
+
+        <div className="flex justify-center gap-4">
+          <Button size="lg" onClick={() => router.push('/register')}>
+            Start Free <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+          <Button size="lg" variant="outline">
+            View Demo
+          </Button>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="px-6 py-20 bg-white/50">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-bold text-center text-slate-900 mb-16">
-            Powerful Features
+      {/* Features */}
+      <section className="px-6 py-24 bg-white">
+        <EventGrid />
+        <h2 className="text-4xl font-bold text-center mb-16">
+          Powerful Features
+        </h2>
+
+        <div className="grid md:grid-cols-3 gap-10 max-w-6xl mx-auto">
+
+          <FeatureCard
+            icon={<Calendar className="h-6 w-6" />}
+            title="Event Management"
+            description="Create and manage unlimited events with real-time updates."
+          />
+
+          <FeatureCard
+            icon={<Users className="h-6 w-6" />}
+            title="Guest Management"
+            description="Import contacts, track RSVPs, and segment guests easily."
+          />
+
+          <FeatureCard
+            icon={<Zap className="h-6 w-6" />}
+            title="Smart Invitations"
+            description="Send via WhatsApp or Email with full analytics tracking."
+          />
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="px-6 py-24 bg-slate-50">
+        <h2 className="text-4xl font-bold text-center mb-16">
+          How It Works
+        </h2>
+
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto text-center">
+
+          <Step title="Create Event" />
+          <Step title="Add Guests" />
+          <Step title="Send Invitations" />
+
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="px-6 py-24">
+        <div className="max-w-4xl mx-auto bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-16 text-center text-white">
+          <h2 className="text-4xl font-bold mb-6">
+            Ready to Elevate Your Events?
           </h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="p-6 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-200">
-              <div className="h-12 w-12 rounded-lg bg-blue-600 text-white flex items-center justify-center mb-4">
-                <Calendar className="h-6 w-6" />
-              </div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-2">Event Management</h3>
-              <p className="text-slate-600">
-                Create, organize, and manage multiple events with ease. Track all details in one place.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-xl bg-gradient-to-br from-purple-50 to-purple-100/50 border border-purple-200">
-              <div className="h-12 w-12 rounded-lg bg-purple-600 text-white flex items-center justify-center mb-4">
-                <Users className="h-6 w-6" />
-              </div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-2">Contact Management</h3>
-              <p className="text-slate-600">
-                Import, organize, and segment contacts. Upload CSV files or add guests manually.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-xl bg-gradient-to-br from-orange-50 to-orange-100/50 border border-orange-200">
-              <div className="h-12 w-12 rounded-lg bg-orange-600 text-white flex items-center justify-center mb-4">
-                <Zap className="h-6 w-6" />
-              </div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-2">Smart Invitations</h3>
-              <p className="text-slate-600">
-                Send personalized invitations via email or WhatsApp. Track opens and responses.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="px-6 py-20">
-        <div className="max-w-4xl mx-auto bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-12 text-center text-white">
-          <h2 className="text-4xl font-bold mb-4">Ready to Transform Your Events?</h2>
-          <p className="text-lg mb-8 opacity-90">
-            Join thousands of event organizers who trust Event Manager
-          </p>
-          <Button size="lg" variant="secondary" onClick={() => router.push('/register')} className="gap-2">
-            Create Free Account <ArrowRight className="h-4 w-4" />
+          <Button size="lg" variant="secondary" onClick={() => router.push('/register')}>
+            Create Free Account <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white/50 py-8 px-6">
-        <div className="max-w-6xl mx-auto text-center text-slate-600 text-sm">
-          <p>&copy; 2025 Event Manager. All rights reserved.</p>
-        </div>
-      </footer>
     </main>
+  );
+}
+
+function FeatureCard({ icon, title, description }: any) {
+  return (
+    <div className="p-8 rounded-2xl shadow-sm hover:shadow-lg transition bg-gradient-to-br from-blue-50 to-white border">
+      <div className="h-12 w-12 flex items-center justify-center bg-blue-600 text-white rounded-lg mb-4">
+        {icon}
+      </div>
+      <h3 className="text-xl font-semibold mb-2">{title}</h3>
+      <p className="text-slate-600">{description}</p>
+    </div>
+  );
+}
+
+function Step({ title }: any) {
+  return (
+    <div className="p-6">
+      <CheckCircle className="mx-auto h-10 w-10 text-blue-600 mb-4" />
+      <h3 className="text-lg font-semibold">{title}</h3>
+    </div>
   );
 }
