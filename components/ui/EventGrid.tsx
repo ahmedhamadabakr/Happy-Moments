@@ -72,7 +72,7 @@ export default function EventGrid() {
     const categoryEntries = useMemo(() => Object.entries(grouped), [grouped]);
 
     return (
-        <div className="min-h-screen bg-gray-50 py-12 px-4 md:px-8" dir="rtl">
+        <div className="min-h-screen bg-gray-50 px-4 md:px-8" dir="rtl">
             {/* عنوان اختياري للمعرض */}
             <div className="text-center mb-12">
                 <h1 className="text-4xl font-extrabold text-[#1A2E26] mb-2">معرض الصور</h1>

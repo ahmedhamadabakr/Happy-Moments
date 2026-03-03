@@ -9,30 +9,106 @@ import { handleApiError } from '@/lib/api/errors'
 import { connectDB } from '@/lib/db'
 import mongoose from 'mongoose'
 
-// Mock WhatsApp API - in production, integrate with actual WhatsApp Business API
-async function sendWhatsAppMessage(
-  phoneNumber: string,
-  guestName: string,
-  eventTitle: string,
-  eventDate: string,
+function buildPublicUrl(baseUrl: string, pathOrUrl?: string | null) {
+  if (!pathOrUrl) return null
+  if (pathOrUrl.startsWith('http://') || pathOrUrl.startsWith('https://')) return pathOrUrl
+  const normalizedBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl
+  const normalizedPath = pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`
+  return `${normalizedBase}${normalizedPath}`
+}
+
+function normalizePhoneE164Like(phone: string) {
+  // Minimal normalization: keep digits and leading +.
+  // WhatsApp Cloud API expects an E.164-like number without spaces.
+  const trimmed = phone.trim()
+  if (trimmed.startsWith('+')) {
+    return `+${trimmed.slice(1).replace(/\D/g, '')}`
+  }
+  return trimmed.replace(/\D/g, '')
+}
+
+async function sendWhatsAppTemplateMessage(args: {
+  phoneNumber: string
+  imageUrl: string
+  guestName: string
+  eventTitle: string
+  eventDate: string
   rsvpLink: string
-): Promise<{ success: boolean; messageId?: string; error?: string }> {
-  try {
-    // Mock implementation - in production:
-    // 1. Use WhatsApp Business API
-    // 2. Handle errors and retries
-    // 3. Store message metadata
-    
-    const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    
-    // Simulate API call with 95% success rate
-    const isSuccess = Math.random() < 0.95
-    
-    if (isSuccess) {
-      return { success: true, messageId }
-    } else {
-      return { success: false, error: 'فشل في إرسال الرسالة' }
+}): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID
+  const templateName = process.env.WHATSAPP_TEMPLATE_NAME
+  const templateLang = process.env.WHATSAPP_TEMPLATE_LANG || 'ar'
+  const apiVersion = process.env.WHATSAPP_API_VERSION || 'v21.0'
+
+  if (!accessToken || !phoneNumberId || !templateName) {
+    return {
+      success: false,
+      error:
+        'Missing WhatsApp env vars. Required: WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID, WHATSAPP_TEMPLATE_NAME',
     }
+  }
+
+  try {
+    const url = `https://graph.facebook.com/${apiVersion}/${phoneNumberId}/messages`
+
+    const to = normalizePhoneE164Like(args.phoneNumber)
+
+    const payload = {
+      messaging_product: 'whatsapp',
+      to,
+      type: 'template',
+      template: {
+        name: templateName,
+        language: {
+          code: templateLang,
+        },
+        components: [
+          {
+            type: 'header',
+            parameters: [
+              {
+                type: 'image',
+                image: {
+                  link: args.imageUrl,
+                },
+              },
+            ],
+          },
+          {
+            type: 'body',
+            parameters: [
+              { type: 'text', text: args.guestName },
+              { type: 'text', text: args.eventTitle },
+              { type: 'text', text: args.eventDate },
+              { type: 'text', text: args.rsvpLink },
+            ],
+          },
+        ],
+      },
+    }
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    })
+
+    const json = await res.json().catch(() => null)
+
+    if (!res.ok) {
+      const errorMsg =
+        json?.error?.message ||
+        json?.message ||
+        'WhatsApp API request failed'
+      return { success: false, error: errorMsg }
+    }
+
+    const messageId = json?.messages?.[0]?.id
+    return { success: true, messageId }
   } catch (error) {
     return {
       success: false,
@@ -46,7 +122,7 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const user = await auth(req)
+    const user = await auth()
     if (!user) {
       return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
     }
@@ -87,41 +163,58 @@ export async function POST(
     let failed = 0
     const errors: { phone: string; error: string }[] = []
 
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+
     for (const guest of eventGuests) {
       try {
         // Generate RSVP link
-        const rsvpLink = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/rsvp/${guest.invitationToken}`
+        const rsvpLink = `${baseUrl}/rsvp/${guest.invitationToken}`
 
-        // Send WhatsApp message
-        const result = await sendWhatsAppMessage(
-          guest.snapshotPhone,
-          guest.snapshotName,
-          event.title,
-          event.eventDate.toISOString().split('T')[0],
-          rsvpLink
+        const invitationImageUrl = buildPublicUrl(
+          baseUrl,
+          guest.finalInvitationImagePath || event.invitationImage
         )
 
+        if (!invitationImageUrl) {
+          throw new Error('Missing invitation image for guest')
+        }
+
+        const eventDate = event.eventDate.toISOString().split('T')[0]
+
+        // Create invitation record first (so we can link WhatsAppMessage.invitationId correctly)
+        const invitation = await Invitation.create({
+          eventGuestId: guest._id,
+          eventId: params.id,
+          companyId: user.companyId,
+          channel: 'whatsapp',
+          recipientPhone: guest.snapshotPhone,
+          deliveryStatus: 'pending',
+          retryCount: 0,
+        })
+
+        const result = await sendWhatsAppTemplateMessage({
+          phoneNumber: guest.snapshotPhone,
+          imageUrl: invitationImageUrl,
+          guestName: guest.snapshotName,
+          eventTitle: event.title,
+          eventDate,
+          rsvpLink,
+        })
+
         if (result.success) {
-          // Create invitation record
-          await Invitation.create({
-            eventGuestId: guest._id,
-            eventId: params.id,
-            companyId: user.companyId,
-            channel: 'whatsapp',
-            recipientPhone: guest.snapshotPhone,
-            deliveryStatus: 'sent',
-            externalMessageId: result.messageId,
-            sentAt: new Date(),
-          })
+          invitation.deliveryStatus = 'sent'
+          invitation.externalMessageId = result.messageId
+          invitation.sentAt = new Date()
+          await invitation.save()
 
           // Create WhatsApp message record
           await WhatsAppMessage.create({
-            invitationId: new mongoose.Types.ObjectId(), // Placeholder
+            invitationId: invitation._id,
             eventGuestId: guest._id,
             eventId: params.id,
             companyId: user.companyId,
             phoneNumber: guest.snapshotPhone,
-            messageText: `مرحباً ${guest.snapshotName}،\nتم دعوتك لحضور: ${event.title}\nالتاريخ: ${event.eventDate.toISOString().split('T')[0]}\nللتأكيد: ${rsvpLink}`,
+            messageText: `مرحباً ${guest.snapshotName}،\nتم دعوتك لحضور: ${event.title}\nالتاريخ: ${eventDate}\nللتأكيد: ${rsvpLink}`,
             externalMessageId: result.messageId,
             status: 'sent',
             sentAt: new Date(),
@@ -137,16 +230,9 @@ export async function POST(
 
           sent++
         } else {
-          // Create failed invitation record
-          await Invitation.create({
-            eventGuestId: guest._id,
-            eventId: params.id,
-            companyId: user.companyId,
-            channel: 'whatsapp',
-            recipientPhone: guest.snapshotPhone,
-            deliveryStatus: 'failed',
-            failureReason: result.error,
-          })
+          invitation.deliveryStatus = 'failed'
+          invitation.failureReason = result.error
+          await invitation.save()
 
           guest.invitationStatus = 'failed'
           await guest.save()
@@ -166,7 +252,7 @@ export async function POST(
     // Log activity
     await ActivityLog.create({
       companyId: user.companyId,
-      userId: user._id,
+      userId: user.userId,
       activityType: 'invitation_send',
       resourceType: 'Event',
       resourceId: event._id,
