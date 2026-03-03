@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { User as UserType, Company as CompanyType } from '@/lib/store/authStore';
 import { cn } from '@/lib/utils';
-import { Calendar, Users, Settings, Home, Image, MessageSquare, LayoutGrid } from 'lucide-react';
+import Image from 'next/image';
+import { Calendar, Users, Settings, Home, Image as ImageIcon, MessageSquare, LayoutGrid } from 'lucide-react';
 
 interface DashboardSidebarProps {
   user: UserType;
@@ -28,20 +29,14 @@ export function DashboardSidebar({ user, company }: DashboardSidebarProps) {
       role: ['manager', 'admin'],
     },
     {
-      label: 'الضيوف',
-      href: '/dashboard/events/guests',
-      icon: Users,
+      label: 'إنشاء فعالية',
+      href: '/dashboard/events/create',
+      icon: Calendar,
       role: ['manager', 'admin'],
     },
     {
-      label: 'القوالب',
-      href: '/dashboard/templates',
-      icon: LayoutGrid,
-      role: ['manager', 'admin'],
-    },
-    {
-      label: 'المستخدمين',
-      href: '/dashboard/users',
+      label: 'العملاء',
+      href: '/dashboard/clients',
       icon: Users,
       role: ['manager', 'admin'],
     },
@@ -52,20 +47,26 @@ export function DashboardSidebar({ user, company }: DashboardSidebarProps) {
       role: ['manager', 'admin'],
     },
     {
+      label: 'القوالب',
+      href: '/dashboard/templates',
+      icon: LayoutGrid,
+      role: ['manager', 'admin'],
+    },
+    {
       label: 'إضافة صورة',
       href: '/dashboard/addPhoto',
-      icon: Image,
+      icon: ImageIcon,
+      role: ['manager', 'admin'],
+    },
+    {
+      label: 'المستخدمين',
+      href: '/dashboard/users',
+      icon: Users,
       role: ['manager', 'admin'],
     },
     {
       label: 'الإعدادات',
       href: '/dashboard/settings',
-      icon: Settings,
-      role: ['manager', 'admin'],
-    },
-    {
-      label: 'v2',
-      href: '/dashboard/v2',
       icon: Settings,
       role: ['manager', 'admin'],
     },
@@ -77,9 +78,7 @@ export function DashboardSidebar({ user, company }: DashboardSidebarProps) {
     <aside className="w-64 border-r border-slate-200 bg-white" dir="rtl">
       <div className="p-6">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold">
-            EM
-          </div>
+          <Image src="/logo2.png" alt="Happy Moments" width={40} height={40} />
           <div>
             <h1 className="text-lg font-bold text-slate-900">مدير الفعاليات</h1>
             <p className="text-xs text-slate-600">{company.name}</p>

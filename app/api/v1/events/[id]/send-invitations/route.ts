@@ -34,6 +34,7 @@ async function sendWhatsAppTemplateMessage(args: {
   eventTitle: string
   eventDate: string
   rsvpLink: string
+  locationUrl: string
 }): Promise<{ success: boolean; messageId?: string; error?: string }> {
   const accessToken = process.env.WHATSAPP_ACCESS_TOKEN
   const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID
@@ -82,6 +83,7 @@ async function sendWhatsAppTemplateMessage(args: {
               { type: 'text', text: args.eventTitle },
               { type: 'text', text: args.eventDate },
               { type: 'text', text: args.rsvpLink },
+              { type: 'text', text: args.locationUrl },
             ],
           },
         ],
@@ -199,6 +201,7 @@ export async function POST(
           eventTitle: event.title,
           eventDate,
           rsvpLink,
+          locationUrl: event.locationUrl || '',
         })
 
         if (result.success) {

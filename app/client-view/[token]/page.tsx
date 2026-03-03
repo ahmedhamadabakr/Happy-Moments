@@ -1,22 +1,79 @@
 import { notFound } from 'next/navigation'
+import { connectDB } from '@/lib/db'
+import { Client } from '@/lib/models/Client'
+import { Event } from '@/lib/models/Event'
+import { EventGuest } from '@/lib/models/EventGuest'
 
 interface PageProps {
   params: Promise<{ token: string }>
 }
 
 async function getClientView(token: string) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/v1/client-view/${token}`, {
-    cache: 'no-store',
-  })
+  await connectDB()
 
-  const json = await res.json()
+  const client = await Client.findOne({ accessToken: token, isActive: true }).lean()
+  if (!client) return null
 
-  if (!res.ok || !json?.success) {
-    return null
+  const events = await Event.find({ clientId: client._id, deletedAt: null })
+    .sort({ eventDate: -1 })
+    .lean()
+
+  const eventsWithStats = await Promise.all(
+    events.map(async (event) => {
+      const guests = await EventGuest.find({ eventId: event._id }).lean()
+
+      const stats = {
+        totalInvited: guests.length,
+        confirmed: guests.filter((g: any) => g.rsvpStatus === 'confirmed').length,
+        declined: guests.filter((g: any) => g.rsvpStatus === 'declined').length,
+        pending: guests.filter((g: any) => g.rsvpStatus === 'pending').length,
+        checkedIn: guests.filter((g: any) => g.checkInStatus === 'checked_in').length,
+        noShow: guests.filter(
+          (g: any) => g.rsvpStatus === 'confirmed' && g.checkInStatus === 'pending'
+        ).length,
+      }
+
+      const guestsList = guests.map((g: any) => ({
+        name: g.snapshotName,
+        phone: g.snapshotPhone,
+        rsvpStatus: g.rsvpStatus,
+        checkInStatus: g.checkInStatus,
+        rsvpMessage: g.rsvpMessage,
+        checkedInAt: g.checkedInAt,
+      }))
+
+      const messages = guests
+        .filter((g: any) => g.rsvpMessage)
+        .map((g: any) => ({
+          guestName: g.snapshotName,
+          message: g.rsvpMessage,
+          timestamp: g.rsvpConfirmedAt,
+        }))
+
+      return {
+        id: event._id.toString(),
+        title: (event as any).title,
+        description: (event as any).description,
+        eventDate: (event as any).eventDate,
+        eventTime: (event as any).eventTime,
+        location: (event as any).location,
+        locationUrl: (event as any).locationUrl,
+        status: (event as any).status,
+        stats,
+        guests: guestsList,
+        messages,
+      }
+    })
+  )
+
+  return {
+    success: true,
+    client: {
+      name: (client as any).fullName,
+      email: (client as any).email,
+    },
+    events: eventsWithStats,
   }
-
-  return json
 }
 
 export default async function ClientViewPage({ params }: PageProps) {

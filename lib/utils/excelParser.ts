@@ -1,5 +1,5 @@
-import XLSX from 'xlsx';
-import { normalizePhoneNumber, validatePhoneNumber } from './phoneNormalizer';
+import * as XLSX from 'xlsx';
+import { normalizePhoneNumber, isValidPhoneNumber } from './phoneNormalizer';
 
 export interface ParsedContact {
   fullName: string;
@@ -123,7 +123,7 @@ export async function parseExcelFile(
         const normalizedPhone = normalizePhoneNumber(phone, defaultCountryCode);
         
         // التحقق من صحة الرقم
-        if (!validatePhoneNumber(normalizedPhone)) {
+        if (!isValidPhoneNumber(normalizedPhone)) {
           errors.push({
             row: i + 1,
             error: 'رقم الهاتف غير صحيح',

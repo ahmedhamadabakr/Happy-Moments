@@ -4,7 +4,6 @@ import { Client } from '@/lib/models/Client';
 import { requireAuth } from '@/lib/middleware/permissions';
 import { generateSecureToken } from '@/lib/utils/qrGenerator';
 import { ActivityLog } from '@/lib/models/ActivityLog';
-import { EmployeePermission } from '@/lib/types/roles';
 
 /**
  * GET /api/v1/clients
@@ -18,10 +17,10 @@ export async function GET(request: NextRequest) {
     await connectDB();
 
     const clients = await Client.find({
-      companyId: session.companyId,
+      companyId: session.user.companyId,
       isActive: true,
     })
-      .select('-accessToken')
+      // accessToken is needed in dashboard to build client-view links
       .sort({ createdAt: -1 })
       .populate('createdBy', 'firstName lastName');
 
@@ -63,19 +62,19 @@ export async function POST(request: NextRequest) {
     const accessToken = generateSecureToken();
 
     const client = await Client.create({
-      companyId: session.companyId,
+      companyId: session.user.companyId,
       fullName,
       email,
       phone,
       accessToken,
-      createdBy: session.userId,
+      createdBy: session.user.userId,
       isActive: true,
     });
 
     // تسجيل النشاط
     await ActivityLog.create({
-      companyId: session.companyId,
-      userId: session.userId,
+      companyId: session.user.companyId,
+      userId: session.user.userId,
       activityType: 'event_create',
       resourceType: 'Client',
       resourceId: client._id,
@@ -85,14 +84,13 @@ export async function POST(request: NextRequest) {
     });
 
     // إرجاع البيانات بدون Token
-    const clientData = client.toObject();
-    delete clientData.accessToken;
+    const { accessToken: _accessToken, ...clientData } = client.toObject();
 
     return NextResponse.json({
       success: true,
       message: 'تم إنشاء العميل بنجاح',
       client: clientData,
-      clientViewUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/client/${client.accessToken}`,
+      clientViewUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/client-view/${client.accessToken}`,
     }, { status: 201 });
   } catch (error: any) {
     console.error('Error creating client:', error);

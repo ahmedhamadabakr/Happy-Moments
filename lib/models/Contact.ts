@@ -2,6 +2,7 @@ import mongoose, { Schema, Document, Model } from 'mongoose'
 
 export interface IContact extends Document {
   companyId: mongoose.Types.ObjectId
+  clientId?: mongoose.Types.ObjectId
   fullName: string
   phone: string
   email?: string
@@ -17,6 +18,12 @@ const contactSchema = new Schema<IContact>(
       ref: 'Company',
       required: true,
       index: true,
+    },
+    clientId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Client',
+      index: true,
+      default: null,
     },
     fullName: {
       type: String,
@@ -48,6 +55,9 @@ const contactSchema = new Schema<IContact>(
 
 // Compound unique index on companyId and phone for deduplication
 contactSchema.index({ companyId: 1, phone: 1 }, { unique: true, sparse: true })
+
+// Index for listing contacts per client
+contactSchema.index({ companyId: 1, clientId: 1 })
 
 // Text index for search functionality
 contactSchema.index({ fullName: 'text', phone: 'text', email: 'text' })
