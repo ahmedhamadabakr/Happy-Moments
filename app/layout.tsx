@@ -24,8 +24,8 @@ export default function RootLayout({
         <SessionManager>
           {children}
         </SessionManager>
+        <Analytics />
       </body>
-      <Analytics />
     </html>
   )
 }
