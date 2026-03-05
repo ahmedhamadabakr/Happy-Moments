@@ -62,3 +62,79 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: 'حدث خطأ أثناء الرفع' }, { status: 500 });
   }
 }
+
+// GET - جلب كل الصور
+export async function GET() {
+  try {
+    await connectDB();
+    const images = await ImageModel.find().sort({ createdAt: -1 });
+    return NextResponse.json({ success: true, data: images });
+  } catch (error) {
+    console.error('get_photos error:', error);
+    return NextResponse.json({ success: false, error: 'حدث خطأ أثناء جلب الصور' }, { status: 500 });
+  }
+}
+
+// PUT - تعديل صورة
+export async function PUT(request: Request) {
+  try {
+    await connectDB();
+    const { id, title, category } = await request.json();
+
+    if (!id) {
+      return NextResponse.json({ success: false, error: 'معرف الصورة مطلوب' }, { status: 400 });
+    }
+
+    const updatedImage = await ImageModel.findByIdAndUpdate(
+      id,
+      { title, category },
+      { new: true }
+    );
+
+    if (!updatedImage) {
+      return NextResponse.json({ success: false, error: 'الصورة غير موجودة' }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, data: updatedImage });
+  } catch (error) {
+    console.error('update_photo error:', error);
+    return NextResponse.json({ success: false, error: 'حدث خطأ أثناء التعديل' }, { status: 500 });
+  }
+}
+
+// DELETE - حذف صورة
+export async function DELETE(request: Request) {
+  try {
+    await connectDB();
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ success: false, error: 'معرف الصورة مطلوب' }, { status: 400 });
+    }
+
+    // البحث عن الصورة للحصول على publicId
+    const image = await ImageModel.findById(id);
+    if (!image) {
+      return NextResponse.json({ success: false, error: 'الصورة غير موجودة' }, { status: 404 });
+    }
+
+    // حذف الصورة من Cloudinary
+    if (image.publicId) {
+      await new Promise<void>((resolve, reject) => {
+        cloudinary.uploader.destroy(image.publicId, (error: any, result: any) => {
+          if (error) reject(error);
+          else resolve();
+        });
+      });
+    }
+
+    // حذف الصورة من MongoDB
+    await ImageModel.findByIdAndDelete(id);
+
+    return NextResponse.json({ success: true, message: 'تم حذف الصورة بنجاح' });
+  } catch (error) {
+    console.error('delete_photo error:', error);
+    return NextResponse.json({ success: false, error: 'حدث خطأ أثناء الحذف' }, { status: 500 });
+  }
+}

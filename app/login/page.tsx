@@ -1,20 +1,10 @@
-import { LoginForm } from '@/components/auth/LoginForm';
+import ModernLoginForm from '@/components/auth/ModernLoginForm';
 
 export const metadata = {
-  title: 'Sign In | Event Management',
-  description: 'Sign in to your event management account',
+  title: 'تسجيل الدخول | منصة إدارة الفعاليات',
+  description: 'سجل دخولك لإدارة فعالياتك ودعواتك بذكاء',
 };
 
 export default function LoginPage() {
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
-      <div className="w-full max-w-md">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-slate-900">Event Manager</h1>
-          <p className="mt-2 text-slate-600">Smart Event Invitation & Guest Management</p>
-        </div>
-        <LoginForm />
-      </div>
-    </main>
-  );
+  return <ModernLoginForm />;
 }

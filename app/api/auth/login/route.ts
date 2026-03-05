@@ -20,6 +20,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     console.log('Login attempt for:', body.email);
+    const { rememberMe } = body;
 
     // Validate input
     const validatedData = loginSchema.parse(body);
@@ -96,8 +97,9 @@ export async function POST(request: NextRequest) {
       companyId: user.company ? user.company.toString() : '',
     });
     
-    // Set cookies
-    await setAuthCookies(accessToken, refreshTokenString);
+    // Set cookies with extended expiry if remember me is checked
+    const accessTokenExpiresIn = rememberMe ? 30 * 24 * 60 * 60 : 24 * 60 * 60; // 30 days or 24 hours
+    await setAuthCookies(accessToken, refreshTokenString, accessTokenExpiresIn);
 
     return NextResponse.json(
       createSuccessResponse(

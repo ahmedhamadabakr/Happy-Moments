@@ -13,7 +13,6 @@ const createUserSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
   phone: z.string().optional(),
-  role: z.enum([UserRole.MANAGER, UserRole.EMPLOYEE]),
   permissionGroup: z.enum(['event_creator', 'contact_manager', 'invitation_sender', 'viewer', 'checkin_staff']).optional(),
   customPermissions: z.array(z.nativeEnum(EmployeePermission)).optional(),
 });
@@ -68,14 +67,12 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await hashPassword(validatedData.password);
 
-    // Determine permissions
+    // Determine permissions - all new users are employees
     let permissions: EmployeePermission[] = [];
-    if (validatedData.role === UserRole.EMPLOYEE) {
-      if (validatedData.permissionGroup) {
-        permissions = PERMISSION_GROUPS[validatedData.permissionGroup];
-      } else if (validatedData.customPermissions) {
-        permissions = validatedData.customPermissions;
-      }
+    if (validatedData.permissionGroup) {
+      permissions = PERMISSION_GROUPS[validatedData.permissionGroup];
+    } else if (validatedData.customPermissions) {
+      permissions = validatedData.customPermissions;
     }
 
     // Create user
@@ -85,7 +82,7 @@ export async function POST(request: NextRequest) {
       email: validatedData.email,
       password: hashedPassword,
       phone: validatedData.phone,
-      role: validatedData.role,
+      role: UserRole.EMPLOYEE,
       permissions,
       company: authResult.user.companyId,
       createdBy: authResult.user.userId,

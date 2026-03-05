@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { User as UserType, Company as CompanyType } from '@/lib/store/authStore';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
-import { Calendar, Users, Settings, Home, Image as ImageIcon, MessageSquare, LayoutGrid } from 'lucide-react';
+import { Calendar, Users, Settings, Home, Image as ImageIcon, MessageSquare, LayoutGrid, Shield } from 'lucide-react';
 
 interface DashboardSidebarProps {
   user: UserType;
@@ -20,55 +20,61 @@ export function DashboardSidebar({ user, company }: DashboardSidebarProps) {
       label: 'نظرة عامة',
       href: '/dashboard',
       icon: Home,
-      role: ['manager', 'admin'],
+      role: ['manager', 'employee'],
+    },
+    {
+      label: 'لوحة المدير',
+      href: '/dashboard/manager',
+      icon: Shield,
+      role: ['manager'],
     },
     {
       label: 'الفعاليات',
       href: '/dashboard/events',
       icon: Calendar,
-      role: ['manager', 'admin'],
+      role: ['manager', 'employee'],
     },
     {
       label: 'إنشاء فعالية',
       href: '/dashboard/events/create',
       icon: Calendar,
-      role: ['manager', 'admin'],
+      role: ['manager', 'employee'],
     },
     {
       label: 'العملاء',
       href: '/dashboard/clients',
       icon: Users,
-      role: ['manager', 'admin'],
+      role: ['manager', 'employee'],
     },
     {
       label: 'واتساب',
       href: '/dashboard/whatsapp',
       icon: MessageSquare,
-      role: ['manager', 'admin'],
+      role: ['manager', 'employee'],
     },
     {
       label: 'القوالب',
       href: '/dashboard/templates',
       icon: LayoutGrid,
-      role: ['manager', 'admin'],
+      role: ['manager', 'employee'],
     },
     {
       label: 'إضافة صورة',
       href: '/dashboard/addPhoto',
       icon: ImageIcon,
-      role: ['manager', 'admin'],
+      role: ['manager', 'employee'],
     },
     {
-      label: 'المستخدمين',
+      label: 'إدارة الموظفين',
       href: '/dashboard/users',
       icon: Users,
-      role: ['manager', 'admin'],
+      role: ['manager'],
     },
     {
       label: 'الإعدادات',
       href: '/dashboard/settings',
       icon: Settings,
-      role: ['manager', 'admin'],
+      role: ['manager', 'employee'],
     },
   ];
 

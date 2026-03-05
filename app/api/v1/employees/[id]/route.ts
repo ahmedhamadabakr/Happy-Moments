@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import { User } from '@/lib/models/User';
 import { requireManager } from '@/lib/middleware/permissions';
-import { UserRole, EmployeePermission, PREDEFINED_ROLES } from '@/lib/types/roles';
+import { UserRole, EmployeePermission, PERMISSION_GROUPS } from '@/lib/types/roles';
 import { ActivityLog } from '@/lib/models/ActivityLog';
 import mongoose from 'mongoose';
 
@@ -22,7 +22,7 @@ export async function GET(
 
     const employee = await User.findOne({
       _id: params.id,
-      company: session.companyId,
+      company: session.user.companyId,
       role: UserRole.EMPLOYEE,
     }).select('-password -refreshTokens');
 
@@ -41,6 +41,88 @@ export async function GET(
     console.error('Error fetching employee:', error);
     return NextResponse.json(
       { error: 'فشل في جلب بيانات الموظف' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * PUT /api/v1/employees/[id]
+ * تحديث بيانات موظف (بديل لـ PATCH)
+ */
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await requireManager(request);
+    if (session instanceof NextResponse) return session;
+
+    const body = await request.json();
+    const {
+      firstName,
+      lastName,
+      phone,
+      roleKey,
+      customPermissions,
+      isActive,
+    } = body;
+
+    await connectDB();
+
+    const employee = await User.findOne({
+      _id: params.id,
+      company: session.user.companyId,
+    });
+
+    if (!employee) {
+      return NextResponse.json(
+        { error: 'الموظف غير موجود' },
+        { status: 404 }
+      );
+    }
+
+    // تحديث البيانات الأساسية
+    if (firstName) employee.firstName = firstName;
+    if (lastName) employee.lastName = lastName;
+    if (phone !== undefined) employee.phone = phone;
+    if (isActive !== undefined) employee.isActive = isActive;
+    
+    // تحديث الصلاحيات فقط (الدور يبقى employee دائماً)
+    if (customPermissions && Array.isArray(customPermissions)) {
+      employee.permissions = customPermissions.filter((p: string) =>
+        Object.values(EmployeePermission).includes(p as EmployeePermission)
+      );
+    } else if (roleKey && PERMISSION_GROUPS[roleKey as keyof typeof PERMISSION_GROUPS]) {
+      employee.permissions = PERMISSION_GROUPS[roleKey as keyof typeof PERMISSION_GROUPS];
+    }
+
+    await employee.save();
+
+    // تسجيل النشاط
+    await ActivityLog.create({
+      companyId: session.user.companyId,
+      userId: session.user.userId,
+      activityType: 'event_update',
+      resourceType: 'User',
+      resourceId: employee._id,
+      details: {
+        employeeName: `${employee.firstName} ${employee.lastName}`,
+        updatedFields: Object.keys(body),
+      },
+    });
+
+    const { password, refreshTokens, ...employeeData } = employee.toObject();
+
+    return NextResponse.json({
+      success: true,
+      message: 'تم تحديث بيانات الموظف بنجاح',
+      employee: employeeData,
+    });
+  } catch (error: any) {
+    console.error('Error updating employee:', error);
+    return NextResponse.json(
+      { error: 'فشل في تحديث بيانات الموظف' },
       { status: 500 }
     );
   }
@@ -72,7 +154,7 @@ export async function PATCH(
 
     const employee = await User.findOne({
       _id: params.id,
-      company: session.companyId,
+      company: session.user.companyId,
       role: UserRole.EMPLOYEE,
     });
 
@@ -94,16 +176,16 @@ export async function PATCH(
       employee.permissions = customPermissions.filter((p: string) =>
         Object.values(EmployeePermission).includes(p as EmployeePermission)
       );
-    } else if (roleKey && PREDEFINED_ROLES[roleKey as keyof typeof PREDEFINED_ROLES]) {
-      employee.permissions = PREDEFINED_ROLES[roleKey as keyof typeof PREDEFINED_ROLES].permissions;
+    } else if (roleKey && PERMISSION_GROUPS[roleKey as keyof typeof PERMISSION_GROUPS]) {
+      employee.permissions = PERMISSION_GROUPS[roleKey as keyof typeof PERMISSION_GROUPS];
     }
 
     await employee.save();
 
     // تسجيل النشاط
     await ActivityLog.create({
-      companyId: session.companyId,
-      userId: session.userId,
+      companyId: session.user.companyId,
+      userId: session.user.userId,
       activityType: 'event_update',
       resourceType: 'User',
       resourceId: employee._id,
@@ -113,9 +195,7 @@ export async function PATCH(
       },
     });
 
-    const employeeData = employee.toObject();
-    delete employeeData.password;
-    delete employeeData.refreshTokens;
+    const { password, refreshTokens, ...employeeData } = employee.toObject();
 
     return NextResponse.json({
       success: true,
@@ -147,7 +227,7 @@ export async function DELETE(
 
     const employee = await User.findOne({
       _id: params.id,
-      company: session.companyId,
+      company: session.user.companyId,
       role: UserRole.EMPLOYEE,
     });
 
@@ -163,8 +243,8 @@ export async function DELETE(
 
     // تسجيل النشاط
     await ActivityLog.create({
-      companyId: session.companyId,
-      userId: session.userId,
+      companyId: session.user.companyId,
+      userId: session.user.userId,
       activityType: 'event_delete',
       resourceType: 'User',
       resourceId: employee._id,

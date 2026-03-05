@@ -3,7 +3,7 @@ import { connectDB } from '@/lib/db';
 import { User } from '@/lib/models/User';
 import { requireManager } from '@/lib/middleware/permissions';
 import { hashPassword } from '@/lib/auth/helpers';
-import { UserRole, EmployeePermission, PREDEFINED_ROLES } from '@/lib/types/roles';
+import { UserRole, EmployeePermission, PERMISSION_GROUPS } from '@/lib/types/roles';
 import { ActivityLog } from '@/lib/models/ActivityLog';
 
 /**
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     await connectDB();
 
     const employees = await User.find({
-      company: session.companyId,
+      company: session.user.companyId,
       role: UserRole.EMPLOYEE,
     })
       .select('-password -refreshTokens')
@@ -101,9 +101,9 @@ export async function POST(request: NextRequest) {
       permissions = customPermissions.filter((p: string) =>
         Object.values(EmployeePermission).includes(p as EmployeePermission)
       );
-    } else if (roleKey && PREDEFINED_ROLES[roleKey as keyof typeof PREDEFINED_ROLES]) {
+    } else if (roleKey && PERMISSION_GROUPS[roleKey as keyof typeof PERMISSION_GROUPS]) {
       // استخدام الدور المحدد مسبقاً
-      permissions = PREDEFINED_ROLES[roleKey as keyof typeof PREDEFINED_ROLES].permissions;
+      permissions = PERMISSION_GROUPS[roleKey as keyof typeof PERMISSION_GROUPS];
     } else {
       return NextResponse.json(
         { error: 'يجب تحديد دور أو صلاحيات للموظف' },
@@ -123,15 +123,15 @@ export async function POST(request: NextRequest) {
       phone,
       role: UserRole.EMPLOYEE,
       permissions,
-      company: session.companyId,
-      createdBy: session.userId,
+      company: session.user.companyId,
+      createdBy: session.user.userId,
       isActive: true,
     });
 
     // تسجيل النشاط
     await ActivityLog.create({
-      companyId: session.companyId,
-      userId: session.userId,
+      companyId: session.user.companyId,
+      userId: session.user.userId,
       activityType: 'event_create',
       resourceType: 'User',
       resourceId: employee._id,
@@ -143,9 +143,7 @@ export async function POST(request: NextRequest) {
     });
 
     // إرجاع البيانات بدون كلمة المرور
-    const employeeData = employee.toObject();
-    delete employeeData.password;
-    delete employeeData.refreshTokens;
+    const { password: _, refreshTokens, ...employeeData } = employee.toObject();
 
     return NextResponse.json({
       success: true,

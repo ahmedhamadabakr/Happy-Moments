@@ -14,8 +14,11 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
   const { user, isLoading, isAuthenticated, checkAuth } = useAuthStore();
 
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+    // Only check auth once on mount
+    if (!isAuthenticated && !isLoading) {
+      checkAuth();
+    }
+  }, []); // Empty dependency array - run only once
 
   useEffect(() => {
     if (!isLoading) {
@@ -28,7 +31,7 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
         router.push('/dashboard');
       }
     }
-  }, [isLoading, isAuthenticated, user, requiredRole, router]);
+  }, [isLoading, isAuthenticated, user?.role, requiredRole, router]);
 
   if (isLoading) {
     return (
