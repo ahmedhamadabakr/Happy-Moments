@@ -45,7 +45,6 @@ const contactSchema = new Schema<IContact>(
     deletedAt: {
       type: Date,
       default: null,
-      index: true,
     },
   },
   {

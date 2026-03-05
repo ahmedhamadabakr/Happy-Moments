@@ -43,7 +43,6 @@ const clientSchema = new Schema<IClient>(
       type: String,
       required: true,
       unique: true,
-      index: true,
     },
     isActive: {
       type: Boolean,
@@ -62,7 +61,6 @@ const clientSchema = new Schema<IClient>(
 
 // Index للبحث السريع
 clientSchema.index({ companyId: 1, fullName: 1 });
-clientSchema.index({ accessToken: 1 });
 
 export const Client: Model<IClient> =
   mongoose.models.Client || mongoose.model<IClient>('Client', clientSchema);

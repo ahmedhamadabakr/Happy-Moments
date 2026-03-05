@@ -6,6 +6,7 @@ import {
   Shield, Users, Calendar, TrendingUp, Activity, 
   UserPlus, Settings, BarChart3, Clock, CheckCircle 
 } from 'lucide-react';
+import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 
 interface DashboardStats {
   totalEmployees: number;
@@ -112,6 +113,8 @@ export default function ManagerDashboardPage() {
   ];
 
   return (
+        <DashboardLayout>
+    
     <div className="min-h-screen bg-gray-50 p-6" dir="rtl">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -226,6 +229,7 @@ export default function ManagerDashboardPage() {
         </div>
       </div>
     </div>
+    </DashboardLayout>
   );
 }
 

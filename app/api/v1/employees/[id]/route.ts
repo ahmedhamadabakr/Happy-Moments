@@ -24,7 +24,6 @@ export async function GET(
     const employee = await User.findOne({
       _id: params.id,
       company: session.user.companyId,
-      role: UserRole.EMPLOYEE,
     }).select('-password -refreshTokens');
 
     if (!employee) {
@@ -158,7 +157,6 @@ export async function PATCH(
     const employee = await User.findOne({
       _id: params.id,
       company: session.user.companyId,
-      role: UserRole.EMPLOYEE,
     });
 
     if (!employee) {
@@ -232,7 +230,6 @@ export async function DELETE(
     const employee = await User.findOne({
       _id: params.id,
       company: session.user.companyId,
-      role: UserRole.EMPLOYEE,
     });
 
     if (!employee) {
