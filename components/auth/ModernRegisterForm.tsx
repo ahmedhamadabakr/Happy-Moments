@@ -13,8 +13,18 @@ export default function EmployeeRegisterForm() {
     password: '',
     confirmPassword: '',
     role: 'EMPLOYEE', // EMPLOYEE only (MANAGER is the admin role)
+    roleKey: '', // مجموعة الصلاحيات
     agreeToTerms: false
   });
+
+  // مجموعات الصلاحيات المتاحة
+  const permissionGroups = [
+    { key: 'event_creator', label: 'منشئ فعاليات' },
+    { key: 'contact_manager', label: 'مدير جهات الاتصال' },
+    { key: 'invitation_sender', label: 'مرسل الدعوات' },
+    { key: 'viewer', label: 'مشاهد فقط' },
+    { key: 'checkin_staff', label: 'موظف تسجيل حضور' },
+  ];
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -103,7 +113,7 @@ export default function EmployeeRegisterForm() {
           phone: formData.phone,
           password: formData.password,
           role: formData.role,
-          roleKey: 'employee',
+          roleKey: formData.roleKey,
         }),
       });
 
@@ -260,18 +270,22 @@ export default function EmployeeRegisterForm() {
             </div>
           </div>
 
-          {/* Role Info - Hidden field, always EMPLOYEE */}
-          <input type="hidden" name="role" value="EMPLOYEE" />
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <Shield className="w-5 h-5 text-blue-600 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-blue-900">إضافة موظف جديد</p>
-                <p className="text-xs text-blue-700 mt-1">
-                  سيتم إضافة المستخدم كموظف. يمكنك تحديد صلاحياته بعد الإضافة من صفحة إدارة الموظفين.
-                </p>
-              </div>
-            </div>
+          {/* اختيار مجموعة الصلاحيات */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">مجموعة الصلاحيات</label>
+            <select
+              name="roleKey"
+              value={formData.roleKey}
+              onChange={handleInputChange}
+              required
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#C1A286] focus:border-transparent transition-all text-right ${errors.roleKey ? 'border-red-300' : 'border-gray-300'}`}
+            >
+              <option value="">اختر مجموعة الصلاحيات</option>
+              {permissionGroups.map(group => (
+                <option key={group.key} value={group.key}>{group.label}</option>
+              ))}
+            </select>
+            {errors.roleKey && <p className="mt-1 text-xs text-red-600">{errors.roleKey}</p>}
           </div>
 
           {/* Password Fields */}

@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
 
     // استيراد الموديلات بشكل ديناميكي لتجنب مشاكل الاستيراد الدائري
     const { Event } = await import('@/lib/models/Event');
-    const { Guest } = await import('@/lib/models/Guest');
+    const { EventGuest: Guest } = await import('@/lib/models/EventGuest');
 
     // عدد الموظفين
     const totalEmployees = await User.countDocuments({

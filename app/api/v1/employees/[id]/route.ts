@@ -12,8 +12,9 @@ import mongoose from 'mongoose';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  paramsPromise: Promise<{ params: { id: string } }>
 ) {
+  const { params } = await paramsPromise;
   try {
     const session = await requireManager(request);
     if (session instanceof NextResponse) return session;
@@ -52,8 +53,9 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  paramsPromise: Promise<{ params: { id: string } }>
 ) {
+  const { params } = await paramsPromise;
   try {
     const session = await requireManager(request);
     if (session instanceof NextResponse) return session;
@@ -134,8 +136,9 @@ export async function PUT(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  paramsPromise: Promise<{ params: { id: string } }>
 ) {
+  const { params } = await paramsPromise;
   try {
     const session = await requireManager(request);
     if (session instanceof NextResponse) return session;
@@ -217,8 +220,9 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  paramsPromise: Promise<{ params: { id: string } }>
 ) {
+  const { params } = await paramsPromise;
   try {
     const session = await requireManager(request);
     if (session instanceof NextResponse) return session;
