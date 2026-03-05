@@ -2,13 +2,36 @@
 
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, Users, Zap, CheckCircle, LogInIcon, Sparkles } from 'lucide-react';
+import { Calendar, Users, Zap, CheckCircle, LogInIcon, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import EventGrid from '@/components/ui/EventGrid';
+import { useState, useEffect } from 'react';
 
 export default function HomePage() {
   const router = useRouter();
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const slides = ['/herosection1.png', '/herosection2.png', '/herosection3.png'];
+  
+  // Auto-slide every 5 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [slides.length]);
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+  };
+
+  const whatsappNumber = '01012345678'; 
+  const whatsappMessage = 'مرحباً، أريد الاستفسار عن خدمات هابي مومنتس';
+  const whatsappLink = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
     <main className="min-h-screen bg-slate-50/50 selection:bg-[#F08784]/20" dir="rtl">
@@ -23,7 +46,7 @@ export default function HomePage() {
             <span>تسجيل دخول</span>
             <LogInIcon size={20} />
           </Link>
-          <Button onClick={() => router.push('/register')} className="bg-[#F08784] hover:bg-[#D97673] text-white rounded-full px-6">
+          <Button onClick={() => window.open(whatsappLink, '_blank')} className="bg-[#F08784] hover:bg-[#D97673] text-white rounded-full px-6">
             ابدأ الآن
           </Button>
         </div>
@@ -44,32 +67,80 @@ export default function HomePage() {
             كل اللي تحتاجه عشان تصمم وتدز وتتابع دعوات مناسباتك — بمكان واحد يريحك ويجمع لك كل التفاصيل بأسلوب راقي.
           </p>
 
-          {/* Hero Image - إضافة تأثير الظل والبرواز */}
-          <div className="relative max-w-3xl mx-auto rounded-3xl overflow-hidden shadow-2xl border-8 border-white group">
-            <Image 
-              src="/herosection.jpg" 
-              alt="واجهة تطبيق هابي مومنتس لتصميم الدعوات" 
-              width={800} 
-              height={500} 
-              className="w-full h-auto transition-transform duration-700 group-hover:scale-105"
-            />
+         {/* Hero Images Slider */}
+          <div className="w-screen relative left-1/2 right-1/2 -mx-[50vw] overflow-hidden py-16">
+            <div className="relative max-w-5xl mx-auto">
+              {/* Slider Container */}
+              <div className="relative w-[92%] mx-auto rounded-3xl overflow-hidden shadow-2xl border-8 border-white">
+                <div className="relative aspect-[7/3]">
+                  {slides.map((slide, index) => (
+                    <div
+                      key={index}
+                      className={`absolute inset-0 transition-opacity duration-700 ${
+                        index === currentSlide ? 'opacity-100' : 'opacity-0'
+                      }`}
+                    >
+                      <Image 
+                        src={slide} 
+                        alt={`صورة ${index + 1} - هابي مومنتس`}
+                        fill
+                        className="object-cover"
+                        priority={index === 0}
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Navigation Buttons */}
+                <button
+                  onClick={prevSlide}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-slate-800 rounded-full p-3 shadow-lg transition-all hover:scale-110"
+                  aria-label="الصورة السابقة"
+                >
+                  <ChevronLeft size={24} />
+                </button>
+                <button
+                  onClick={nextSlide}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-slate-800 rounded-full p-3 shadow-lg transition-all hover:scale-110"
+                  aria-label="الصورة التالية"
+                >
+                  <ChevronRight size={24} />
+                </button>
+
+                {/* Dots Indicator */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                  {slides.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentSlide(index)}
+                      className={`w-3 h-3 rounded-full transition-all ${
+                        index === currentSlide 
+                          ? 'bg-[#F08784] w-8' 
+                          : 'bg-white/60 hover:bg-white/80'
+                      }`}
+                      aria-label={`انتقل إلى الصورة ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         
         {/* خلفية جمالية */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-0 opacity-20 pointer-events-none">
             <div className="absolute top-20 left-10 w-64 h-64 bg-[#F08784] rounded-full blur-[120px]" />
-            <div className="absolute bottom-20 right-10 w-64 h-64 bg-blue-300 rounded-full blur-[120px]" />
+            <div className="absolute bottom-10 right-10 w-64 h-64 bg-blue-300 rounded-full blur-[120px]" />
         </div>
       </section>
 
-      {/* About Section - براندينج الشركة */}
-      <section className="py-20  px-6">
+   {/* About Section - براندينج الشركة */}
+      <section className=" px-6 bg-slate-50/50">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl font-bold text-slate-800 mb-6 flex items-center justify-center gap-2">
             <Sparkles className="text-[#F08784]" /> نبذة عن هابي مومنتس
           </h1>
-          <p className="text-2xl text-slate-600 leading-loose">
+          <p className="text-2xl text-slate-600 leading-loose text-center">
             <strong className="text-slate-900">هابي مومنتس (Happy Moments)</strong> هي شركة كويتية متخصصة في تصميم دعوات التهنئة الإلكترونية بأسلوب عصري وأنيق. نقدم تصاميم مميزة لمختلف المناسبات مثل الأعراس، التخرج، والولادات، لنخلّد أجمل لحظاتكم بأسلوب رقمي راقي وسهل المشاركة.
           </p>
         </div>
@@ -98,11 +169,11 @@ export default function HomePage() {
               description="أرسل عبر الواتساب أو الإيميل مع تحليلات دقيقة لمن فتح الدعوة."
             />
           </div>
-        </div>
+        </div>  
       </section>
 
       {/* Steps Section */}
-      <section className="px-6 py-24 bg-white">
+      <section className="px-6 py-24 bg-slate-50/50">
         <h2 className="text-4xl font-bold text-center mb-16">خطوات بسيطة.. وبدون عبالة</h2>
         <div className="grid md:grid-cols-3 gap-12 max-w-5xl mx-auto text-center relative">
           <Step number="1" title="أنشئ فعاليتك" desc="اختر التصميم اللي يناسب ذوقك ومناسبتك" />
@@ -117,7 +188,7 @@ export default function HomePage() {
           <div className="relative z-10">
             <h2 className="text-4xl md:text-5xl font-bold mb-8">هل أنت مستعد لرفع مستوى فعالياتك؟</h2>
             <p className="text-slate-400 mb-10 text-lg">انضم إلى آلاف المستخدمين الذين يثقون بـ هابي مومنتس</p>
-            <Button size="lg" className="bg-[#F08784] hover:bg-[#D97673] text-white text-xl px-12 py-8 rounded-2xl transition-all hover:scale-105" onClick={() => router.push('/register')}>
+            <Button size="lg" className="bg-[#F08784] hover:bg-[#D97673] text-white text-xl px-12 py-8 rounded-2xl transition-all hover:scale-105" onClick={() => window.open(whatsappLink, '_blank')}>
               ابدأ تجربتك المجانية الآن
             </Button>
           </div>
