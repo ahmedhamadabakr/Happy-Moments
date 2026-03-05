@@ -18,8 +18,8 @@ export default function SessionManager({ children }: SessionManagerProps) {
         });
         
         if (!response.ok) {
-          // Session expired, redirect to login
-          window.location.href = '/login';
+          // Session expired, but do NOT redirect
+          console.warn('Session expired: would redirect to login, but redirect is disabled.');
         }
       } catch (error) {
         console.error('Session check failed:', error);
