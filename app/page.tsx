@@ -34,10 +34,10 @@ export default function HomePage() {
   const whatsappLink = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
-    <main className="min-h-screen bg-slate-50/50 selection:bg-[#F08784]/20" dir="rtl">
+    <main className="min-h-screen bg-slate-100 selection:bg-[#F08784]/20" dir="rtl">
       
       {/* Navbar - تحسين الشكل ليكون أكثر عصرية */}
-      <header className="flex items-center justify-between px-6 md:px-12 py-4 border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-50">
+      <header className="flex items-center justify-between px-6 md:px-12 py-4 border-b border-slate-300 bg-slate-50/95 backdrop-blur-md sticky top-0 z-50">
         <div className="flex items-center gap-2">
           <Image src="/logo2.png" alt="هابي مومنتس - Happy Moments" width={120} height={40} className="object-contain" priority />
         </div>
@@ -53,7 +53,7 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section - تحسين توزيع العناصر والـ SEO */}
-      <section className="relative overflow-hidden pt-20 pb-28 px-6 text-center">
+      <section className="relative overflow-hidden pt-20 pb-28 px-6 text-center bg-slate-100">
         <div className="max-w-4xl mx-auto relative z-10">
           <span className="inline-block py-1 px-4 rounded-full bg-[#F08784]/10 text-[#F08784] text-sm font-bold mb-6 animate-fade-in">
               بوابتكم لأجمل اللحظات
@@ -94,14 +94,14 @@ export default function HomePage() {
                 {/* Navigation Buttons */}
                 <button
                   onClick={prevSlide}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-slate-800 rounded-full p-3 shadow-lg transition-all hover:scale-110"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-slate-200/90 hover:bg-slate-300 text-slate-800 rounded-full p-3 shadow-lg transition-all hover:scale-110"
                   aria-label="الصورة السابقة"
                 >
                   <ChevronLeft size={24} />
                 </button>
                 <button
                   onClick={nextSlide}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-slate-800 rounded-full p-3 shadow-lg transition-all hover:scale-110"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-slate-200/90 hover:bg-slate-300 text-slate-800 rounded-full p-3 shadow-lg transition-all hover:scale-110"
                   aria-label="الصورة التالية"
                 >
                   <ChevronRight size={24} />
@@ -116,7 +116,7 @@ export default function HomePage() {
                       className={`w-3 h-3 rounded-full transition-all ${
                         index === currentSlide 
                           ? 'bg-[#F08784] w-8' 
-                          : 'bg-white/60 hover:bg-white/80'
+                          : 'bg-slate-300/80 hover:bg-slate-400'
                       }`}
                       aria-label={`انتقل إلى الصورة ${index + 1}`}
                     />
@@ -135,7 +135,7 @@ export default function HomePage() {
       </section>
 
    {/* About Section - براندينج الشركة */}
-      <section className=" px-6 bg-slate-50/50">
+      <section className=" px-6 bg-slate-100">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl font-bold text-slate-800 mb-6 flex items-center justify-center gap-2">
             <Sparkles className="text-[#F08784]" /> نبذة عن هابي مومنتس
@@ -146,44 +146,45 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="px-6 py-24 bg-slate-50">
+      {/* Features & Steps Section - Combined */}
+      <section className="px-6 py-24 bg-slate-100">
         <div className="max-w-6xl mx-auto">
           
           <EventGrid />
 
-          <div className="grid md:grid-cols-3 gap-8 mt-16">
+          {/* عنوان القسم */}
+          <div className="text-center mb-16 mt-20">
+            <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-4">
+              خدماتنا <span className="text-[#F08784]">المميزة</span>
+            </h2>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              كل ما تحتاجه لإدارة فعالياتك باحترافية وسهولة
+            </p>
+          </div>
+
+          {/* Features Cards */}
+          <div className="grid md:grid-cols-3 gap-8 mb-32">
             <FeatureCard
-              icon={<Calendar className="h-6 w-6" />}
+              icon={<Calendar className="h-8 w-8" />}
               title="إدارة الفعاليات"
               description="أنشئ وأدر عدد لا محدود من الفعاليات مع تحديثات فورية ومباشرة."
             />
             <FeatureCard
-              icon={<Users className="h-6 w-6" />}
+              icon={<Users className="h-8 w-8" />}
               title="إدارة الضيوف"
               description="استيراد جهات الاتصال، تتبع الحضور، وتقسيم الضيوف بكل سهولة وسلاسة."
             />
             <FeatureCard
-              icon={<Zap className="h-6 w-6" />}
+              icon={<Zap className="h-8 w-8" />}
               title="دعوات ذكية"
               description="أرسل عبر الواتساب أو الإيميل مع تحليلات دقيقة لمن فتح الدعوة."
             />
           </div>
         </div>  
       </section>
-
-      {/* Steps Section */}
-      <section className="px-6 py-24 bg-slate-50/50">
-        <h2 className="text-4xl font-bold text-center mb-16">خطوات بسيطة.. وبدون عبالة</h2>
-        <div className="grid md:grid-cols-3 gap-12 max-w-5xl mx-auto text-center relative">
-          <Step number="1" title="أنشئ فعاليتك" desc="اختر التصميم اللي يناسب ذوقك ومناسبتك" />
-          <Step number="2" title="أضف ضيوفك" desc="ارفع قائمة الأسماء بضغطة زر واحدة" />
-          <Step number="3" title="أرسل وتابع" desc="دز الدعوات وتابع الحضور أول بأول" />
-        </div>
-      </section>
-
+          
       {/* Final CTA */}
-      <section className="px-6 py-24">
+      <section className="px-6  bg-slate-100">
         <div className="max-w-5xl mx-auto bg-slate-900 rounded-[3rem] p-12 md:p-20 text-center text-white relative overflow-hidden">
           <div className="relative z-10">
             <h2 className="text-4xl md:text-5xl font-bold mb-8">هل أنت مستعد لرفع مستوى فعالياتك؟</h2>
@@ -198,7 +199,7 @@ export default function HomePage() {
       </section>
 
       {/* Simple Footer */}
-      <footer className="py-12 border-t border-slate-100 text-center text-slate-500 text-sm">
+      <footer className="py-12 border-t border-slate-300 bg-slate-100 text-center text-slate-600 text-sm">
         <p>© {new Date().getFullYear()} هابي مومنتس. جميع الحقوق محفوظة - صنع بكل حب في الكويت 🇰🇼</p>
       </footer>
     </main>
@@ -208,23 +209,34 @@ export default function HomePage() {
 // مكونات فرعية محسنة
 function FeatureCard({ icon, title, description }: any) {
   return (
-    <article className="p-8 rounded-3xl transition-all duration-300 bg-white border border-slate-100 hover:border-[#F08784]/30 hover:shadow-xl group">
-      <div className="h-14 w-14 flex items-center justify-center bg-[#F08784]/10 text-[#F08784] rounded-2xl mb-6 group-hover:bg-[#F08784] group-hover:text-white transition-colors">
+    <article className="relative p-10 rounded-3xl transition-all duration-300 bg-white hover:shadow-xl group text-center">
+      {/* الأيقونة */}
+      <div className="h-20 w-20 flex items-center justify-center bg-[#F08784]/10 text-[#F08784] rounded-2xl mb-6 mx-auto group-hover:bg-[#F08784]/20 transition-colors">
         {icon}
       </div>
-      <h3 className="text-2xl font-bold mb-3 text-slate-800">{title}</h3>
-      <p className="text-slate-600 leading-relaxed">{description}</p>
+      
+      <h3 className="text-xl font-bold mb-3 text-slate-900">{title}</h3>
+      <p className="text-slate-600 leading-relaxed text-sm">{description}</p>
+      
     </article>
   );
 }
 
 function Step({ number, title, desc }: any) {
   return (
-    <div className="relative p-6">
-      <div className="text-6xl font-black text-slate-100 absolute top-0 left-1/2 -translate-x-1/2 -z-10">{number}</div>
-      <CheckCircle className="mx-auto h-12 w-12 text-[#F08784] mb-4" />
-      <h3 className="text-xl font-bold mb-2">{title}</h3>
-      <p className="text-slate-500">{desc}</p>
+    <div className="relative p-10 bg-white rounded-3xl transition-all duration-300 hover:shadow-xl group text-center">
+      {/* الأيقونة */}
+      <div className="h-20 w-20 flex items-center justify-center bg-[#F08784]/10 text-[#F08784] rounded-2xl mb-6 mx-auto text-2xl font-black group-hover:bg-[#F08784]/20 transition-colors">
+        {number}
+      </div>
+      
+      <h3 className="text-xl font-bold mb-3 text-slate-900">{title}</h3>
+      <p className="text-slate-600 leading-relaxed text-sm">{desc}</p>
+      
+      {/* زر Learn More */}
+      <button className="mt-6 text-[#F08784] text-sm font-semibold hover:text-[#D97673] transition-colors">
+        اعرف أكثر →
+      </button>
     </div>
   );
 }
