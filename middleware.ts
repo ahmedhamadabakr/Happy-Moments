@@ -10,7 +10,7 @@ export async function middleware(request: NextRequest) {
   response.headers.set('Access-Control-Allow-Credentials', 'true');
   
   // Skip auth check for login, register, and static files
-  const publicPaths = ['/login', '/api/auth/login', '/api/auth/register', '/api/auth/refresh', '/api/auth/health'];
+  const publicPaths = ['/login', '/api/auth/login', '/api/auth/register', '/api/auth/refresh', '/api/auth/health', '/api/photos'];
   const isPublicPath = publicPaths.some(path => request.nextUrl.pathname.startsWith(path));
   
   // Skip for static files and Next.js internals
