@@ -2,133 +2,126 @@
 
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/lib/store/authStore';
-import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
-import { Card } from '@/components/shared/Card';
-import { Button } from '@/components/shared/Button';
-import { FormInput } from '@/components/shared/FormInput';
-import { useApi } from '@/lib/hooks/useApi';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 
 export default function SettingsPage() {
-  const { user, company } = useAuthStore();
+  // **THE FIX**: We are now using the unified `user` object and `setUser` updater from the store.
+  const { user, setUser } = useAuthStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // State for the form, initialized with user data
   const [formData, setFormData] = useState({
-    name: '',
+    fullName: '',
     email: '',
     phone: '',
-    address: '',
   });
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
 
-  const { execute: updateCompany } = useApi(
-    `/api/v1/company`,
-    {
-      onSuccess: () => {
-        setSuccess(true);
-        setTimeout(() => setSuccess(false), 3000);
-      },
-    }
-  );
-
+  // Effect to populate the form once the user object is available.
   useEffect(() => {
-    if (company) {
+    if (user) {
+      // Gracefully handle both `fullName` and `firstName`/`lastName` structures.
+      const currentFullName = (user as any).fullName || `${(user as any).firstName || ''} ${(user as any).lastName || ''}`.trim();
       setFormData({
-        name: company.name || '',
-        email: company.email || '',
-        phone: company.phone || '',
-        address: company.address || '',
+        fullName: currentFullName,
+        email: user.email || '',
+        phone: user.phone || '',
       });
     }
-  }, [company]);
+  }, [user]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setIsSubmitting(true);
+
     try {
-      await updateCompany('PUT', formData);
+      // API endpoint to update the user's own profile
+      const response = await fetch('/api/auth/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        // **Crucially, update the user state in the global store**
+        setUser(result.user);
+        toast.success('تم تحديث ملفك الشخصي بنجاح!');
+      } else {
+        throw new Error(result.error || 'فشل تحديث الملف الشخصي.');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'حدث خطأ غير متوقع.');
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
+  
+  // Don't render the form until the user data is loaded to prevent flicker
+  if (!user) {
+    return null;
+  }
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-gray-900">إعدادات الشركة</h1>
+      <div className="space-y-8 max-w-3xl mx-auto">
+        <header>
+            <h1 className="text-4xl font-extrabold text-slate-900">الإعدادات</h1>
+            <p className="mt-2 text-lg text-slate-600">إدارة معلومات ملفك الشخصي وتفضيلاتك.</p>
+        </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Settings */}
-          <div className="lg:col-span-2">
-            <Card title="معلومات الشركة">
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <FormInput
-                  label="اسم الشركة"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                />
-                <FormInput
-                  label="البريد الإلكتروني"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                />
-                <FormInput
-                  label="رقم الهاتف"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
-                />
-                <FormInput
-                  label="العنوان"
-                  value={formData.address}
-                  onChange={(e) =>
-                    setFormData({ ...formData, address: e.target.value })
-                  }
-                />
-                <div className="flex justify-end gap-2">
-                  <Button type="submit" loading={loading}>
-                    حفظ التغييرات
-                  </Button>
+        <div className="bg-white border border-slate-200 rounded-xl shadow-sm">
+            <form onSubmit={handleSubmit} className="p-8">
+                <div className="space-y-6">
+                    <div>
+                        <Label htmlFor="fullName" className="text-lg font-semibold">الاسم الكامل</Label>
+                        <p className="text-sm text-slate-500 mb-2">هذا هو الاسم الذي سيظهر للآخرين.</p>
+                        <Input
+                            id="fullName"
+                            name="fullName"
+                            value={formData.fullName}
+                            onChange={handleInputChange}
+                            className="text-lg py-6"
+                        />
+                    </div>
+                    <div>
+                        <Label htmlFor="email" className="text-lg font-semibold">البريد الإلكتروني</Label>
+                        <p className="text-sm text-slate-500 mb-2">لا يمكن تغيير البريد الإلكتروني للحساب.</p>
+                        <Input
+                            id="email"
+                            name="email"
+                            type="email"
+                            value={formData.email}
+                            disabled
+                            className="text-lg py-6 bg-slate-50"
+                        />
+                    </div>
+                    <div>
+                        <Label htmlFor="phone" className="text-lg font-semibold">رقم الهاتف</Label>
+                         <p className="text-sm text-slate-500 mb-2">يستخدم هذا الرقم للتواصل عند الضرورة.</p>
+                        <Input
+                            id="phone"
+                            name="phone"
+                            value={formData.phone}
+                            onChange={handleInputChange}
+                            className="text-lg py-6"
+                        />
+                    </div>
                 </div>
-                {success && (
-                  <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
-                    تم حفظ التغييرات بنجاح
-                  </div>
-                )}
-              </form>
-            </Card>
-          </div>
-
-          {/* Sidebar Info */}
-          <div>
-            <Card title="معلومات الحساب">
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-gray-600">المسؤول الحالي</p>
-                  <p className="font-medium text-gray-900">
-                    {user?.firstName} {user?.lastName}
-                  </p>
+                <div className="mt-8 pt-6 border-t border-slate-200 flex justify-end">
+                    <Button type="submit" loading={isSubmitting} size="lg" className="text-lg px-8 py-6">
+                        {isSubmitting ? 'جاري الحفظ...' : 'حفظ التغييرات'}
+                    </Button>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600">البريد الإلكتروني</p>
-                  <p className="font-medium text-gray-900">{user?.email}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">الدور</p>
-                  <p className="font-medium text-gray-900">
-                    {user?.role === 'admin' ? 'مسؤول' : 'مستخدم'}
-                  </p>
-                </div>
-              </div>
-            </Card>
-          </div>
+            </form>
         </div>
       </div>
-    </DashboardLayout>
   );
 }

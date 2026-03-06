@@ -1,51 +1,62 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 
 interface UseApiOptions {
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   onSuccess?: (data: any) => void;
-  onError?: (error: string) => void;
+  onError?: (error: Error) => void;
 }
 
 export function useApi<T = any>(
-  url: string,
+  initialUrl: string,
   options: UseApiOptions = {}
 ) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
 
   const execute = useCallback(
-    async (method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET', body?: any) => {
+    async (body?: any, overrideUrl?: string) => {
       setLoading(true);
       setError(null);
+      const url = overrideUrl || initialUrl;
+
       try {
         const response = await fetch(url, {
-          method,
+          method: optionsRef.current.method || (body ? 'POST' : 'GET'),
           headers: {
             'Content-Type': 'application/json',
           },
           body: body ? JSON.stringify(body) : undefined,
         });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'حدث خطأ ما');
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.error || 'An unknown error occurred.');
         }
 
-        const result = await response.json();
-        setData(result.data);
-        options.onSuccess?.(result.data);
-        return result.data;
+        setData(result);
+        if (optionsRef.current.onSuccess) {
+          optionsRef.current.onSuccess(result);
+        }
+        return result;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'خطأ في الاتصال';
-        setError(errorMessage);
-        options.onError?.(errorMessage);
+        const error = err instanceof Error ? err : new Error('An unknown error occurred.');
+        setError(error);
+        if (optionsRef.current.onError) {
+          optionsRef.current.onError(error);
+        }
+        throw error;
       } finally {
         setLoading(false);
       }
     },
-    [url, options]
+    [initialUrl]
   );
 
   return { data, loading, error, execute };

@@ -1,23 +1,32 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
-import { Card } from '@/components/shared/Card';
-import { Button } from '@/components/shared/Button';
-import { FormInput } from '@/components/shared/FormInput';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Upload, X, CheckCircle, ArrowRight, Send, PartyPopper, Users } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Slider } from '@/components/ui/slider';
 
 interface ClientOption {
   _id: string;
   fullName: string;
 }
 
-export default function CreateEventFromClientPage() {
+export default function CreateEventPage() {
   const [clients, setClients] = useState<ClientOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [step, setStep] = useState(1);
 
   const [invitationImage, setInvitationImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     clientId: '',
@@ -29,26 +38,18 @@ export default function CreateEventFromClientPage() {
     locationUrl: '',
     qrX: '50',
     qrY: '50',
-    qrWidth: '150',
-    qrHeight: '150',
+    qrSize: '30',
   });
 
-  const [createdEventId, setCreatedEventId] = useState<string | null>(null);
-  const [createdStats, setCreatedStats] = useState<any | null>(null);
-
-  const isReadyToCreate = useMemo(() => {
-    return Boolean(formData.clientId && formData.title && formData.eventDate && invitationImage);
-  }, [formData.clientId, formData.title, formData.eventDate, invitationImage]);
+  const [createdEvent, setCreatedEvent] = useState<any | null>(null);
+  const router = useRouter();
 
   async function loadClients() {
-    setError(null);
     try {
-      const res = await fetch('/api/v1/clients', { method: 'GET' });
+      const res = await fetch('/api/v1/clients');
       const json = await res.json();
-      if (!res.ok || !json?.success) {
-        throw new Error(json?.error || 'فشل في جلب العملاء');
-      }
-      setClients((json.clients || []).map((c: any) => ({ _id: c._id, fullName: c.fullName })));
+      if (!json.success) throw new Error(json.error || 'فشل جلب العملاء');
+      setClients(json.clients.map((c: any) => ({ _id: c._id, fullName: c.fullName })));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'خطأ غير معروف');
     }
@@ -58,43 +59,58 @@ export default function CreateEventFromClientPage() {
     loadClients();
   }, []);
 
-  async function handleCreateEvent() {
-    if (!isReadyToCreate || !invitationImage) return;
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setInvitationImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setInvitationImage(null);
+      setImagePreview(null);
+    }
+  };
 
+  async function handleCreateEvent() {
     setLoading(true);
     setError(null);
     setSuccessMessage(null);
-    setCreatedEventId(null);
-    setCreatedStats(null);
 
     try {
       const fd = new FormData();
-      fd.append('clientId', formData.clientId);
-      fd.append('title', formData.title);
-      fd.append('description', formData.description);
-      fd.append('eventDate', formData.eventDate);
-      fd.append('eventTime', formData.eventTime);
-      fd.append('location', formData.location);
-      fd.append('locationUrl', formData.locationUrl);
-      fd.append('qrX', formData.qrX);
-      fd.append('qrY', formData.qrY);
-      fd.append('qrWidth', formData.qrWidth);
-      fd.append('qrHeight', formData.qrHeight);
-      fd.append('invitationImage', invitationImage);
+      const { qrSize, ...remaning } = formData;
 
-      const res = await fetch('/api/v1/events/create-from-client', {
+      Object.entries(remaning).forEach(([key, value]) => {
+        fd.append(key, value);
+      });
+
+      fd.append('qrWidth', qrSize)
+      fd.append('qrHeight', qrSize)
+
+      if (invitationImage) {
+        fd.append('invitationImage', invitationImage);
+      }
+
+      const apiUrl = formData.clientId 
+        ? '/api/v1/events/create-from-client' 
+        : '/api/v1/events';
+      
+      const res = await fetch(apiUrl, {
         method: 'POST',
         body: fd,
       });
 
       const json = await res.json();
-      if (!res.ok || !json?.success) {
-        throw new Error(json?.error || 'فشل في إنشاء الفعالية');
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || 'فشل في إنشاء الفعالية');
       }
 
-      setCreatedEventId(json?.event?.id?.toString?.() || json?.event?.id || null);
-      setCreatedStats(json?.stats || null);
-      setSuccessMessage(json?.message || 'تم إنشاء الفعالية بنجاح');
+      setCreatedEvent(json.event);
+      setSuccessMessage(json.message || 'تم إنشاء الفعالية بنجاح!');
+      setStep(2);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'خطأ غير معروف');
     } finally {
@@ -102,185 +118,176 @@ export default function CreateEventFromClientPage() {
     }
   }
 
-  async function handleSendInvitations() {
-    if (!createdEventId) return;
+  const renderStep1 = () => (
+    <Card className="border-slate-200 shadow-md rounded-3xl overflow-hidden bg-white">
+      <CardHeader className="bg-gradient-to-r from-slate-50 to-amber-50/20 border-b border-slate-100">
+        <CardTitle className="text-2xl font-bold text-slate-900">خطوة 1: تفاصيل الفعالية</CardTitle>
+        <CardDescription className="text-slate-600 text-base">املأ المعلومات الأساسية لفعاليتك</CardDescription>
+      </CardHeader>
+      <CardContent className="p-6 space-y-6">
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Right Column */}
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="title" className="font-semibold">عنوان الفعالية</Label>
+              <Input id="title" value={formData.title} onChange={(e) => setFormData(p => ({ ...p, title: e.target.value }))} placeholder="مثال: حفل إطلاق المنتج الجديد" />
+            </div>
 
-    setLoading(true);
-    setError(null);
-    setSuccessMessage(null);
+            <div className="space-y-2">
+              <Label htmlFor="description" className="font-semibold">وصف الفعالية (اختياري)</Label>
+              <Textarea id="description" value={formData.description} onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))} placeholder="تفاصيل إضافية عن الفعالية..." />
+            </div>
 
-    try {
-      const res = await fetch(`/api/v1/events/${createdEventId}/send-invitations`, {
-        method: 'POST',
-      });
-      const json = await res.json();
+            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="eventDate" className="font-semibold">تاريخ الفعالية</Label>
+                    <Input id="eventDate" type="date" value={formData.eventDate} onChange={(e) => setFormData(p => ({ ...p, eventDate: e.target.value }))} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="eventTime" className="font-semibold">الوقت</Label>
+                    <Input id="eventTime" type="time" value={formData.eventTime} onChange={(e) => setFormData(p => ({ ...p, eventTime: e.target.value }))} />
+                </div>
+            </div>
 
-      if (!res.ok || !json?.success) {
-        throw new Error(json?.error || 'فشل في إرسال الدعوات');
-      }
+            <div className="space-y-2">
+              <Label htmlFor="location" className="font-semibold">الموقع</Label>
+              <Input id="location" value={formData.location} onChange={(e) => setFormData(p => ({ ...p, location: e.target.value }))} placeholder="مثال: فندق الريتز كارلتون" />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="locationUrl" className="font-semibold">رابط الموقع (Google Maps)</Label>
+              <Input id="locationUrl" value={formData.locationUrl} onChange={(e) => setFormData(p => ({ ...p, locationUrl: e.target.value }))} placeholder="https://maps.app.goo.gl/..." />
+            </div>
 
-      setSuccessMessage(json?.message || 'تم إرسال الدعوات بنجاح');
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'خطأ غير معروف');
-    } finally {
-      setLoading(false);
-    }
-  }
+          </div>
+
+          {/* Left Column */}
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <Label className="font-semibold">صورة الدعوة (اختياري)</Label>
+              <div className="p-4 border-2 border-dashed rounded-xl text-center cursor-pointer hover:border-amber-400 transition-colors relative" onClick={() => !imagePreview && document.getElementById('invitationImage')?.click()}>
+                {imagePreview ? (
+                  <div className="relative aspect-video">
+                    <img src={imagePreview} alt="Preview" className="rounded-lg w-full h-full object-cover" />
+                     <div 
+                      className="absolute border-2 border-dashed border-red-500 bg-white/30 backdrop-blur-sm"
+                      style={{
+                        left: `${formData.qrX}%`,
+                        top: `${formData.qrY}%`,
+                        width: `${formData.qrSize}%`,
+                        height: `${formData.qrSize}%`,
+                        transform: 'translate(-50%, -50%)'
+                      }}
+                    >
+                      <div className='text-red-500 font-bold text-xs bg-white/50 p-px rounded-sm absolute -top-5 right-0'>QR Preview</div>
+                    </div>
+                    <Button variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={(e) => { e.stopPropagation(); setImagePreview(null); setInvitationImage(null); }}>
+                      <X className="h-4 w-4"/>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center space-y-2 text-slate-500 py-10">
+                    <Upload className="w-10 h-10" />
+                    <p>اسحب وأفلت الصورة هنا، أو انقر للاختيار</p>
+                    <p className="text-xs">سيتم دمج QR Code على هذه الصورة</p>
+                  </div>
+                )}
+                <Input id="invitationImage" type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+              </div>
+            </div>
+             {imagePreview && (
+              <Card className="bg-slate-50/80">
+                <CardContent className='p-4 space-y-4'>
+                    <div>
+                      <Label className='font-medium'>المحور الأفقي (X): {formData.qrX}%</Label>
+                      <Slider value={[parseInt(formData.qrX)]} onValueChange={([val]) => setFormData(p => ({ ...p, qrX: String(val) }))} />
+                    </div>
+                     <div>
+                      <Label className='font-medium'>المحور العامودي (Y): {formData.qrY}%</Label>
+                      <Slider value={[parseInt(formData.qrY)]} onValueChange={([val]) => setFormData(p => ({ ...p, qrY: String(val) }))} />
+                    </div>
+                     <div>
+                      <Label className='font-medium'>حجم الرمز: {formData.qrSize}%</Label>
+                      <Slider value={[parseInt(formData.qrSize)]} onValueChange={([val]) => setFormData(p => ({ ...p, qrSize: String(val) }))} />
+                    </div>
+                </CardContent>
+              </Card>
+            )}
+
+            <div className="space-y-2">
+                <Label className="font-semibold">ربط بعميل (اختياري)</Label>
+                <Select 
+                    onValueChange={(value) => {
+                        const finalValue = value === 'no-client' ? '' : value;
+                        setFormData(p => ({ ...p, clientId: finalValue }));
+                    }}
+                    value={formData.clientId || 'no-client'}
+                >
+                    <SelectTrigger>
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="no-client">بدون عميل</SelectItem>
+                        {clients.map((c) => (
+                            <SelectItem key={c._id} value={c._id}>{c.fullName}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                <p className="text-xs text-slate-500 pt-1">إذا اخترت عميل، سيتم إنشاء دعوات لجهات الاتصال الخاصة به.</p>
+            </div>
+          </div>
+        </div>
+
+        {error && (
+            <Alert variant="destructive">
+                <X className="h-4 w-4" />
+                <AlertTitle>خطأ</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+            </Alert>
+        )}
+
+        <div className="flex justify-end pt-4">
+            <Button onClick={handleCreateEvent} disabled={loading || !formData.title || !formData.eventDate} loading={loading} size="lg">
+                متابعة <ArrowRight className="mr-2 h-4 w-4"/>
+            </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const renderStep2 = () => (
+     <Card className="border-slate-200 shadow-md rounded-3xl overflow-hidden bg-white text-center">
+      <CardHeader>
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+            <CheckCircle className="h-10 w-10 text-green-600" />
+        </div>
+        <CardTitle className="text-2xl font-bold text-slate-900 mt-4">تم إنشاء الفعالية بنجاح!</CardTitle>
+        <CardDescription className="text-slate-600 text-base">"{createdEvent?.title}" جاهزة الآن. ما هي خطوتك التالية؟</CardDescription>
+      </CardHeader>
+      <CardContent className="p-6 space-y-4">
+        <div className="grid md:grid-cols-2 gap-4">
+            {createdEvent?.clientId && (
+                <Button variant="outline" size="lg" onClick={() => router.push(`/dashboard/events/${createdEvent._id}/send-invitations`)}>
+                    <Send className="ml-2 h-4 w-4"/> إرسال الدعوات للضيوف
+                </Button>
+            )}
+            <Button variant="outline" size="lg" onClick={() => router.push(`/dashboard/events/${createdEvent._id}/guests`)}>
+                <Users className="ml-2 h-4 w-4"/> إضافة ضيوف يدويًا
+            </Button>
+        </div>
+        <div className="pt-4">
+            <Button size="lg" onClick={() => router.push(`/dashboard/events/${createdEvent._id}`)}>
+                <PartyPopper className="ml-2 h-4 w-4"/> الذهاب إلى صفحة الفعالية
+            </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <DashboardLayout>
       <div className="space-y-6" dir="rtl">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">إنشاء فعالية (من جهات اتصال العميل)</h1>
-          <p className="mt-1 text-sm text-gray-600">
-            سيتم إنشاء دعوة لكل شخص في شيت العميل مع QR مميز، ثم يمكنك إرسالها عبر واتساب.
-          </p>
-        </div>
-
-        {error && (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">{error}</div>
-        )}
-        {successMessage && (
-          <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800">{successMessage}</div>
-        )}
-
-        <Card title="بيانات الفعالية">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">العميل</label>
-              <select
-                className="h-10 rounded-lg border border-gray-300 px-3 text-sm"
-                value={formData.clientId}
-                onChange={(e) => setFormData((p) => ({ ...p, clientId: e.target.value }))}
-              >
-                <option value="">اختر عميل</option>
-                {clients.map((c) => (
-                  <option key={c._id} value={c._id}>
-                    {c.fullName}
-                  </option>
-                ))}
-              </select>
-              <div className="text-xs text-gray-500">تأكد أنك رفعت جهات الاتصال لهذا العميل من صفحة العملاء.</div>
-            </div>
-
-            <FormInput
-              label="عنوان الفعالية"
-              value={formData.title}
-              onChange={(e) => setFormData((p) => ({ ...p, title: e.target.value }))}
-              placeholder="مثال: حفل زفاف"
-            />
-
-            <div className="md:col-span-2 flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">الوصف (اختياري)</label>
-              <textarea
-                className="min-h-24 rounded-lg border border-gray-300 px-3 py-2 text-sm"
-                value={formData.description}
-                onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
-                placeholder="وصف مختصر للفعالية..."
-              />
-            </div>
-
-            <FormInput
-              label="تاريخ الفعالية"
-              type="date"
-              value={formData.eventDate}
-              onChange={(e) => setFormData((p) => ({ ...p, eventDate: e.target.value }))}
-            />
-
-            <FormInput
-              label="وقت الفعالية (اختياري)"
-              value={formData.eventTime}
-              onChange={(e) => setFormData((p) => ({ ...p, eventTime: e.target.value }))}
-              placeholder="مثال: 08:00 PM"
-            />
-
-            <FormInput
-              label="المكان (اختياري)"
-              value={formData.location}
-              onChange={(e) => setFormData((p) => ({ ...p, location: e.target.value }))}
-              placeholder="اسم المكان"
-            />
-
-            <FormInput
-              label="رابط الموقع الجغرافي (Google Maps)"
-              value={formData.locationUrl}
-              onChange={(e) => setFormData((p) => ({ ...p, locationUrl: e.target.value }))}
-              placeholder="https://maps.google.com/..."
-            />
-
-            <div className="md:col-span-2">
-              <div className="text-sm font-medium text-gray-700 mb-2">صورة الدعوة</div>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setInvitationImage(e.target.files?.[0] || null)}
-              />
-              <div className="text-xs text-gray-500 mt-1">سيتم دمج QR لكل ضيف على هذه الصورة.</div>
-            </div>
-          </div>
-        </Card>
-
-        <Card title="مكان QR على الصورة (اختياري)">
-          <div className="grid gap-4 md:grid-cols-4">
-            <FormInput
-              label="X"
-              value={formData.qrX}
-              onChange={(e) => setFormData((p) => ({ ...p, qrX: e.target.value }))}
-            />
-            <FormInput
-              label="Y"
-              value={formData.qrY}
-              onChange={(e) => setFormData((p) => ({ ...p, qrY: e.target.value }))}
-            />
-            <FormInput
-              label="Width"
-              value={formData.qrWidth}
-              onChange={(e) => setFormData((p) => ({ ...p, qrWidth: e.target.value }))}
-            />
-            <FormInput
-              label="Height"
-              value={formData.qrHeight}
-              onChange={(e) => setFormData((p) => ({ ...p, qrHeight: e.target.value }))}
-            />
-          </div>
-        </Card>
-
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <Button
-            onClick={handleCreateEvent}
-            disabled={!isReadyToCreate || loading}
-            loading={loading}
-          >
-            إنشاء الفعالية وتوليد الدعوات
-          </Button>
-
-          <Button
-            variant="secondary"
-            onClick={handleSendInvitations}
-            disabled={!createdEventId || loading}
-            loading={loading}
-          >
-            إرسال دعوات واتساب
-          </Button>
-        </div>
-
-        {createdEventId && (
-          <Card title="نتائج الإنشاء">
-            <div className="space-y-2 text-sm text-gray-700">
-              <div>Event ID: {createdEventId}</div>
-              {createdStats && (
-                <>
-                  <div>إجمالي جهات الاتصال: {createdStats.totalContacts}</div>
-                  <div>تم إنشاء ضيوف: {createdStats.guestsCreated}</div>
-                  <div>أخطاء: {createdStats.errors}</div>
-                </>
-              )}
-              <div className="text-xs text-gray-500">
-                بعد الإرسال: كل ضيف سيرى صفحة RSVP ويمكنه قبول/رفض، والعميل يرى الردود من صفحة العميل.
-              </div>
-            </div>
-          </Card>
-        )}
+        {step === 1 ? renderStep1() : renderStep2()}
       </div>
     </DashboardLayout>
   );

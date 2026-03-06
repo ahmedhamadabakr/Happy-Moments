@@ -1,117 +1,90 @@
 'use client';
 
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 
 export interface User {
   id: string;
-  firstName: string;
-  lastName: string;
+  fullName: string;
   email: string;
-  role: 'manager' | 'employee' | 'client';
+  role: 'manager' | 'employee';
   phone?: string;
-  company?: {
-    id: string;
-    name: string;
-    email: string;
-  };
-}
-
-export interface Company {
-  id: string;
-  name: string;
-  email: string;
 }
 
 interface AuthState {
   user: User | null;
-  company: Company | null;
-  isLoading: boolean;
-  isAuthenticated: boolean;
+  // Using a single status field prevents impossible states (e.g., being both loading and authenticated).
+  // 'loading': The initial state on app load, while we check the session.
+  // 'authenticated': The user is confirmed to be logged in.
+  // 'unauthenticated': The user is confirmed to be logged out.
+  status: 'loading' | 'authenticated' | 'unauthenticated';
   error: string | null;
-
-  // Actions
-  setUser: (user: User | null) => void;
-  setCompany: (company: Company | null) => void;
-  setLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
-  logout: () => void;
   checkAuth: () => Promise<void>;
+  logout: () => Promise<void>;
+  setUser: (user: User) => void;
 }
 
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set, get) => ({
-      user: null,
-      company: null,
-      isLoading: false,
-      isAuthenticated: false,
-      error: null,
+// **THE FIX**: We are removing the `persist` middleware.
+// This ensures the app ALWAYS starts with a clean 'loading' state on a full page load,
+// forcing a fresh check with the server instead of relying on stale data from localStorage.
+export const useAuthStore = create<AuthState>((set, get) => ({
+  user: null,
+  status: 'loading', // Always start in 'loading' to force an auth check.
+  error: null,
 
-      setUser: (user) => set({ user, isAuthenticated: !!user }),
-      setCompany: (company) => set({ company }),
-      setLoading: (isLoading) => set({ isLoading }),
-      setError: (error) => set({ error }),
+  /**
+   * Checks the user's session status by calling the backend.
+   * This is the single source of truth for authentication.
+   */
+  checkAuth: async () => {
+    // Avoid re-checking if the status is already determined.
+    if (get().status !== 'loading') return;
 
-      logout: async () => {
-        try {
-          await fetch('/api/auth/logout', { method: 'POST' });
-        } catch (error) {
-          console.error('Logout error:', error);
+    try {
+      // As seen in your logs, the app uses /api/auth/health.
+      const response = await fetch('/api/auth/health', {
+        credentials: 'include',
+        cache: 'no-store', // Ensure we always get the latest status from the server.
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.user) {
+          // The API confirmed an active session.
+          set({ user: data.user, status: 'authenticated', error: null });
+        } else {
+          // The API responded, but indicated no active session.
+          set({ user: null, status: 'unauthenticated', error: null });
         }
-        set({ user: null, company: null, isAuthenticated: false });
-      },
-
-      checkAuth: async () => {
-        const currentState = get();
-        
-        // Always check with API first
-        set({ isLoading: true });
-        
-        try {
-          const response = await fetch('/api/auth/profile', {
-            credentials: 'include',
-            cache: 'no-store',
-          });
-          
-          if (response.ok) {
-            const data = await response.json();
-            if (data.success && data.data) {
-              set({
-                user: data.data.user,
-                company: data.data.user.company,
-                isAuthenticated: true,
-                isLoading: false,
-              });
-              return;
-            }
-          }
-          
-          // If API call fails, clear auth state
-          set({ 
-            user: null, 
-            company: null, 
-            isAuthenticated: false,
-            isLoading: false,
-          });
-        } catch (error) {
-          console.error('Auth check error:', error);
-          set({ 
-            user: null, 
-            company: null, 
-            isAuthenticated: false,
-            isLoading: false,
-          });
-        }
-      },
-    }),
-    {
-      name: 'auth-store',
-      partialize: (state) => ({
-        user: state.user,
-        company: state.company,
-        isAuthenticated: state.isAuthenticated,
-      }),
+      } else {
+        // The API returned a non-200 status (e.g., 401, 500).
+        set({ user: null, status: 'unauthenticated', error: null });
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error);
+      // The fetch call itself failed (e.g., network error).
+      set({ user: null, status: 'unauthenticated', error: 'Failed to check authentication status.' });
     }
-  )
-);
+  },
+
+  /**
+   * Logs the user out and clears the state.
+   */
+  logout: async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (error) {
+      console.error('Logout API call failed:', error);
+    }
+    // Crucially, set status to 'unauthenticated' to trigger redirects correctly.
+    set({ user: null, status: 'unauthenticated', error: null });
+  },
+
+  /**
+   * Allows updating user data in the store, for example after a profile edit.
+   */
+  setUser: (user: User) => {
+    if (get().status === 'authenticated') {
+      set({ user });
+    }
+  },
+}));

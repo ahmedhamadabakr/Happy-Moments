@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store/authStore';
-import { User as UserType } from '@/lib/store/authStore';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -13,82 +12,81 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, Settings, User, Menu } from 'lucide-react';
+import { LogOut, Settings, User as UserIcon } from 'lucide-react';
 
-interface DashboardHeaderProps {
-  user: UserType;
-}
-
-export function DashboardHeader({ user }: DashboardHeaderProps) {
+export function DashboardHeader() {
   const router = useRouter();
-  const logout = useAuthStore((state) => state.logout);
+  const { user, logout } = useAuthStore();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
-    try {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-      });
-      logout();
-      router.push('/login');
-    } catch (error) {
-      console.error('Logout failed:', error);
-    } finally {
-      setIsLoggingOut(false);
-    }
+    await logout();
+    router.push('/login');
   };
 
+  if (!user) {
+    return null; // The layout should prevent this, but it's a good safeguard.
+  }
+
+  // **THE FIX**: Create robust variables to handle both old (firstName/lastName) and new (fullName) user structures.
+  const userFullName = (user as any).fullName || `${(user as any).firstName || ''} ${(user as any).lastName || ''}`.trim();
+  const userFirstName = userFullName.split(' ')[0] || 'المستخدم';
+  const userInitial = userFullName.charAt(0).toUpperCase() || 'U';
+
   return (
-    <header className="border-b border-slate-200 bg-white px-6 py-4">
+    <header className="border-b border-slate-200 bg-white px-6 py-4" dir="rtl">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-slate-900">Dashboard</h2>
-          <p className="text-sm text-slate-600">Welcome back, {user.firstName}!</p>
+          <h2 className="text-lg font-semibold text-slate-900">لوحة التحكم</h2>
+          {/* Now safely displays the first name */}
+          <p className="text-sm text-slate-600">أهلاً بعودتك، {userFirstName}!</p>
         </div>
 
         <div className="flex items-center gap-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-sm font-semibold text-slate-700">
-                  {user.firstName.charAt(0)}
+              <Button variant="ghost" size="icon" className="rounded-full hover:bg-slate-100">
+                <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center text-lg font-semibold text-amber-700">
+                  {/* Safely displays the initial */}
+                  {userInitial}
                 </div>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align="end" className="w-64" dir="rtl">
               <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium text-slate-900">
-                    {user.firstName} {user.lastName}
+                <div className="flex flex-col space-y-1 p-2">
+                  <p className="text-md font-semibold text-slate-900">
+                    {/* Safely displays the full name */}
+                    {userFullName}
                   </p>
                   <p className="text-xs text-slate-600">{user.email}</p>
-                  <p className="text-xs text-slate-500 capitalize">Role: {user.role}</p>
+                  <p className="text-xs text-slate-500 capitalize pt-1">الدور: {user.role}</p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => router.push('/dashboard/profile')}
-                className="cursor-pointer"
+                className="cursor-pointer p-2 text-base"
               >
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
+                <UserIcon className="ml-2 h-4 w-4" />
+                <span>الملف الشخصي</span>
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => router.push('/dashboard/settings')}
-                className="cursor-pointer"
+                className="cursor-pointer p-2 text-base"
               >
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
+                <Settings className="ml-2 h-4 w-4" />
+                <span>الإعدادات</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                className="cursor-pointer text-red-600"
+                className="cursor-pointer text-red-600 focus:text-red-700 focus:bg-red-50 p-2 text-base"
               >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
+                <LogOut className="ml-2 h-4 w-4" />
+                <span>{isLoggingOut ? 'جاري تسجيل الخروج...' : 'تسجيل الخروج'}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

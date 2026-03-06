@@ -1,254 +1,192 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-import { useAuthStore } from '@/lib/store/authStore';
+import { useParams, useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
-import { Card } from '@/components/shared/Card';
-import { Button } from '@/components/shared/Button';
-import { StatsCard } from '@/components/shared/StatsCard';
-import { FormInput } from '@/components/shared/FormInput';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Calendar, MapPin, Users, CheckSquare, BarChart2, QrCode, Share2, Edit, X, UserPlus, Send } from 'lucide-react';
+import { Event, Guest } from '@/lib/types';
 import { useApi } from '@/lib/hooks/useApi';
 
-interface Event {
-  _id: string;
-  title: string;
-  description: string;
-  eventDate: string;
-  location: string;
-  status: 'draft' | 'active' | 'closed';
-  guestCount: number;
-  rsvpCount: number;
-  checkedInCount: number;
-}
+// Placeholder components for Guests and Analytics, to be implemented
+const GuestList = ({ guests }: { guests: Guest[] }) => (
+    <Card>
+        <CardHeader>
+            <CardTitle>قائمة الضيوف</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <p>سيتم عرض قائمة الضيوف هنا.</p>
+             {/* todo: show guest list, add/remove guests*/}
+        </CardContent>
+    </Card>
+);
+
+const EventAnalytics = ({ eventId }: { eventId: string }) => (
+    <Card>
+        <CardHeader>
+            <CardTitle>تحليلات الفعالية</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <p>سيتم عرض تحليلات الفعالية هنا.</p>
+            {/* todo: show charts for rsvp, check-in etc. */}
+        </CardContent>
+    </Card>
+);
+
 
 export default function EventDetailsPage() {
   const params = useParams();
+  const router = useRouter();
   const eventId = params.id as string;
-  const { user, company } = useAuthStore();
-  const [event, setEvent] = useState<Event | null>(null);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    eventDate: '',
-    location: '',
-  });
-  const [loading, setLoading] = useState(false);
-  const [stats, setStats] = useState({
-    guestCount: 0,
-    rsvpCount: 0,
-    checkedInCount: 0,
-    rsvpRate: 0,
-  });
 
-  const { execute: fetchEvent } = useApi(`/api/v1/events/${eventId}`);
-  const { execute: fetchEventAnalytics } = useApi(
-    `/api/v1/analytics/events/${eventId}`
+  const [event, setEvent] = useState<Event | null>(null);
+  const [guests, setGuests] = useState<Guest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [formData, setFormData] = useState<Partial<Event>>({});
+
+  const { execute: fetchEventData, loading: fetchLoading } = useApi(
+    `/api/v1/events/${eventId}`,
+    {
+      onSuccess: (data) => {
+        setEvent(data.event);
+        setGuests(data.guests);
+        setFormData(data.event);
+        setLoading(false);
+      },
+      onError: (err) => {
+        setError(err.message);
+        setLoading(false);
+      }
+    }
   );
-  const { execute: updateEvent } = useApi(`/api/v1/events/${eventId}`, {
-    onSuccess: (data) => {
-      setEvent(data);
-      setIsEditMode(false);
-    },
-  });
+
+  const { execute: updateEvent, loading: updateLoading } = useApi(
+    `/api/v1/events/${eventId}`,
+    {
+      method: 'PATCH',
+      onSuccess: (updatedEvent) => {
+        setEvent(updatedEvent);
+        setIsEditMode(false);
+      },
+      onError: (err) => setError(err.message)
+    }
+  );
 
   useEffect(() => {
-    const loadEvent = async () => {
-      try {
-        const eventData = await fetchEvent('GET');
-        if (eventData) {
-          setEvent(eventData);
-          setFormData({
-            title: eventData.title || '',
-            description: eventData.description || '',
-            eventDate: eventData.eventDate || '',
-            location: eventData.location || '',
-          });
-        }
-
-        const analyticsData = await fetchEventAnalytics('GET');
-        if (analyticsData) {
-          setStats({
-            guestCount: analyticsData.guestCount || 0,
-            rsvpCount: analyticsData.rsvpCount || 0,
-            checkedInCount: analyticsData.checkedInCount || 0,
-            rsvpRate: analyticsData.rsvpRate || 0,
-          });
-        }
-      } catch (error) {
-        console.error('Failed to load event');
-      }
-    };
-
-    if (user && company && eventId) {
-      loadEvent();
+    if (eventId) {
+      fetchEventData();
     }
-  }, [user, company, eventId]);
+  }, [eventId]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      await updateEvent('PUT', formData);
-    } finally {
-      setLoading(false);
-    }
+  const handleUpdate = async () => {
+    await updateEvent(formData);
   };
 
-  if (!event) {
+  if (loading || fetchLoading) {
     return (
       <DashboardLayout>
-        <div className="text-center py-10">
-          <p className="text-gray-500">جاري تحميل الفعالية...</p>
+        <div className="flex items-center justify-center h-full">
+          <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
       </DashboardLayout>
     );
   }
 
-  const statusBg = {
-    draft: 'bg-gray-100 text-gray-800',
-    active: 'bg-green-100 text-green-800',
-    closed: 'bg-red-100 text-red-800',
-  };
+  if (error) {
+    return (
+      <DashboardLayout>
+        <Alert variant="destructive" className="m-4">
+          <X className="h-4 w-4" />
+          <AlertTitle>حدث خطأ</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      </DashboardLayout>
+    );
+  }
 
-  const statusLabel = {
-    draft: 'مسودة',
-    active: 'نشطة',
-    closed: 'مغلقة',
-  };
+  if (!event) return null; // Or show a not found component
+
+  const stats = [
+    { title: "الحالة", value: event.status, icon: CheckSquare },
+    { title: "إجمالي الضيوف", value: guests.length, icon: Users },
+    { title: "الردود على الدعوة", value: guests.filter(g => g.rsvpStatus === 'ATTENDING').length, icon: CheckSquare },
+    { title: "نسبة الحضور المتوقع", value: `${guests.length > 0 ? Math.round((guests.filter(g => g.rsvpStatus === 'ATTENDING').length / guests.length) * 100) : 0}%`, icon: BarChart2 },
+  ];
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-6" dir="rtl">
         {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">{event.title}</h1>
-            <div className="flex gap-2 mt-2">
-              <span
-                className={`inline-block px-3 py-1 text-sm font-medium rounded-full ${
-                  statusBg[event.status as keyof typeof statusBg]
-                }`}
-              >
-                {statusLabel[event.status as keyof typeof statusLabel]}
-              </span>
-            </div>
-          </div>
-          <Button onClick={() => setIsEditMode(!isEditMode)}>
-            {isEditMode ? 'إلغاء' : 'تعديل'}
-          </Button>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatsCard
-            title="إجمالي الضيوف"
-            value={stats.guestCount}
-            description="تم دعوتهم"
-          />
-          <StatsCard
-            title="الرد على الدعوة"
-            value={stats.rsvpCount}
-            description={`${stats.rsvpRate}% من الضيوف`}
-          />
-          <StatsCard
-            title="الحاضرون فعلياً"
-            value={stats.checkedInCount}
-            description="تم تسجيلهم"
-          />
-          <StatsCard
-            title="نسبة الحضور"
-            value={`${stats.checkedInCount > 0 ? Math.round((stats.checkedInCount / stats.guestCount) * 100) : 0}%`}
-            description="من إجمالي الضيوف"
-          />
-        </div>
-
-        {/* Event Details */}
-        <Card title="تفاصيل الفعالية">
-          {isEditMode ? (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <FormInput
-                label="اسم الفعالية"
-                value={formData.title}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
-              />
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-gray-700">
-                  الوصف
-                </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  rows={4}
-                />
-              </div>
-              <FormInput
-                label="التاريخ والوقت"
-                type="datetime-local"
-                value={formData.eventDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, eventDate: e.target.value })
-                }
-              />
-              <FormInput
-                label="المكان"
-                value={formData.location}
-                onChange={(e) =>
-                  setFormData({ ...formData, location: e.target.value })
-                }
-              />
-              <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsEditMode(false)}
-                >
-                  إلغاء
-                </Button>
-                <Button type="submit" loading={loading}>
-                  حفظ التغييرات
-                </Button>
-              </div>
-            </form>
-          ) : (
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm text-gray-600">الوصف</p>
-                <p className="text-gray-900 mt-1">{event.description}</p>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-600">التاريخ والوقت</p>
-                  <p className="text-gray-900 mt-1">
-                    {new Date(event.eventDate).toLocaleString('ar-SA')}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">المكان</p>
-                  <p className="text-gray-900 mt-1">{event.location}</p>
-                </div>
+        <Card className="bg-gradient-to-br from-slate-50 to-amber-50/20 rounded-3xl p-6 border border-slate-200 shadow-sm">
+          <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900">{event.title}</h1>
+              <div className="flex items-center gap-4 text-slate-600 mt-2">
+                  <div className="flex items-center gap-2"><Calendar className="w-4 h-4 text-amber-500" /> {new Date(event.eventDate).toLocaleDateString('ar-SA', { dateStyle: 'long' })}</div>
+                  {event.location && <div className="flex items-center gap-2"><MapPin className="w-4 h-4 text-amber-500" /> {event.location}</div>}
               </div>
             </div>
-          )}
-        </Card>
-
-        {/* Actions */}
-        <Card>
-          <div className="flex flex-wrap gap-2">
-            <Button variant="secondary">إرسال الدعوات</Button>
-            <Button variant="secondary">تحديث قائمة الضيوف</Button>
-            <Button variant="secondary">إرسال تذكير</Button>
-            {event.status !== 'closed' && (
-              <Button variant="danger">إغلاق الفعالية</Button>
-            )}
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant="outline" onClick={() => router.push(`/dashboard/check-in/${eventId}`)}><QrCode className="ml-2 h-4 w-4"/> سكانر تسجيل الدخول</Button>
+              <Button variant="outline" onClick={() => alert('سيتم فتح رابط المشاركة قريباً')}><Share2 className="ml-2 h-4 w-4"/> مشاركة الفعالية</Button>
+              <Button onClick={() => setIsEditMode(!isEditMode)}>{isEditMode ? <><X className="ml-2 h-4 w-4"/> إلغاء</> : <><Edit className="ml-2 h-4 w-4"/> تعديل</>}</Button>
+            </div>
           </div>
         </Card>
+
+        {/* Edit Mode */}
+        {isEditMode && (
+          <Card className="border-slate-200 shadow-md rounded-3xl">
+            <CardHeader>
+              <CardTitle>تعديل الفعالية</CardTitle>
+            </CardHeader>
+            <CardContent className="grid md:grid-cols-2 gap-4">
+               {/* Form fields for editing, similar to create page */}
+               <Button onClick={handleUpdate} disabled={updateLoading} loading={updateLoading}>حفظ التغييرات</Button>
+               <Button variant="ghost" onClick={() => setIsEditMode(false)}>إلغاء</Button>
+            </CardContent>
+          </Card>
+        )}
+        
+        {/* Stats Cards */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {stats.map(stat => (
+                <Card key={stat.title}>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium text-slate-600">{stat.title}</CardTitle>
+                        <stat.icon className="w-4 h-4 text-amber-500"/>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{stat.value}</div>
+                    </CardContent>
+                </Card>
+            ))}
+        </div>
+
+        <Tabs defaultValue="guests">
+            <div className="flex justify-between items-center">
+                <TabsList>
+                    <TabsTrigger value="guests">الضيوف</TabsTrigger>
+                    <TabsTrigger value="analytics">التحليلات</TabsTrigger>
+                </TabsList>
+                <div className="flex gap-2">
+                     <Button variant="outline" onClick={() => router.push(`/dashboard/events/${eventId}/guests`)}><UserPlus className="ml-2 h-4 w-4"/> إضافة ضيوف</Button>
+                     <Button onClick={() => router.push(`/dashboard/events/${eventId}/send-invitations`)}><Send className="ml-2 h-4 w-4"/> إرسال الدعوات</Button>
+                </div>
+            </div>
+            <TabsContent value="guests" className="mt-4">
+                <GuestList guests={guests} />
+            </TabsContent>
+            <TabsContent value="analytics" className="mt-4">
+                <EventAnalytics eventId={eventId} />
+            </TabsContent>
+        </Tabs>
+
       </div>
     </DashboardLayout>
   );

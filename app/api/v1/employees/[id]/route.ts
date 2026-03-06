@@ -47,89 +47,6 @@ export async function GET(
 }
 
 /**
- * PUT /api/v1/employees/[id]
- * تحديث بيانات موظف (بديل لـ PATCH)
- */
-export async function PUT(
-  request: NextRequest,
-  paramsPromise: Promise<{ params: { id: string } }>
-) {
-  const { params } = await paramsPromise;
-  try {
-    const session = await requireManager(request);
-    if (session instanceof NextResponse) return session;
-
-    const body = await request.json();
-    const {
-      firstName,
-      lastName,
-      phone,
-      roleKey,
-      customPermissions,
-      isActive,
-    } = body;
-
-    await connectDB();
-
-    const employee = await User.findOne({
-      _id: params.id,
-      company: session.user.companyId,
-    });
-
-    if (!employee) {
-      return NextResponse.json(
-        { error: 'الموظف غير موجود' },
-        { status: 404 }
-      );
-    }
-
-    // تحديث البيانات الأساسية
-    if (firstName) employee.firstName = firstName;
-    if (lastName) employee.lastName = lastName;
-    if (phone !== undefined) employee.phone = phone;
-    if (isActive !== undefined) employee.isActive = isActive;
-    
-    // تحديث الصلاحيات فقط (الدور يبقى employee دائماً)
-    if (customPermissions && Array.isArray(customPermissions)) {
-      employee.permissions = customPermissions.filter((p: string) =>
-        Object.values(EmployeePermission).includes(p as EmployeePermission)
-      );
-    } else if (roleKey && PERMISSION_GROUPS[roleKey as keyof typeof PERMISSION_GROUPS]) {
-      employee.permissions = PERMISSION_GROUPS[roleKey as keyof typeof PERMISSION_GROUPS];
-    }
-
-    await employee.save();
-
-    // تسجيل النشاط
-    await ActivityLog.create({
-      companyId: session.user.companyId,
-      userId: session.user.userId,
-      activityType: 'event_update',
-      resourceType: 'User',
-      resourceId: employee._id,
-      details: {
-        employeeName: `${employee.firstName} ${employee.lastName}`,
-        updatedFields: Object.keys(body),
-      },
-    });
-
-    const { password, refreshTokens, ...employeeData } = employee.toObject();
-
-    return NextResponse.json({
-      success: true,
-      message: 'تم تحديث بيانات الموظف بنجاح',
-      employee: employeeData,
-    });
-  } catch (error: any) {
-    console.error('Error updating employee:', error);
-    return NextResponse.json(
-      { error: 'فشل في تحديث بيانات الموظف' },
-      { status: 500 }
-    );
-  }
-}
-
-/**
  * PATCH /api/v1/employees/[id]
  * تحديث بيانات موظف
  */
@@ -187,7 +104,7 @@ export async function PATCH(
     await ActivityLog.create({
       companyId: session.user.companyId,
       userId: session.user.userId,
-      activityType: 'event_update',
+      activityType: 'user_update',
       resourceType: 'User',
       resourceId: employee._id,
       details: {
@@ -246,7 +163,7 @@ export async function DELETE(
     await ActivityLog.create({
       companyId: session.user.companyId,
       userId: session.user.userId,
-      activityType: 'event_delete',
+      activityType: 'user_delete',
       resourceType: 'User',
       resourceId: employee._id,
       details: {

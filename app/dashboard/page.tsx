@@ -1,7 +1,7 @@
-import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, Users, Eye, CheckCircle } from 'lucide-react';
+import Link from 'next/link';
 
 export const metadata = {
   title: 'لوحة التحكم | إدارة الفعاليات',
@@ -40,97 +40,99 @@ export default function DashboardPage() {
     },
   ];
 
+  const gettingStartedSteps = [
+    {
+      step: 1,
+      title: 'أنشئ أول فعالية لك',
+      description: 'اذهب إلى قسم الفعاليات لإنشاء فعالية جديدة وبدء إدارتها',
+      link: '/dashboard/events/create',
+      color: 'bg-[#F08784]/10 text-[#F08784]',
+      hoverColor: 'hover:bg-[#F08784] hover:text-white',
+    },
+    {
+      step: 2,
+      title: 'استيراد أو إضافة جهات اتصال',
+      description: 'ارفع قائمة جهات الاتصال الخاصة بك أو أضف الضيوف يدوياً لدعوتهم إلى الفعاليات',
+      link: '/dashboard/clients',
+      color: 'bg-emerald-50 text-emerald-600',
+      hoverColor: 'hover:bg-emerald-600 hover:text-white',
+    },
+    {
+      step: 3,
+      title: 'إرسال الدعوات',
+      description: 'أرسل دعوات شخصية عبر البريد الإلكتروني أو الواتساب',
+      link: '/dashboard/events',
+      color: 'bg-violet-50 text-violet-600',
+      hoverColor: 'hover:bg-violet-600 hover:text-white',
+    },
+    {
+      step: 4,
+      title: 'تتبع الردود',
+      description: 'راقب الحضور وإدارة تأكيدات الضيوف في الوقت الفعلي',
+      link: '/dashboard/events',
+      color: 'bg-amber-50 text-amber-600',
+      hoverColor: 'hover:bg-amber-600 hover:text-white',
+    },
+  ];
+
   return (
-    <ProtectedRoute>
-      <DashboardLayout>
-        <div className="space-y-8" dir="rtl">
-          {/* Header Section */}
-          <div className="bg-gradient-to-br from-[#F08784]/5 via-white to-violet-50/30 rounded-3xl p-8 border border-slate-100 shadow-sm">
-            <h1 className="text-4xl font-black text-slate-900">مرحباً بك في مدير الفعاليات 👋</h1>
-            <p className="mt-3 text-lg text-slate-600">إدارة فعالياتك وضيوفك بفعالية واحترافية</p>
-          </div>
-
-          {/* Stats Grid */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {stats.map((stat) => {
-              const Icon = stat.icon;
-              return (
-                <Card key={stat.title} className="border-slate-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-white rounded-2xl">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-semibold text-slate-700">{stat.title}</CardTitle>
-                    <div className={`rounded-xl p-2.5 ${stat.color} transition-transform hover:scale-110`}>
-                      <Icon className="h-5 w-5" />
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-black text-slate-900">{stat.value}</div>
-                    <p className="text-xs text-slate-500 pt-2">{stat.description}</p>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-
-          {/* Getting Started Card */}
-          <Card className="border-slate-200 shadow-md rounded-3xl overflow-hidden bg-white">
-            <CardHeader className="bg-gradient-to-r from-slate-50 to-[#F08784]/5 border-b border-slate-100">
-              <CardTitle className="text-2xl font-bold text-slate-900">ابدأ الآن</CardTitle>
-              <CardDescription className="text-slate-600 text-base">إعداد منصة إدارة الفعاليات الخاصة بك</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-8 pb-8">
-              <div className="space-y-6">
-                <div className="flex items-start gap-5 group">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F08784]/10 text-[#F08784] font-black text-lg group-hover:bg-[#F08784] group-hover:text-white transition-all duration-300 group-hover:scale-110 flex-shrink-0">
-                    1
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-slate-900 text-lg">أنشئ أول فعالية لك</h3>
-                    <p className="text-sm text-slate-600 mt-2 leading-relaxed">
-                      اذهب إلى قسم الفعاليات لإنشاء فعالية جديدة وبدء إدارتها
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-5 group">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 font-black text-lg group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300 group-hover:scale-110 flex-shrink-0">
-                    2
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-slate-900 text-lg">استيراد أو إضافة جهات اتصال</h3>
-                    <p className="text-sm text-slate-600 mt-2 leading-relaxed">
-                      ارفع قائمة جهات الاتصال الخاصة بك أو أضف الضيوف يدوياً لدعوتهم إلى الفعاليات
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-5 group">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-50 text-violet-600 font-black text-lg group-hover:bg-violet-600 group-hover:text-white transition-all duration-300 group-hover:scale-110 flex-shrink-0">
-                    3
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-slate-900 text-lg">إرسال الدعوات</h3>
-                    <p className="text-sm text-slate-600 mt-2 leading-relaxed">
-                      أرسل دعوات شخصية عبر البريد الإلكتروني أو الواتساب
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-5 group">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 font-black text-lg group-hover:bg-amber-600 group-hover:text-white transition-all duration-300 group-hover:scale-110 flex-shrink-0">
-                    4
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-slate-900 text-lg">تتبع الردود</h3>
-                    <p className="text-sm text-slate-600 mt-2 leading-relaxed">
-                      راقب الحضور وإدارة تأكيدات الضيوف في الوقت الفعلي
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+    // The protection is now handled by DashboardLayout
+    <DashboardLayout>
+      <div className="space-y-8" dir="rtl">
+        {/* Header Section */}
+        <div className="bg-gradient-to-br from-[#F08784]/5 via-white to-violet-50/30 rounded-3xl p-8 border border-slate-100 shadow-sm">
+          <h1 className="text-4xl font-black text-slate-900">مرحباً بك في مدير الفعاليات 👋</h1>
+          <p className="mt-3 text-lg text-slate-600">إدارة فعالياتك وضيوفك بفعالية واحترافية</p>
         </div>
-      </DashboardLayout>
-    </ProtectedRoute>
+
+        {/* Stats Grid */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {stats.map((stat) => {
+            const Icon = stat.icon;
+            return (
+              <Card key={stat.title} className="border-slate-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-white rounded-2xl">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-semibold text-slate-700">{stat.title}</CardTitle>
+                  <div className={`rounded-xl p-2.5 ${stat.color} transition-transform hover:scale-110`}>
+                    <Icon className="h-5 w-5" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-black text-slate-900">{stat.value}</div>
+                  <p className="text-xs text-slate-500 pt-2">{stat.description}</p>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        {/* Getting Started Card */}
+        <Card className="border-slate-200 shadow-md rounded-3xl overflow-hidden bg-white">
+          <CardHeader className="bg-gradient-to-r from-slate-50 to-[#F08784]/5 border-b border-slate-100">
+            <CardTitle className="text-2xl font-bold text-slate-900">ابدأ الآن</CardTitle>
+            <CardDescription className="text-slate-600 text-base">خطوات بسيطة لإطلاق فعاليتك الأولى</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-8 pb-8">
+            <div className="space-y-2">
+              {gettingStartedSteps.map((step) => (
+                <Link href={step.link} key={step.step}>
+                  <div className="flex items-start gap-5 group p-4 rounded-2xl hover:bg-slate-50 transition-all duration-200 cursor-pointer">
+                    <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${step.color} font-black text-lg ${step.hoverColor} transition-all duration-300 group-hover:scale-110 flex-shrink-0`}>
+                      {step.step}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-slate-900 text-lg">{step.title}</h3>
+                      <p className="text-sm text-slate-600 mt-2 leading-relaxed">
+                        {step.description}
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </DashboardLayout>
   );
 }
