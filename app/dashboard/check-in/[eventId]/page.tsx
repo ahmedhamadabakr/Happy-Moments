@@ -1,4 +1,3 @@
-import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import CheckInScanner from '@/components/checkin/CheckInScanner';
 
@@ -10,11 +9,9 @@ export default async function CheckInPage({ params }: PageProps) {
   const { eventId } = await params;
 
   return (
-    <ProtectedRoute>
-      <DashboardLayout>
-        <CheckInScanner eventId={eventId} />
-      </DashboardLayout>
-    </ProtectedRoute>
+    <DashboardLayout>
+      <CheckInScanner eventId={eventId} />
+    </DashboardLayout>
   );
 }
 
