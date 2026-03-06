@@ -536,7 +536,6 @@ export default function ClientsPage() {
             </div>
           </div>
         </Modal>
-      </div>
     </DashboardLayout>
   );
 }
