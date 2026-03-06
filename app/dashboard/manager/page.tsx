@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   Shield, Users, Calendar, TrendingUp, Activity, 
-  UserPlus, Settings, BarChart3, Clock, CheckCircle 
+  UserPlus, BarChart3, Clock, CheckCircle 
 } from 'lucide-react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 
@@ -95,13 +95,6 @@ export default function ManagerDashboardPage() {
       icon: Users,
       color: 'bg-green-500',
       href: '/dashboard/users'
-    },
-    {
-      title: 'إعدادات النظام',
-      description: 'إدارة إعدادات الشركة',
-      icon: Settings,
-      color: 'bg-purple-500',
-      href: '/dashboard/settings'
     },
     {
       title: 'التقارير والإحصائيات',

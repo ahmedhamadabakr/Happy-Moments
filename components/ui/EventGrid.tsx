@@ -32,7 +32,7 @@ const cardVariants = {
         opacity: 1,
         y: 0,
         transition: {
-            type: 'spring',
+            type: 'spring' as const,
             stiffness: 120,
             damping: 12,
         },
@@ -166,11 +166,7 @@ export default function EventGrid() {
                                                 
                                                 {/* شريط زخرفي */}
                                                 <div className="w-16 h-1 bg-[#F08784] rounded-full mb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                                                
-                                                {/* نص إضافي يظهر عند التمرير */}
-                                                <p className="text-white/80 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
-                                                    اضغط للمشاهدة
-                                                </p>
+                                            
                                             </div>
                                         </div>
 

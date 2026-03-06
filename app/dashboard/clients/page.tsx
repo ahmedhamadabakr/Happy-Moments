@@ -110,7 +110,7 @@ export default function ClientsPage() {
                 setUploadClient({ id: row._id, name: row.fullName });
                 setIsUploadContactsModalOpen(true);
               }}
-              className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
+              className="flex items-center gap-1 px-3 py-1.5 bg-[#F08784]/10 text-[#F08784] rounded-xl hover:bg-[#F08784]/20 transition-colors text-sm font-medium"
             >
               <Upload className="w-4 h-4" />
               رفع جهات اتصال
@@ -205,40 +205,38 @@ export default function ClientsPage() {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-gray-50 p-6" dir="rtl">
-        <div className="max-w-7xl mx-auto space-y-6">
-          
-          {/* Header */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-[#C1A286] to-[#d4b896] rounded-lg flex items-center justify-center shadow-sm">
-                  <Users className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-[#1A2E26]">إدارة العملاء</h1>
-                  <p className="text-gray-600 text-sm">إضافة عملاء جدد ومتابعة روابط الدعوات</p>
-                </div>
+      <div className="space-y-8" dir="rtl">
+        {/* Header Section */}
+        <div className="bg-gradient-to-br from-[#F08784]/5 via-white to-violet-50/30 rounded-3xl p-8 border border-slate-100 shadow-sm">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-[#F08784]/10 rounded-2xl flex items-center justify-center">
+                <Users className="w-8 h-8 text-[#F08784]" />
               </div>
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-[#1A2E26] text-white rounded-lg hover:bg-[#2a4a3d] transition-all shadow-sm hover:shadow-md"
-              >
-                <UserPlus className="w-4 h-4" />
-                إضافة عميل جديد
-              </button>
+              <div>
+                <h1 className="text-4xl font-black text-slate-900">إدارة العملاء</h1>
+                <p className="text-lg text-slate-600 mt-1">إضافة عملاء جدد ومتابعة روابط الدعوات</p>
+              </div>
             </div>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center gap-2 px-6 py-3 bg-[#F08784] text-white rounded-xl hover:bg-[#D97673] transition-all shadow-lg hover:shadow-xl font-bold"
+            >
+              <UserPlus className="w-5 h-5" />
+              إضافة عميل جديد
+            </button>
           </div>
+        </div>
 
           {createdClientViewUrl && (
-            <div className="bg-green-50 border border-green-200 rounded-xl p-6 shadow-sm animate-in fade-in slide-in-from-top-4">
+            <div className="bg-emerald-50 border border-emerald-200 rounded-3xl p-6 shadow-sm animate-in fade-in slide-in-from-top-4">
               <div className="flex items-center gap-2 mb-3">
-                <CheckCircle2 className="w-5 h-5 text-green-600" />
-                <h3 className="font-bold text-green-800">تم إنشاء العميل بنجاح!</h3>
+                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                <h3 className="font-bold text-emerald-800">تم إنشاء العميل بنجاح!</h3>
               </div>
-              <p className="text-sm text-green-700 mb-3">رابط صفحة العميل (شارك هذا الرابط مع العميل لمتابعة الردود):</p>
+              <p className="text-sm text-emerald-700 mb-3">رابط صفحة العميل (شارك هذا الرابط مع العميل لمتابعة الردود):</p>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                <div className="flex-1 rounded-lg border border-green-200 bg-white px-4 py-3 text-sm font-mono text-gray-600 break-all shadow-inner">
+                <div className="flex-1 rounded-xl border border-emerald-200 bg-white px-4 py-3 text-sm font-mono text-slate-600 break-all shadow-inner">
                   {createdClientViewUrl}
                 </div>
                 <button
@@ -249,7 +247,7 @@ export default function ClientsPage() {
                       // ignore
                     }
                   }}
-                  className="flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm"
+                  className="flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors shadow-sm"
                 >
                   <Copy className="w-4 h-4" />
                   نسخ
@@ -259,26 +257,26 @@ export default function ClientsPage() {
           )}
 
           {error && (
-            <div className="rounded-xl border border-red-200 bg-red-50 p-4 flex items-center gap-3 text-red-800">
+            <div className="rounded-3xl border border-red-200 bg-red-50 p-4 flex items-center gap-3 text-red-800">
               <AlertCircle className="w-5 h-5 flex-shrink-0" />
               <p className="text-sm font-medium">{error}</p>
             </div>
           )}
 
           {/* Search & Table */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4">
-              <h2 className="text-lg font-bold text-gray-800">قائمة العملاء</h2>
+          <div className="bg-white rounded-3xl shadow-md border border-slate-200 overflow-hidden">
+            <div className="p-6 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+              <h2 className="text-xl font-bold text-slate-900">قائمة العملاء</h2>
               <div className="relative w-full sm:w-72">
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                  <Search className="h-4 w-4 text-gray-400" />
+                  <Search className="h-4 w-4 text-slate-400" />
                 </div>
                 <input
                   type="text"
                   placeholder="بحث باسم العميل..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pr-9 pl-4 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#C1A286] focus:border-transparent outline-none transition-all"
+                  className="w-full pr-9 pl-4 py-2.5 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#F08784] focus:border-transparent outline-none transition-all bg-slate-50 focus:bg-white"
                 />
               </div>
             </div>
@@ -538,7 +536,6 @@ export default function ClientsPage() {
             </div>
           </div>
         </Modal>
-      </div>
     </DashboardLayout>
   );
 }

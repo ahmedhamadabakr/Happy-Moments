@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, Settings, User as UserIcon } from 'lucide-react';
+import { LogOut, User as UserIcon } from 'lucide-react';
 
 export function DashboardHeader() {
   const router = useRouter();
@@ -71,13 +71,6 @@ export function DashboardHeader() {
               >
                 <UserIcon className="ml-2 h-4 w-4" />
                 <span>الملف الشخصي</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => router.push('/dashboard/settings')}
-                className="cursor-pointer p-2 text-base"
-              >
-                <Settings className="ml-2 h-4 w-4" />
-                <span>الإعدادات</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem

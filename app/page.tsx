@@ -71,8 +71,8 @@ export default function HomePage() {
           <div className="w-screen relative left-1/2 right-1/2 -mx-[50vw] overflow-hidden py-16">
             <div className="relative max-w-5xl mx-auto">
               {/* Slider Container */}
-              <div className="relative w-[92%] mx-auto rounded-3xl overflow-hidden shadow-2xl border-8 border-white">
-                <div className="relative aspect-[7/3]">
+              <div className="relative w-[99%] mx-auto rounded-3xl overflow-hidden shadow-2xl border-8 border-white">
+                <div className="relative aspect-[16/10]">
                   {slides.map((slide, index) => (
                     <div
                       key={index}
