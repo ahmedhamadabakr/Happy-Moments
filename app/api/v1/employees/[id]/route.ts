@@ -12,9 +12,8 @@ import mongoose from 'mongoose';
  */
 export async function GET(
   request: NextRequest,
-  paramsPromise: Promise<{ params: { id: string } }>
+  { params }: { params: { id: string } }
 ) {
-  const { params } = await paramsPromise;
   try {
     const session = await requireManager(request);
     if (session instanceof NextResponse) return session;
@@ -46,80 +45,87 @@ export async function GET(
   }
 }
 
+
+async function updateEmployee(
+  request: NextRequest,
+  params: { id: string }
+) {
+  const session = await requireManager(request);
+  if (session instanceof NextResponse) return session;
+
+  const body = await request.json();
+  const {
+    firstName,
+    lastName,
+    phone,
+    roleKey,
+    customPermissions,
+    isActive,
+  } = body;
+
+  await connectDB();
+
+  const employee = await User.findOne({
+    _id: params.id,
+    company: session.user.companyId,
+  });
+
+  if (!employee) {
+    return NextResponse.json(
+      { error: 'الموظف غير موجود' },
+      { status: 404 }
+    );
+  }
+
+  // تحديث البيانات الأساسية
+  if (firstName) employee.firstName = firstName;
+  if (lastName) employee.lastName = lastName;
+  if (phone !== undefined) employee.phone = phone;
+  if (isActive !== undefined) employee.isActive = isActive;
+
+  // تحديث الصلاحيات فقط (الدور يبقى employee دائماً)
+  if (customPermissions && Array.isArray(customPermissions)) {
+    employee.permissions = customPermissions.filter((p: string) =>
+      Object.values(EmployeePermission).includes(p as EmployeePermission)
+    );
+  } else if (roleKey && PERMISSION_GROUPS[roleKey as keyof typeof PERMISSION_GROUPS]) {
+    employee.permissions = PERMISSION_GROUPS[roleKey as keyof typeof PERMISSION_GROUPS];
+  }
+
+  await employee.save();
+
+  // تسجيل النشاط
+  await ActivityLog.create({
+    companyId: session.user.companyId,
+    userId: session.user.userId,
+    activityType: 'event_update',
+    resourceType: 'User',
+    resourceId: employee._id,
+    details: {
+      employeeName: `${employee.firstName} ${employee.lastName}`,
+      updatedFields: Object.keys(body),
+    },
+  });
+
+  const { password, refreshTokens, ...employeeData } = employee.toObject();
+
+  return NextResponse.json({
+    success: true,
+    message: 'تم تحديث بيانات الموظف بنجاح',
+    employee: employeeData,
+  });
+}
+
 /**
  * PUT /api/v1/employees/[id]
  * تحديث بيانات موظف (بديل لـ PATCH)
  */
 export async function PUT(
   request: NextRequest,
-  paramsPromise: Promise<{ params: { id: string } }>
+  { params }: { params: { id: string } }
 ) {
-  const { params } = await paramsPromise;
   try {
-    const session = await requireManager(request);
-    if (session instanceof NextResponse) return session;
-
-    const body = await request.json();
-    const {
-      firstName,
-      lastName,
-      phone,
-      roleKey,
-      customPermissions,
-      isActive,
-    } = body;
-
-    await connectDB();
-
-    const employee = await User.findOne({
-      _id: params.id,
-      company: session.user.companyId,
-    });
-
-    if (!employee) {
-      return NextResponse.json(
-        { error: 'الموظف غير موجود' },
-        { status: 404 }
-      );
-    }
-
-    // تحديث البيانات الأساسية
-    if (firstName) employee.firstName = firstName;
-    if (lastName) employee.lastName = lastName;
-    if (phone !== undefined) employee.phone = phone;
-    if (isActive !== undefined) employee.isActive = isActive;
-    
-    // تحديث الصلاحيات فقط (الدور يبقى employee دائماً)
-    if (customPermissions && Array.isArray(customPermissions)) {
-      employee.permissions = customPermissions.filter((p: string) =>
-        Object.values(EmployeePermission).includes(p as EmployeePermission)
-      );
-    } else if (roleKey && PERMISSION_GROUPS[roleKey as keyof typeof PERMISSION_GROUPS]) {
-      employee.permissions = PERMISSION_GROUPS[roleKey as keyof typeof PERMISSION_GROUPS];
-    }
-
-    await employee.save();
-
-    // تسجيل النشاط
-    await ActivityLog.create({
-      companyId: session.user.companyId,
-      userId: session.user.userId,
-      activityType: 'event_update',
-      resourceType: 'User',
-      resourceId: employee._id,
-      details: {
-        employeeName: `${employee.firstName} ${employee.lastName}`,
-        updatedFields: Object.keys(body),
-      },
-    });
-
-    const { password, refreshTokens, ...employeeData } = employee.toObject();
-
-    return NextResponse.json({
-      success: true,
-      message: 'تم تحديث بيانات الموظف بنجاح',
-      employee: employeeData,
-    });
+    return await updateEmployee(request, params);
   } catch (error: any) {
     console.error('Error updating employee:', error);
     return NextResponse.json(
@@ -135,100 +141,33 @@ export async function PUT(
  */
 export async function PATCH(
   request: NextRequest,
-  paramsPromise: Promise<{ params: { id: string } }>
+  { params }: { params: { id: string } }
 ) {
-  const { params } = await paramsPromise;
   try {
-    const session = await requireManager(request);
-    if (session instanceof NextResponse) return session;
-
-    const body = await request.json();
-    const {
-      firstName,
-      lastName,
-      phone,
-      roleKey,
-      customPermissions,
-      isActive,
-    } = body;
-
-    await connectDB();
-
-    const employee = await User.findOne({
-      _id: params.id,
-      company: session.user.companyId,
-    });
-
-    if (!employee) {
-      return NextResponse.json(
-        { error: 'الموظف غير موجود' },
-        { status: 404 }
-      );
-    }
-
-    // تحديث البيانات الأساسية
-    if (firstName) employee.firstName = firstName;
-    if (lastName) employee.lastName = lastName;
-    if (phone !== undefined) employee.phone = phone;
-    if (isActive !== undefined) employee.isActive = isActive;
-
-    // تحديث الصلاحيات
-    if (customPermissions && Array.isArray(customPermissions)) {
-      employee.permissions = customPermissions.filter((p: string) =>
-        Object.values(EmployeePermission).includes(p as EmployeePermission)
-      );
-    } else if (roleKey && PERMISSION_GROUPS[roleKey as keyof typeof PERMISSION_GROUPS]) {
-      employee.permissions = PERMISSION_GROUPS[roleKey as keyof typeof PERMISSION_GROUPS];
-    }
-
-    await employee.save();
-
-    // تسجيل النشاط
-    await ActivityLog.create({
-      companyId: session.user.companyId,
-      userId: session.user.userId,
-      activityType: 'event_update',
-      resourceType: 'User',
-      resourceId: employee._id,
-      details: {
-        employeeName: `${employee.firstName} ${employee.lastName}`,
-        updatedFields: Object.keys(body),
-      },
-    });
-
-    const { password, refreshTokens, ...employeeData } = employee.toObject();
-
-    return NextResponse.json({
-      success: true,
-      message: 'تم تحديث بيانات الموظف بنجاح',
-      employee: employeeData,
-    });
+    return await updateEmployee(request, params);
   } catch (error: any) {
     console.error('Error updating employee:', error);
-    return NextResponse.json(
-      { error: 'فشل في تحديث بيانات الموظف' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'فشل في تحديث بيانات الموظف' }, { status: 500 });
   }
 }
-
 /**
  * DELETE /api/v1/employees/[id]
  * حذف موظف
- */
-export async function DELETE(
+ */export async function DELETE(
   request: NextRequest,
-  paramsPromise: Promise<{ params: { id: string } }>
+  { params }: { params: Promise<{ id: string }> } // Note the Promise type here
 ) {
-  const { params } = await paramsPromise;
   try {
+    // 1. Await the params to get the id
+    const { id } = await params;
+
     const session = await requireManager(request);
     if (session instanceof NextResponse) return session;
 
     await connectDB();
 
     const employee = await User.findOne({
-      _id: params.id,
+      _id: id, // Use the unwrapped id
       company: session.user.companyId,
     });
 
@@ -240,7 +179,9 @@ export async function DELETE(
     }
 
     const employeeName = `${employee.firstName} ${employee.lastName}`;
-    await employee.deleteOne();
+    const employeeId = employee._id; // Store ID before deletion
+
+    await User.deleteOne({ _id: id });
 
     // تسجيل النشاط
     await ActivityLog.create({
@@ -248,7 +189,7 @@ export async function DELETE(
       userId: session.user.userId,
       activityType: 'event_delete',
       resourceType: 'User',
-      resourceId: employee._id,
+      resourceId: employeeId,
       details: {
         employeeName,
       },
