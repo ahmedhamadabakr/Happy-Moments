@@ -19,17 +19,30 @@ export default function ManageUsersPage() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await fetch('/api/v1/employees');
+        const res = await fetch('/api/v1/employees', {
+          credentials: 'include'
+        });
+  
         if (!res.ok) throw new Error('فشل في جلب المستخدمين');
+  
         const data = await res.json();
-        setUsers(data.data || []);
+  
+        const formattedUsers = data.employees.map((u: any) => ({
+          id: u._id,
+          fullName: u.firstName + ' ' + u.lastName,
+          email: u.email,
+          role: u.role,
+        }));
+  
+        setUsers(formattedUsers);
+  
       } catch (e) {
         setError(e instanceof Error ? e.message : 'خطأ غير متوقع');
       } finally {
         setLoading(false);
       }
     };
-
+  
     if (user?.role === 'manager') {
       fetchUsers();
     }
