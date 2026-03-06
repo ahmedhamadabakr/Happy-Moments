@@ -8,11 +8,11 @@ import Image from 'next/image';
 import {
   Calendar,
   Users,
-  Settings,
   Home,
   UserPlus,
   LayoutGrid,
   MessageSquare,
+  User,
 } from 'lucide-react';
 
 // This component no longer needs props as it will fetch its own data from the auth store.
@@ -66,12 +66,6 @@ export function DashboardSidebar() {
       // Visible only to managers
       role: ['manager'],
     },
-    {
-      label: 'الإعدادات',
-      href: '/dashboard/settings',
-      icon: Settings,
-      role: ['manager', 'employee'],
-    },
   ];
 
   // Filter navigation items based on the current user's role
@@ -122,7 +116,7 @@ export function DashboardSidebar() {
                 <p className="mt-1 text-xs text-slate-500">{user.email}</p>
             </div>
             <Link href="/dashboard/profile" title="Edit Profile" className='p-2 rounded-lg hover:bg-slate-100 transition-colors'>
-                <Settings className='w-5 h-5 text-slate-600' />
+                <User className='w-5 h-5 text-slate-600' />
             </Link>
         </div>
       </div>
