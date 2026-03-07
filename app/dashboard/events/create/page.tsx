@@ -176,7 +176,7 @@ export default function CreateEventPage() {
                           left: `${formData.qrX}%`,
                           top: `${formData.qrY}%`,
                           width: `${formData.qrSize}%`,
-                          height: `${formData.qrSize}%`,
+                          aspectRatio: '1',
                           transform: 'translate(-50%, -50%)'
                         }}
                       >
