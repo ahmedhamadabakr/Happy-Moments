@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth/jwt'
 import { Event } from '@/lib/models/Event'
+import { EventGuest } from '@/lib/models/EventGuest'
 import { ActivityLog } from '@/lib/models/ActivityLog'
 import { updateEventSchema } from '@/lib/validations/event'
 import { handleApiError } from '@/lib/api/errors'
@@ -9,9 +10,11 @@ import mongoose from 'mongoose'
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await context.params
+
     const user = await auth(req)
     if (!user) {
       return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
@@ -19,12 +22,12 @@ export async function GET(
 
     await connectDB()
 
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'معرّف غير صحيح' }, { status: 400 })
     }
 
     const event = await Event.findOne({
-      _id: params.id,
+      _id: id,
       companyId: user.companyId,
       deletedAt: null,
     }).lean()
@@ -36,7 +39,17 @@ export async function GET(
       )
     }
 
-    return NextResponse.json({ success: true, data: event })
+    const guests = await EventGuest.find({
+      eventId: id,
+      companyId: user.companyId,
+    }).lean()
+
+    return NextResponse.json({
+      success: true,
+      event,
+      data: event,
+      guests,
+    })
   } catch (error) {
     return handleApiError(error)
   }
@@ -44,9 +57,11 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await context.params
+
     const user = await auth(req)
     if (!user) {
       return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
@@ -54,7 +69,7 @@ export async function PUT(
 
     await connectDB()
 
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'معرّف غير صحيح' }, { status: 400 })
     }
 
@@ -62,7 +77,7 @@ export async function PUT(
     const validated = updateEventSchema.parse(body)
 
     const event = await Event.findOne({
-      _id: params.id,
+      _id: id,
       companyId: user.companyId,
       deletedAt: null,
     })
@@ -74,7 +89,6 @@ export async function PUT(
       )
     }
 
-    // Update fields
     if (validated.title) event.title = validated.title
     if (validated.description !== undefined) event.description = validated.description
     if (validated.eventDate) event.eventDate = new Date(validated.eventDate)
@@ -84,7 +98,6 @@ export async function PUT(
 
     await event.save()
 
-    // Log activity
     await ActivityLog.create({
       companyId: user.companyId,
       userId: user._id,
@@ -102,9 +115,11 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await context.params
+
     const user = await auth(req)
     if (!user) {
       return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
@@ -112,12 +127,12 @@ export async function DELETE(
 
     await connectDB()
 
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'معرّف غير صحيح' }, { status: 400 })
     }
 
     const event = await Event.findOne({
-      _id: params.id,
+      _id: id,
       companyId: user.companyId,
       deletedAt: null,
     })
@@ -129,11 +144,9 @@ export async function DELETE(
       )
     }
 
-    // Soft delete
     event.deletedAt = new Date()
     await event.save()
 
-    // Log activity
     await ActivityLog.create({
       companyId: user.companyId,
       userId: user._id,

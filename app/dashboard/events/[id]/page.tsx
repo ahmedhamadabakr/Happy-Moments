@@ -53,9 +53,10 @@ export default function EventDetailsPage() {
     `/api/v1/events/${eventId}`,
     {
       onSuccess: (data) => {
-        setEvent(data.event);
-        setGuests(data.guests);
-        setFormData(data.event);
+        const eventData = data.event || data.data;
+        setEvent(eventData);
+        setGuests(data.guests || []);
+        setFormData(eventData);
         setLoading(false);
       },
       onError: (err) => {

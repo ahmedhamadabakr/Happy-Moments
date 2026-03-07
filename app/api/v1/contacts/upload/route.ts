@@ -84,8 +84,11 @@ export async function POST(req: NextRequest) {
         // Create new contact
         const contact = await Contact.create({
           companyId: user.companyId,
-          fullName: contactData.fullName,
+          firstName: contactData.firstName,
+          lastName: contactData.lastName,
+          suffix: contactData.suffix,
           phone: contactData.phone,
+          companion: contactData.companion,
           email: contactData.email,
         })
 

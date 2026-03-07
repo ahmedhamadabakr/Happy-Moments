@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import path from 'path'
-import { writeFile } from 'fs/promises'
+import { writeFile, mkdir } from 'fs/promises'
+import { existsSync } from 'fs'
 
 import { connectDB } from '@/lib/db'
 import { requireAnyPermission } from '@/lib/middleware/permissions'
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
 
     const client = await Client.findOne({
       _id: clientId,
-      companyId: session.companyId,
+      companyId: session.user.companyId,
       isActive: true,
     })
 
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
     }
 
     const contacts = await Contact.find({
-      companyId: session.companyId,
+      companyId: session.user.companyId,
       clientId: client._id,
       deletedAt: null,
     }).lean()
@@ -73,13 +74,19 @@ export async function POST(request: NextRequest) {
     // حفظ صورة الدعوة
     const invitationImageBuffer = Buffer.from(await invitationImageFile.arrayBuffer())
     const invitationImageDir = path.join(process.cwd(), 'public', 'event-images')
+    
+    // إنشاء المجلد إذا لم يكن موجوداً
+    if (!existsSync(invitationImageDir)) {
+      await mkdir(invitationImageDir, { recursive: true })
+    }
+    
     const invitationImageFilename = `${Date.now()}-${invitationImageFile.name}`
     const invitationImagePath = path.join(invitationImageDir, invitationImageFilename)
     await writeFile(invitationImagePath, invitationImageBuffer)
 
     // إنشاء الفعالية
     const event = await Event.create({
-      companyId: session.companyId,
+      companyId: session.user.companyId,
       clientId: client._id,
       title,
       description,
@@ -95,7 +102,7 @@ export async function POST(request: NextRequest) {
         height: qrHeight,
       },
       status: 'draft',
-      createdBy: session.userId,
+      createdBy: session.user.userId,
       clientViewToken: generateSecureToken(),
     })
 
@@ -106,12 +113,14 @@ export async function POST(request: NextRequest) {
       try {
         const invitationToken = generateSecureToken()
         const qrToken = generateSecureToken()
+        
+        const fullName = `${(contact as any).firstName} ${(contact as any).lastName}`.trim()
 
         const eventGuest = await EventGuest.create({
           eventId: event._id,
           contactId: (contact as any)._id,
-          companyId: session.companyId,
-          snapshotName: (contact as any).fullName,
+          companyId: session.user.companyId,
+          snapshotName: fullName,
           snapshotPhone: (contact as any).phone,
           snapshotEmail: (contact as any).email,
           invitationToken,
@@ -135,12 +144,13 @@ export async function POST(request: NextRequest) {
         await eventGuest.save()
 
         guestsCreated.push({
-          name: (contact as any).fullName,
+          name: fullName,
           phone: (contact as any).phone,
         })
       } catch (e: any) {
+        const fullName = `${(contact as any).firstName} ${(contact as any).lastName}`.trim()
         errors.push({
-          name: (contact as any).fullName,
+          name: fullName,
           phone: (contact as any).phone,
           error: e?.message || 'خطأ غير معروف',
         })
@@ -148,8 +158,8 @@ export async function POST(request: NextRequest) {
     }
 
     await ActivityLog.create({
-      companyId: session.companyId,
-      userId: session.userId,
+      companyId: session.user.companyId,
+      userId: session.user.userId,
       activityType: 'event_create',
       resourceType: 'Event',
       resourceId: event._id,

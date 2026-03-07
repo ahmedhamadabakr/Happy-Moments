@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useApi } from '@/lib/hooks/useApi';
 import { Event } from '@/lib/types';
-import { PlusCircle, ArrowLeft, Calendar, Sparkles, Clock, Users, Eye } from 'lucide-react';
+import { PlusCircle, ArrowLeft, Calendar, Sparkles, Clock, Users, Eye, QrCode } from 'lucide-react';
 
 export default function EventsListPage() {
     const router = useRouter();
@@ -18,7 +18,7 @@ export default function EventsListPage() {
         '/api/v1/events',
         {
             onSuccess: (data) => {
-                setEvents(data.events || []);
+                setEvents(data.data || data.events || []);
             }
         }
     );
@@ -136,21 +136,33 @@ export default function EventsListPage() {
                                         {event.description || 'لا يوجد وصف للفعالية'}
                                     </p>
                                     
-                                    <div className="flex items-center justify-between">
+                                    <div className="flex items-center justify-between mb-3">
                                         <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold border ${getStatusColor(event.status)}`}>
                                             {getStatusText(event.status)}
                                         </div>
-                                        
-                                        <Link href={`/dashboard/events/${event._id}`} passHref>
+                                    </div>
+
+                                    <div className="flex gap-2">
+                                        <Link href={`/dashboard/events/${event._id}`} passHref className="flex-1">
                                             <Button 
                                                 variant="outline" 
                                                 size="sm"
-                                                className="border-slate-300 hover:border-[#F08784] hover:text-[#F08784] hover:bg-[#F08784]/5 rounded-xl font-semibold transition-all"
+                                                className="w-full border-slate-300 hover:border-[#F08784] hover:text-[#F08784] hover:bg-[#F08784]/5 rounded-xl font-semibold transition-all"
                                             >
                                                 <Eye className="ml-2 h-4 w-4" />
                                                 التفاصيل
                                             </Button>
                                         </Link>
+                                        
+                                        <Button 
+                                            variant="outline" 
+                                            size="sm"
+                                            onClick={() => router.push(`/dashboard/check-in/${event._id}`)}
+                                            className="border-slate-300 hover:border-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl font-semibold transition-all"
+                                            title="تسجيل الحضور"
+                                        >
+                                            <QrCode className="h-4 w-4" />
+                                        </Button>
                                     </div>
                                 </CardContent>
                             </Card>

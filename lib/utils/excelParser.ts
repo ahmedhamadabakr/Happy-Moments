@@ -2,8 +2,11 @@ import * as XLSX from 'xlsx';
 import { normalizePhoneNumber, isValidPhoneNumber } from './phoneNormalizer';
 
 export interface ParsedContact {
-  fullName: string;
+  firstName: string;
+  lastName: string;
+  suffix?: string;
   phone: string;
+  companion?: number;
   email?: string;
   rowNumber: number;
 }
@@ -46,11 +49,14 @@ export async function parseExcelFile(
     
     // البحث عن صف العناوين
     let headerRowIndex = -1;
-    let nameColumnIndex = -1;
+    let firstNameColumnIndex = -1;
+    let lastNameColumnIndex = -1;
+    let suffixColumnIndex = -1;
     let phoneColumnIndex = -1;
+    let companionColumnIndex = -1;
     let emailColumnIndex = -1;
     
-    // البحث عن العناوين (Name, Phone, Email)
+    // البحث عن العناوين (firstName, lastName, suffix, phone, companion, email)
     for (let i = 0; i < Math.min(5, rawData.length); i++) {
       const row = rawData[i];
       if (Array.isArray(row)) {
@@ -58,15 +64,30 @@ export async function parseExcelFile(
           const cell = String(row[j]).toLowerCase().trim();
           
           if (
-            (cell.includes('name') || cell.includes('اسم') || cell.includes('الاسم')) &&
-            nameColumnIndex === -1
+            (cell === 'firstname' || cell === 'first name' || cell.includes('الاسم الأول')) &&
+            firstNameColumnIndex === -1
           ) {
-            nameColumnIndex = j;
+            firstNameColumnIndex = j;
             headerRowIndex = i;
           }
           
           if (
-            (cell.includes('phone') || cell.includes('هاتف') || cell.includes('رقم') || cell.includes('mobile')) &&
+            (cell === 'lastname' || cell === 'last name' || cell.includes('اسم العائلة') || cell.includes('الاسم الأخير')) &&
+            lastNameColumnIndex === -1
+          ) {
+            lastNameColumnIndex = j;
+            headerRowIndex = i;
+          }
+          
+          if (
+            (cell === 'suffix' || cell.includes('لقب') || cell.includes('اللقب')) &&
+            suffixColumnIndex === -1
+          ) {
+            suffixColumnIndex = j;
+          }
+          
+          if (
+            (cell === 'phone' || cell.includes('هاتف') || cell.includes('رقم') || cell.includes('mobile')) &&
             phoneColumnIndex === -1
           ) {
             phoneColumnIndex = j;
@@ -74,7 +95,14 @@ export async function parseExcelFile(
           }
           
           if (
-            (cell.includes('email') || cell.includes('بريد') || cell.includes('ايميل')) &&
+            (cell === 'companion' || cell === 'companions' || cell.includes('مرافق') || cell.includes('المرافقين')) &&
+            companionColumnIndex === -1
+          ) {
+            companionColumnIndex = j;
+          }
+          
+          if (
+            (cell === 'email' || cell.includes('بريد') || cell.includes('ايميل')) &&
             emailColumnIndex === -1
           ) {
             emailColumnIndex = j;
@@ -82,16 +110,19 @@ export async function parseExcelFile(
         }
       }
       
-      if (nameColumnIndex !== -1 && phoneColumnIndex !== -1) {
+      if (firstNameColumnIndex !== -1 && lastNameColumnIndex !== -1 && phoneColumnIndex !== -1) {
         break;
       }
     }
     
-    // إذا لم نجد العناوين، نفترض أن أول عمود هو الاسم والثاني هو الهاتف
-    if (nameColumnIndex === -1 || phoneColumnIndex === -1) {
-      nameColumnIndex = 0;
-      phoneColumnIndex = 1;
-      emailColumnIndex = 2;
+    // إذا لم نجد العناوين، نفترض الترتيب: firstName, lastName, suffix, phone, companion
+    if (firstNameColumnIndex === -1 || lastNameColumnIndex === -1 || phoneColumnIndex === -1) {
+      firstNameColumnIndex = 0;
+      lastNameColumnIndex = 1;
+      suffixColumnIndex = 2;
+      phoneColumnIndex = 3;
+      companionColumnIndex = 4;
+      emailColumnIndex = 5;
       headerRowIndex = 0;
     }
     
@@ -105,15 +136,21 @@ export async function parseExcelFile(
         continue;
       }
       
-      const name = row[nameColumnIndex]?.toString().trim();
+      const firstName = row[firstNameColumnIndex]?.toString().trim();
+      const lastName = row[lastNameColumnIndex]?.toString().trim();
+      const suffix = suffixColumnIndex !== -1 ? row[suffixColumnIndex]?.toString().trim() : undefined;
       const phone = row[phoneColumnIndex]?.toString().trim();
+      const companionValue = companionColumnIndex !== -1 ? row[companionColumnIndex] : undefined;
+      const companion = companionValue !== undefined && companionValue !== null && companionValue !== '' 
+        ? parseInt(String(companionValue)) 
+        : undefined;
       const email = emailColumnIndex !== -1 ? row[emailColumnIndex]?.toString().trim() : undefined;
       
-      // التحقق من وجود الاسم والهاتف
-      if (!name || !phone) {
+      // التحقق من وجود الاسم الأول والأخير والهاتف
+      if (!firstName || !lastName || !phone) {
         errors.push({
           row: i + 1,
-          error: 'الاسم أو رقم الهاتف مفقود',
+          error: 'الاسم الأول أو الأخير أو رقم الهاتف مفقود',
         });
         continue;
       }
@@ -143,8 +180,11 @@ export async function parseExcelFile(
         seenPhones.add(normalizedPhone);
         
         contacts.push({
-          fullName: name,
+          firstName,
+          lastName,
+          suffix,
           phone: normalizedPhone,
+          companion: companion !== undefined && !isNaN(companion) ? companion : undefined,
           email: email && email.includes('@') ? email.toLowerCase() : undefined,
           rowNumber: i + 1,
         });

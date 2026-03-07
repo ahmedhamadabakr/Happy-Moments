@@ -9,7 +9,8 @@ import { EmployeePermission } from '@/lib/types/roles';
 import { parseExcelFile, validateExcelFile } from '@/lib/utils/excelParser';
 import { generateSecureToken, generateGuestInvitationWithQR } from '@/lib/utils/qrGenerator';
 import { ActivityLog } from '@/lib/models/ActivityLog';
-import { writeFile } from 'fs/promises';
+import { writeFile, mkdir } from 'fs/promises';
+import { existsSync } from 'fs';
 import path from 'path';
 
 /**
@@ -80,6 +81,12 @@ export async function POST(request: NextRequest) {
     // حفظ صورة الدعوة
     const invitationImageBuffer = Buffer.from(await invitationImageFile.arrayBuffer());
     const invitationImageDir = path.join(process.cwd(), 'public', 'event-images');
+    
+    // إنشاء المجلد إذا لم يكن موجوداً
+    if (!existsSync(invitationImageDir)) {
+      await mkdir(invitationImageDir, { recursive: true });
+    }
+    
     const invitationImageFilename = `${Date.now()}-${invitationImageFile.name}`;
     const invitationImagePath = path.join(invitationImageDir, invitationImageFilename);
     

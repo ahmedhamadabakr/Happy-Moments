@@ -9,21 +9,22 @@ import * as xlsx from 'xlsx'
 
 export async function GET(
   request: NextRequest,
-  context: Promise<{ params: { clientId: string } }>
+  context: { params: Promise<{ clientId: string }> }
 ) {
   try {
-    const { params } = await context
+    const { clientId } = await context.params
+
     const session = await requireAuth(request)
     if (session instanceof NextResponse) return session
 
     await connectDB()
 
-    if (!mongoose.Types.ObjectId.isValid(params.clientId)) {
+    if (!mongoose.Types.ObjectId.isValid(clientId)) {
       return NextResponse.json({ error: 'معرّف غير صحيح' }, { status: 400 })
     }
 
     const client = await Client.findOne({
-      _id: params.clientId,
+      _id: clientId,
       companyId: session.user.companyId,
       isActive: true,
     })
@@ -44,29 +45,33 @@ export async function GET(
       success: true,
       contacts,
     })
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error fetching client contacts:', error)
-    return NextResponse.json({ error: 'فشل في جلب جهات الاتصال' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'فشل في جلب جهات الاتصال' },
+      { status: 500 }
+    )
   }
 }
 
 export async function POST(
   request: NextRequest,
-  context: Promise<{ params: { clientId: string } }>
+  context: { params: Promise<{ clientId: string }> }
 ) {
   try {
-    const { params } = await context
+    const { clientId } = await context.params
+
     const session = await requireAuth(request)
     if (session instanceof NextResponse) return session
 
     await connectDB()
 
-    if (!mongoose.Types.ObjectId.isValid(params.clientId)) {
+    if (!mongoose.Types.ObjectId.isValid(clientId)) {
       return NextResponse.json({ error: 'معرّف غير صحيح' }, { status: 400 })
     }
 
     const client = await Client.findOne({
-      _id: params.clientId,
+      _id: clientId,
       companyId: session.user.companyId,
       isActive: true,
     })
@@ -79,7 +84,10 @@ export async function POST(
     const contactsFile = formData.get('contactsFile') as File
 
     if (!contactsFile) {
-      return NextResponse.json({ error: 'ملف جهات الاتصال مطلوب' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'ملف جهات الاتصال مطلوب' },
+        { status: 400 }
+      )
     }
 
     if (!validateExcelFile(contactsFile.name, contactsFile.type)) {
@@ -89,98 +97,144 @@ export async function POST(
       )
     }
 
-    const contactsBuffer = Buffer.from(await contactsFile.arrayBuffer())
+    const buffer = Buffer.from(await contactsFile.arrayBuffer())
 
-    const workbook = xlsx.read(contactsBuffer, { type: 'buffer' })
-    const sheetName = workbook.SheetNames[0]
-    const worksheet = workbook.Sheets[sheetName]
-    // header: 1 converts rows to arrays of strings
-    const rows = xlsx.utils.sheet_to_json(worksheet, {
+    const workbook = xlsx.read(buffer, { type: 'buffer' })
+    const sheet = workbook.Sheets[workbook.SheetNames[0]]
+
+    const rows = xlsx.utils.sheet_to_json(sheet, {
       header: 1,
       defval: '',
     }) as (string | number)[][]
 
-    const parsedContacts: { fullName: string; phone: string; email?: string }[] = []
-    const parsingErrors: { name: string; phone: string; error: string }[] = []
+    const parsedContacts: {
+      firstName: string
+      lastName: string
+      suffix?: string
+      phone: string
+      companion?: number
+      email?: string
+    }[] = []
 
-    // Start from 1 to skip header row
+    const parsingErrors: any[] = []
+
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i]
-      if (!row || row.every((cell) => String(cell).trim() === '')) {
-        continue // Skip empty rows
-      }
+
+      if (!row || row.every((c) => String(c).trim() === '')) continue
 
       const firstName = String(row[0] || '').trim()
       const lastName = String(row[1] || '').trim()
-      const suffix = String(row[2] || '').trim()
-      let phone = String(row[3] || '').trim().replace(/\s/g, '')
+      const suffix = String(row[2] || '').trim() || undefined
 
-      const fullName = [firstName, lastName, suffix].filter(Boolean).join(' ')
+      let phone = String(row[3] || '').replace(/\D/g, '')
 
-      if (!fullName || !phone) {
-        parsingErrors.push({ name: fullName || `Row ${i + 1}`, phone: phone || 'N/A', error: 'الاسم أو الرقم مفقود' })
+      const companionValue = row[4]
+      const email = String(row[5] || '').trim() || undefined
+
+      let companion: number | undefined = undefined
+      if (companionValue !== '' && companionValue !== undefined) {
+        const num = Number(companionValue)
+        if (!isNaN(num)) companion = num
+      }
+
+      if (!firstName || !lastName || !phone) {
+        parsingErrors.push({
+          name: `${firstName} ${lastName}` || `Row ${i + 1}`,
+          phone: phone || 'N/A',
+          error: 'الاسم الأول أو الأخير أو الرقم مفقود',
+        })
         continue
       }
 
-      // Normalize phone for Kuwait: add +965 if not present
-      if (!phone.startsWith('+')) {
+      if (phone.startsWith('965')) {
+        phone = `+${phone}`
+      } else {
         phone = `+965${phone.replace(/^0+/, '')}`
       }
 
-      parsedContacts.push({ fullName, phone })
+      parsedContacts.push({
+        firstName,
+        lastName,
+        suffix,
+        phone,
+        companion,
+        email,
+      })
     }
 
     if (parsedContacts.length === 0) {
-      return NextResponse.json({ error: 'لا توجد بيانات صحيحة في الملف' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'لا توجد بيانات صحيحة في الملف' },
+        { status: 400 }
+      )
     }
+
+    const phones = parsedContacts.map((c) => c.phone)
+
+    const existingContacts = await Contact.find({
+      companyId: session.user.companyId,
+      phone: { $in: phones },
+      deletedAt: null,
+    })
+
+    const existingMap = new Map(existingContacts.map((c) => [c.phone, c]))
 
     let created = 0
     let updated = 0
     let skipped = 0
-    const dbErrors: { name: string; phone: string; error: string }[] = []
+
+    const dbErrors: any[] = []
+    const newContacts: any[] = []
 
     for (const parsed of parsedContacts) {
       try {
-        const existing = await Contact.findOne({
-          companyId: session.user.companyId,
-          phone: parsed.phone,
-          deletedAt: null,
-        })
+        const existing = existingMap.get(parsed.phone)
 
         if (!existing) {
-          await Contact.create({
+          newContacts.push({
             companyId: session.user.companyId,
             clientId: client._id,
-            fullName: parsed.fullName,
+            firstName: parsed.firstName,
+            lastName: parsed.lastName,
+            suffix: parsed.suffix,
             phone: parsed.phone,
+            companion: parsed.companion,
             email: parsed.email,
           })
           created++
           continue
         }
 
-        if (existing.clientId && existing.clientId.toString() !== client._id.toString()) {
+        if (existing.clientId.toString() !== client._id.toString()) {
           skipped++
           dbErrors.push({
-            name: parsed.fullName,
+            name: `${parsed.firstName} ${parsed.lastName}`,
             phone: parsed.phone,
             error: 'رقم الهاتف مسجل بالفعل لعميل آخر',
           })
           continue
         }
 
-        existing.clientId = client._id
-        existing.fullName = parsed.fullName
+        existing.firstName = parsed.firstName
+        existing.lastName = parsed.lastName
+        existing.suffix = parsed.suffix
+        existing.companion = parsed.companion
         existing.email = parsed.email
+
         await existing.save()
         updated++
       } catch (e: any) {
         dbErrors.push({
-          name: parsed.fullName,
+          name: `${parsed.firstName} ${parsed.lastName}`,
           phone: parsed.phone,
           error: e?.message || 'خطأ غير معروف',
         })
       }
+    }
+
+    if (newContacts.length > 0) {
+      await Contact.insertMany(newContacts)
     }
 
     const allErrors = [...parsingErrors, ...dbErrors]
@@ -190,7 +244,7 @@ export async function POST(
         success: true,
         message: 'تم رفع جهات الاتصال بنجاح',
         stats: {
-          total: rows.length - 1, // Exclude header
+          total: rows.length - 1,
           valid: parsedContacts.length,
           created,
           updated,
@@ -201,8 +255,11 @@ export async function POST(
       },
       { status: 201 }
     )
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error uploading client contacts:', error)
-    return NextResponse.json({ error: 'فشل في رفع جهات الاتصال' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'فشل في رفع جهات الاتصال' },
+      { status: 500 }
+    )
   }
 }
