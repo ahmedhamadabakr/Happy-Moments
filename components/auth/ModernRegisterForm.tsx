@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, Mail, Lock, User, Briefcase, Building, Phone, Shield, Users } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Briefcase, Building, Phone, Shield, Users, ArrowRight } from 'lucide-react';
 
 export default function EmployeeRegisterForm() {
   const [formData, setFormData] = useState({
@@ -173,6 +173,17 @@ export default function EmployeeRegisterForm() {
       </div>
 
       <div className="relative z-10 bg-white p-8 rounded-3xl shadow-2xl w-full max-w-2xl border border-slate-200/50 backdrop-blur-sm">
+        {/* Back Button */}
+        <div className="mb-6">
+          <a 
+            href="/dashboard/users" 
+            className="inline-flex items-center gap-2 text-slate-600 hover:text-[#F08784] transition-colors font-semibold group"
+          >
+            <ArrowRight className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+            <span>العودة لإدارة الموظفين</span>
+          </a>
+        </div>
+
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-[#F08784]/10 rounded-2xl mb-4">
@@ -401,13 +412,6 @@ export default function EmployeeRegisterForm() {
             )}
           </button>
         </form>
-
-        {/* Back to Users */}
-        <div className="text-center mt-8 pt-6 border-t border-slate-200">
-          <a href="/dashboard/users" className="text-sm text-[#F08784] hover:text-[#D97673] transition-colors font-semibold">
-            ← العودة لإدارة الموظفين
-          </a>
-        </div>
       </div>
     </div>
   );

@@ -5,7 +5,6 @@ import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Loader2, X, PlusCircle, Trash2, User as UserIcon, Users, Shield, Mail, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useAuthStore, User } from '@/lib/store/authStore';
@@ -149,35 +148,35 @@ export default function ManageUsersPage() {
               </div>
             ) : (
               <div className="overflow-x-auto rounded-2xl border border-slate-200">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-slate-50 hover:bg-slate-50">
-                      <TableHead className="font-bold text-slate-900">الاسم الكامل</TableHead>
-                      <TableHead className="font-bold text-slate-900">البريد الإلكتروني</TableHead>
-                      <TableHead className="font-bold text-slate-900">الدور</TableHead>
-                      <TableHead className="text-left font-bold text-slate-900">الإجراءات</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-200">
+                      <th className="text-right px-6 py-4 font-bold text-slate-900">الاسم الكامل</th>
+                      <th className="text-right px-6 py-4 font-bold text-slate-900">البريد الإلكتروني</th>
+                      <th className="text-right px-6 py-4 font-bold text-slate-900">الدور</th>
+                      <th className="text-right px-6 py-4 font-bold text-slate-900">الإجراءات</th>
+                    </tr>
+                  </thead>
+                  <tbody>
                     {users.map((u) => (
-                      <TableRow key={u.id} className="hover:bg-slate-50 transition-colors">
-                        <TableCell className="font-semibold text-slate-900">
+                      <tr key={u.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                        <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-[#F08784]/10 rounded-full flex items-center justify-center">
+                            <div className="w-10 h-10 bg-[#F08784]/10 rounded-full flex items-center justify-center flex-shrink-0">
                               <span className="text-[#F08784] font-bold">
                                 {u.fullName?.charAt(0)?.toUpperCase()}
                               </span>
                             </div>
-                            {u.fullName}
+                            <span className="font-semibold text-slate-900">{u.fullName}</span>
                           </div>
-                        </TableCell>
-                        <TableCell className="text-slate-600">
-                          <div className="flex items-center gap-2">
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2 text-slate-600">
                             <Mail className="w-4 h-4 text-slate-400" />
-                            {u.email}
+                            <span>{u.email}</span>
                           </div>
-                        </TableCell>
-                        <TableCell>
+                        </td>
+                        <td className="px-6 py-4">
                           <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border ${
                             u.role === 'manager' 
                               ? 'bg-violet-50 text-violet-700 border-violet-200' 
@@ -186,8 +185,8 @@ export default function ManageUsersPage() {
                             <Shield className="w-3 h-3" />
                             {u.role === 'manager' ? 'مدير' : 'موظف'}
                           </div>
-                        </TableCell>
-                        <TableCell className="text-left">
+                        </td>
+                        <td className="px-6 py-4">
                           <Button
                             variant="destructive"
                             size="sm"
@@ -197,11 +196,11 @@ export default function ManageUsersPage() {
                             <Trash2 className="h-4 w-4 ml-1" />
                             حذف
                           </Button>
-                        </TableCell>
-                      </TableRow>
+                        </td>
+                      </tr>
                     ))}
-                  </TableBody>
-                </Table>
+                  </tbody>
+                </table>
               </div>
             )}
           </CardContent>
