@@ -143,5 +143,22 @@ eventGuestSchema.index({ eventId: 1, rsvpStatus: 1 })
 eventGuestSchema.index({ eventId: 1, checkInStatus: 1 })
 eventGuestSchema.index({ companyId: 1, checkInStatus: 1 })
 
+// Virtual fields for compatibility
+eventGuestSchema.virtual('name').get(function() {
+  return this.snapshotName;
+});
+
+eventGuestSchema.virtual('phone').get(function() {
+  return this.snapshotPhone;
+});
+
+eventGuestSchema.virtual('email').get(function() {
+  return this.snapshotEmail;
+});
+
+// Ensure virtuals are included in JSON
+eventGuestSchema.set('toJSON', { virtuals: true });
+eventGuestSchema.set('toObject', { virtuals: true });
+
 export const EventGuest: Model<IEventGuest> = 
   mongoose.models.EventGuest || mongoose.model<IEventGuest>('EventGuest', eventGuestSchema)

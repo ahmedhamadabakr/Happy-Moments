@@ -16,9 +16,11 @@ function generateToken(): string {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await context.params
+
     const user = await auth(req)
     if (!user) {
       return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
@@ -26,13 +28,12 @@ export async function GET(
 
     await connectDB()
 
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'معرّف غير صحيح' }, { status: 400 })
     }
 
-    // Verify event exists
     const event = await Event.findOne({
-      _id: params.id,
+      _id: id,
       companyId: user.companyId,
       deletedAt: null,
     })
@@ -51,7 +52,7 @@ export async function GET(
     const skip = (page - 1) * limit
 
     const guests = await EventGuest.find({
-      eventId: params.id,
+      eventId: id,
       companyId: user.companyId,
     })
       .select('-__v')
@@ -60,7 +61,7 @@ export async function GET(
       .lean()
 
     const total = await EventGuest.countDocuments({
-      eventId: params.id,
+      eventId: id,
       companyId: user.companyId,
     })
 
@@ -81,9 +82,11 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await context.params
+
     const user = await auth(req)
     if (!user) {
       return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
@@ -91,16 +94,15 @@ export async function POST(
 
     await connectDB()
 
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'معرّف غير صحيح' }, { status: 400 })
     }
 
     const body = await req.json()
     const { contactIds } = selectGuestsSchema.parse(body)
 
-    // Verify event exists and is not closed
     const event = await Event.findOne({
-      _id: params.id,
+      _id: id,
       companyId: user.companyId,
       deletedAt: null,
     })
@@ -119,7 +121,6 @@ export async function POST(
       )
     }
 
-    // Get contacts
     const contacts = await Contact.find({
       _id: { $in: contactIds },
       companyId: user.companyId,
@@ -133,13 +134,12 @@ export async function POST(
       )
     }
 
-    // Create EventGuest documents (skip duplicates)
     let created = 0
     let skipped = 0
 
     for (const contact of contacts) {
       const exists = await EventGuest.findOne({
-        eventId: params.id,
+        eventId: id,
         contactId: contact._id,
       })
 
@@ -148,11 +148,13 @@ export async function POST(
         continue
       }
 
+      const fullName = `${contact.firstName} ${contact.lastName}`.trim()
+
       await EventGuest.create({
-        eventId: params.id,
+        eventId: id,
         contactId: contact._id,
         companyId: user.companyId,
-        snapshotName: contact.fullName,
+        snapshotName: fullName,
         snapshotPhone: contact.phone,
         snapshotEmail: contact.email,
         invitationToken: generateToken(),
@@ -164,7 +166,6 @@ export async function POST(
       created++
     }
 
-    // Log activity
     await ActivityLog.create({
       companyId: user.companyId,
       userId: user._id,
