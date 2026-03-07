@@ -156,24 +156,30 @@ export default function EmployeeRegisterForm() {
   };
 
   if (!mounted || !authorized) return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1A2E26] via-[#2a4a3d] to-[#1A2E26] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-[#F08784]/5 to-violet-50/30 flex items-center justify-center p-4">
       <div className="text-center">
-        <div className="w-12 h-12 border-4 border-[#C1A286] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-white">جاري التحقق من الصلاحيات...</p>
+        <div className="w-12 h-12 border-4 border-[#F08784] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-slate-600">جاري التحقق من الصلاحيات...</p>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1A2E26] via-[#2a4a3d] to-[#1A2E26] flex items-center justify-center p-4" dir="rtl">
-      <div className="bg-white/95 backdrop-blur-sm p-8 rounded-3xl shadow-2xl w-full max-w-lg border border-white/20">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-[#F08784]/5 to-violet-50/30 flex items-center justify-center p-4 relative overflow-hidden" dir="rtl">
+      {/* خلفية زخرفية */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 right-10 w-96 h-96 bg-[#F08784]/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 left-10 w-96 h-96 bg-violet-400/10 rounded-full blur-3xl" />
+      </div>
+
+      <div className="relative z-10 bg-white p-8 rounded-3xl shadow-2xl w-full max-w-2xl border border-slate-200/50 backdrop-blur-sm">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-[#C1A286] to-[#d4b896] rounded-full mb-4">
-            <Users className="w-8 h-8 text-white" />
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-[#F08784]/10 rounded-2xl mb-4">
+            <Users className="w-8 h-8 text-[#F08784]" />
           </div>
-          <h1 className="text-3xl font-bold text-[#1A2E26] mb-2">إضافة موظف جديد</h1>
-          <p className="text-gray-600">قم بإضافة موظف أو مدير جديد للنظام</p>
+          <h1 className="text-3xl font-black text-slate-900 mb-2">إضافة موظف جديد</h1>
+          <p className="text-slate-600">قم بإضافة موظف أو مدير جديد للنظام</p>
         </div>
 
         {/* Error Message */}
@@ -376,26 +382,29 @@ export default function EmployeeRegisterForm() {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-3 px-4 rounded-lg font-bold text-white transition-all transform hover:scale-[1.02] ${
+            className={`w-full py-4 px-4 rounded-xl font-bold text-white transition-all transform hover:scale-[1.02] shadow-lg ${
               loading
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-gradient-to-r from-[#1A2E26] to-[#2a4a3d] hover:from-[#2a4a3d] hover:to-[#1A2E26] shadow-lg'
+                ? 'bg-slate-400 cursor-not-allowed'
+                : 'bg-[#F08784] hover:bg-[#D97673]'
             }`}
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 جاري إضافة الموظف...
               </span>
             ) : (
-              'إضافة موظف جديد'
+              <span className="flex items-center justify-center gap-2">
+                <Users className="w-5 h-5" />
+                إضافة موظف جديد
+              </span>
             )}
           </button>
         </form>
 
         {/* Back to Users */}
-        <div className="text-center mt-8">
-          <a href="/dashboard/users" className="text-sm text-[#C1A286] hover:text-[#a08060] transition-colors">
+        <div className="text-center mt-8 pt-6 border-t border-slate-200">
+          <a href="/dashboard/users" className="text-sm text-[#F08784] hover:text-[#D97673] transition-colors font-semibold">
             ← العودة لإدارة الموظفين
           </a>
         </div>
