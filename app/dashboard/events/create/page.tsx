@@ -167,21 +167,23 @@ export default function CreateEventPage() {
               <Label className="font-semibold">صورة الدعوة (اختياري)</Label>
               <div className="p-4 border-2 border-dashed rounded-xl text-center cursor-pointer hover:border-amber-400 transition-colors relative" onClick={() => !imagePreview && document.getElementById('invitationImage')?.click()}>
                 {imagePreview ? (
-                  <div className="relative aspect-[9/16] max-h-[600px] mx-auto">
-                    <img src={imagePreview} alt="Preview" className="rounded-lg w-full h-full object-cover" />
-                     <div 
-                      className="absolute border-2 border-dashed border-red-500 bg-white/30 backdrop-blur-sm"
-                      style={{
-                        left: `${formData.qrX}%`,
-                        top: `${formData.qrY}%`,
-                        width: `${formData.qrSize}%`,
-                        height: `${formData.qrSize}%`,
-                        transform: 'translate(-50%, -50%)'
-                      }}
-                    >
-                      <div className='text-red-500 font-bold text-xs bg-white/50 p-px rounded-sm absolute -top-5 right-0'>QR Preview</div>
+                  <div className="relative w-full">
+                    <div className="relative max-h-[700px] overflow-auto rounded-lg bg-slate-50">
+                      <img src={imagePreview} alt="Preview" className="w-full h-auto object-contain" />
+                      <div 
+                        className="absolute border-2 border-dashed border-red-500 bg-white/30 backdrop-blur-sm"
+                        style={{
+                          left: `${formData.qrX}%`,
+                          top: `${formData.qrY}%`,
+                          width: `${formData.qrSize}%`,
+                          height: `${formData.qrSize}%`,
+                          transform: 'translate(-50%, -50%)'
+                        }}
+                      >
+                        <div className='text-red-500 font-bold text-xs bg-white/50 p-px rounded-sm absolute -top-5 right-0'>QR Preview</div>
+                      </div>
                     </div>
-                    <Button variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={(e) => { e.stopPropagation(); setImagePreview(null); setInvitationImage(null); }}>
+                    <Button variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 z-10" onClick={(e) => { e.stopPropagation(); setImagePreview(null); setInvitationImage(null); }}>
                       <X className="h-4 w-4"/>
                     </Button>
                   </div>
