@@ -167,7 +167,7 @@ export default function CreateEventPage() {
               <Label className="font-semibold">صورة الدعوة (اختياري)</Label>
               <div className="p-4 border-2 border-dashed rounded-xl text-center cursor-pointer hover:border-amber-400 transition-colors relative" onClick={() => !imagePreview && document.getElementById('invitationImage')?.click()}>
                 {imagePreview ? (
-                  <div className="relative aspect-video">
+                  <div className="relative aspect-[9/16] max-h-[600px] mx-auto">
                     <img src={imagePreview} alt="Preview" className="rounded-lg w-full h-full object-cover" />
                      <div 
                       className="absolute border-2 border-dashed border-red-500 bg-white/30 backdrop-blur-sm"
@@ -190,6 +190,7 @@ export default function CreateEventPage() {
                     <Upload className="w-10 h-10" />
                     <p>اسحب وأفلت الصورة هنا، أو انقر للاختيار</p>
                     <p className="text-xs">سيتم دمج QR Code على هذه الصورة</p>
+                    <p className="text-xs text-amber-600 font-semibold mt-2">يُفضل استخدام صورة بالطول (Portrait)</p>
                   </div>
                 )}
                 <Input id="invitationImage" type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
