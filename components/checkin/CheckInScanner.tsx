@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Camera, Keyboard, CheckCircle, XCircle, Users } from 'lucide-react';
+import { Camera, Keyboard, CheckCircle, XCircle, Users, QrCode, BarChart2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface CheckInScannerProps {
@@ -112,87 +112,120 @@ export default function CheckInScanner({ eventId }: CheckInScannerProps) {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Check-In Scanner</h1>
-        <div className="flex gap-2">
-          <Button
-            variant={mode === 'camera' ? 'default' : 'outline'}
-            onClick={() => setMode('camera')}
-          >
-            <Camera className="h-4 w-4 mr-2" />
-            Camera
-          </Button>
-          <Button
-            variant={mode === 'manual' ? 'default' : 'outline'}
-            onClick={() => setMode('manual')}
-          >
-            <Keyboard className="h-4 w-4 mr-2" />
-            Manual
-          </Button>
+    <div className="space-y-6" dir="rtl">
+      <Card className="bg-gradient-to-br from-amber-50 via-white to-amber-50/30 rounded-2xl p-6 border-2 border-amber-100 shadow-lg">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-bold text-slate-900 tracking-tight">سكانر تسجيل الدخول</h1>
+            <p className="text-slate-600 mt-2 font-medium">امسح رمز QR أو أدخل الرمز يدوياً</p>
+          </div>
+          <div className="flex gap-3">
+            <Button
+              variant={mode === 'camera' ? 'default' : 'outline'}
+              onClick={() => setMode('camera')}
+              className={mode === 'camera' 
+                ? 'bg-amber-500 hover:bg-amber-600 text-white font-semibold shadow-md' 
+                : 'bg-white hover:bg-amber-50 border-2 border-amber-200 hover:border-amber-300 font-semibold'
+              }
+            >
+              <Camera className="h-5 w-5 ml-2" />
+              الكاميرا
+            </Button>
+            <Button
+              variant={mode === 'manual' ? 'default' : 'outline'}
+              onClick={() => setMode('manual')}
+              className={mode === 'manual' 
+                ? 'bg-amber-500 hover:bg-amber-600 text-white font-semibold shadow-md' 
+                : 'bg-white hover:bg-amber-50 border-2 border-amber-200 hover:border-amber-300 font-semibold'
+              }
+            >
+              <Keyboard className="h-5 w-5 ml-2" />
+              يدوي
+            </Button>
+          </div>
         </div>
-      </div>
+      </Card>
 
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-3">
-        <Card>
+        <Card className="border-2 border-amber-100 hover:border-amber-200 transition-all hover:shadow-lg bg-gradient-to-br from-white to-amber-50/20 rounded-xl">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Guests</CardTitle>
+            <CardTitle className="text-sm font-semibold text-slate-700">إجمالي الضيوف</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-blue-600" />
-              <span className="text-2xl font-bold">{stats.total}</span>
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-blue-100 rounded-lg">
+                <Users className="h-6 w-6 text-blue-600" />
+              </div>
+              <span className="text-4xl font-bold text-slate-900">{stats.total}</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-2 border-amber-100 hover:border-amber-200 transition-all hover:shadow-lg bg-gradient-to-br from-white to-green-50/20 rounded-xl">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Checked In</CardTitle>
+            <CardTitle className="text-sm font-semibold text-slate-700">تم تسجيل الدخول</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
-              <span className="text-2xl font-bold">{stats.checkedIn}</span>
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-green-100 rounded-lg">
+                <CheckCircle className="h-6 w-6 text-green-600" />
+              </div>
+              <span className="text-4xl font-bold text-slate-900">{stats.checkedIn}</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-2 border-amber-100 hover:border-amber-200 transition-all hover:shadow-lg bg-gradient-to-br from-white to-amber-50/20 rounded-xl">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Attendance Rate</CardTitle>
+            <CardTitle className="text-sm font-semibold text-slate-700">نسبة الحضور</CardTitle>
           </CardHeader>
           <CardContent>
-            <span className="text-2xl font-bold">
-              {stats.total > 0 ? ((stats.checkedIn / stats.total) * 100).toFixed(1) : 0}%
-            </span>
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-amber-100 rounded-lg">
+                <BarChart2 className="h-6 w-6 text-amber-600" />
+              </div>
+              <span className="text-4xl font-bold text-slate-900">
+                {stats.total > 0 ? ((stats.checkedIn / stats.total) * 100).toFixed(1) : 0}%
+              </span>
+            </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Scanner */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{mode === 'camera' ? 'QR Scanner' : 'Manual Entry'}</CardTitle>
+      <Card className="border-2 border-amber-100 shadow-lg rounded-2xl overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-amber-50 to-white border-b-2 border-amber-100">
+          <CardTitle className="text-2xl text-slate-900 font-bold">
+            {mode === 'camera' ? 'ماسح رمز QR' : 'الإدخال اليدوي'}
+          </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           {mode === 'camera' ? (
-            <div className="aspect-video bg-slate-900 rounded-lg flex items-center justify-center">
-              <p className="text-white">Camera scanner will be implemented here</p>
-              <p className="text-slate-400 text-sm mt-2">Use manual mode for now</p>
+            <div className="aspect-video bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl flex flex-col items-center justify-center shadow-inner border-2 border-slate-700">
+              <QrCode className="w-20 h-20 text-amber-400 mb-4" />
+              <p className="text-white text-xl font-semibold mb-2">سيتم تفعيل الكاميرا قريباً</p>
+              <p className="text-slate-400 text-base">استخدم الوضع اليدوي حالياً</p>
             </div>
           ) : (
             <form onSubmit={handleManualSubmit} className="space-y-4">
-              <Input
-                placeholder="Enter QR token or guest ID"
-                value={manualToken}
-                onChange={(e) => setManualToken(e.target.value)}
-                disabled={isScanning}
-                autoFocus
-              />
-              <Button type="submit" disabled={isScanning || !manualToken.trim()}>
-                {isScanning ? 'Processing...' : 'Check In'}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700">أدخل رمز QR أو معرف الضيف</label>
+                <Input
+                  placeholder="اكتب الرمز هنا..."
+                  value={manualToken}
+                  onChange={(e) => setManualToken(e.target.value)}
+                  disabled={isScanning}
+                  autoFocus
+                  className="text-lg p-6 border-2 border-amber-200 focus:border-amber-400 rounded-xl"
+                />
+              </div>
+              <Button 
+                type="submit" 
+                disabled={isScanning || !manualToken.trim()}
+                className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-lg py-6 rounded-xl shadow-md"
+              >
+                {isScanning ? 'جاري المعالجة...' : 'تسجيل الدخول'}
               </Button>
             </form>
           )}
@@ -200,35 +233,40 @@ export default function CheckInScanner({ eventId }: CheckInScannerProps) {
       </Card>
 
       {/* Recent Scans */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Scans (Last 50)</CardTitle>
+      <Card className="border-2 border-amber-100 shadow-lg rounded-2xl overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-amber-50 to-white border-b-2 border-amber-100">
+          <CardTitle className="text-2xl text-slate-900 font-bold">آخر 50 عملية مسح</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
+        <CardContent className="p-6">
+          <div className="space-y-3">
             {recentScans.length === 0 ? (
-              <p className="text-slate-500 text-center py-8">No scans yet</p>
+              <div className="text-center py-12">
+                <QrCode className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                <p className="text-slate-500 text-lg font-medium">لا توجد عمليات مسح بعد</p>
+              </div>
             ) : (
               recentScans.map((scan, index) => (
                 <div
                   key={`${scan.id}-${index}`}
-                  className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
+                  className="flex items-center justify-between p-4 bg-gradient-to-r from-amber-50/50 to-white rounded-xl border-2 border-amber-100 hover:border-amber-200 hover:shadow-md transition-all"
                 >
-                  <div className="flex items-center gap-3">
-                    {scan.success ? (
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                    ) : (
-                      <XCircle className="h-5 w-5 text-red-600" />
-                    )}
+                  <div className="flex items-center gap-4">
+                    <div className={`p-2 rounded-lg ${scan.success ? 'bg-green-100' : 'bg-red-100'}`}>
+                      {scan.success ? (
+                        <CheckCircle className="h-6 w-6 text-green-600" />
+                      ) : (
+                        <XCircle className="h-6 w-6 text-red-600" />
+                      )}
+                    </div>
                     <div>
-                      <p className="font-medium">{scan.guestName}</p>
-                      <p className="text-sm text-slate-600">
-                        {scan.scanType === 'first' ? 'First check-in' : 'Repeated scan'}
+                      <p className="font-bold text-slate-900 text-lg">{scan.guestName}</p>
+                      <p className="text-sm text-slate-600 font-medium">
+                        {scan.scanType === 'first' ? '✓ أول تسجيل دخول' : '⚠ مسح متكرر'}
                       </p>
                     </div>
                   </div>
-                  <span className="text-sm text-slate-500">
-                    {new Date(scan.timestamp).toLocaleTimeString()}
+                  <span className="text-sm text-slate-500 font-medium bg-white px-3 py-1.5 rounded-lg border border-slate-200">
+                    {new Date(scan.timestamp).toLocaleTimeString('ar-SA')}
                   </span>
                 </div>
               ))

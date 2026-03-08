@@ -386,69 +386,69 @@ export default function ClientsPage() {
         onClose={() => setIsUploadContactsModalOpen(false)}
         title={uploadClient ? `رفع جهات الاتصال: ${uploadClient.name}` : 'رفع جهات الاتصال'}
         actions={
-          <div className="flex gap-2 w-full">
+          <div className="flex gap-3 w-full">
             <button
               onClick={() => setIsUploadContactsModalOpen(false)}
-              className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              className="flex-1 px-6 py-3 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-semibold border-2 border-slate-200"
             >
               إغلاق
             </button>
             <button
               onClick={handleUploadContacts}
               disabled={loading}
-              className={`flex-1 px-4 py-2 bg-[#1A2E26] text-white rounded-lg hover:bg-[#2a4a3d] transition-colors flex items-center justify-center gap-2 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className={`flex-1 px-6 py-3 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-colors font-bold shadow-md flex items-center justify-center gap-2 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
-              {loading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <Upload className="w-4 h-4" />}
+              {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <Upload className="w-5 h-5" />}
               رفع الملف
             </button>
           </div>
         }
       >
-        <div className="space-y-4">
-          <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
-            <h4 className="font-bold text-blue-900 mb-3 flex items-center gap-2 text-sm">
-              <FileSpreadsheet className="w-4 h-4" />
+        <div className="space-y-5">
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 p-5 rounded-xl border-2 border-blue-200 shadow-sm">
+            <h4 className="font-bold text-blue-900 mb-4 flex items-center gap-2 text-base">
+              <FileSpreadsheet className="w-5 h-5" />
               تنسيق الملف المطلوب
             </h4>
-            <p className="text-xs text-blue-800 mb-3">
+            <p className="text-sm text-blue-800 mb-4 font-medium">
               يرجى التأكد من أن ملف Excel يحتوي على الأعمدة التالية (بنفس الأسماء بالضبط):
             </p>
-            <div className="overflow-x-auto rounded-lg border border-blue-200 mb-3">
-              <table className="w-full text-xs text-right bg-white">
-                <thead className="bg-blue-100 text-blue-900 font-semibold">
+            <div className="overflow-x-auto rounded-xl border-2 border-blue-300 mb-4 shadow-sm">
+              <table className="w-full text-sm text-right bg-white">
+                <thead className="bg-gradient-to-r from-blue-200 to-blue-100 text-blue-900 font-bold">
                   <tr>
-                    <th className="p-2 border-b border-blue-100">firstName</th>
-                    <th className="p-2 border-b border-blue-100">lastName</th>
-                    <th className="p-2 border-b border-blue-100">suffix</th>
-                    <th className="p-2 border-b border-blue-100">phone</th>
-                    <th className="p-2 border-b border-blue-100">companion</th>
+                    <th className="p-3 border-b-2 border-blue-200">firstName</th>
+                    <th className="p-3 border-b-2 border-blue-200">lastName</th>
+                    <th className="p-3 border-b-2 border-blue-200">suffix</th>
+                    <th className="p-3 border-b-2 border-blue-200">phone</th>
+                    <th className="p-3 border-b-2 border-blue-200">companion</th>
                   </tr>
                 </thead>
-                <tbody className="text-gray-600">
-                  <tr className="border-b border-gray-50">
-                    <td className="p-2">منــال</td>
-                    <td className="p-2">الشمري</td>
-                    <td className="p-2">المكرمة</td>
-                    <td className="p-2" dir="ltr">60288122</td>
-                    <td className="p-2">0</td>
+                <tbody className="text-gray-700 font-medium">
+                  <tr className="border-b border-blue-50 hover:bg-blue-50/50">
+                    <td className="p-3">منــال</td>
+                    <td className="p-3">الشمري</td>
+                    <td className="p-3">المكرمة</td>
+                    <td className="p-3" dir="ltr">60288122</td>
+                    <td className="p-3">0</td>
                   </tr>
-                  <tr>
-                    <td className="p-2">وردة</td>
-                    <td className="p-2">العلي</td>
-                    <td className="p-2">المكرمة</td>
-                    <td className="p-2" dir="ltr">60222122</td>
-                    <td className="p-2">2</td>
+                  <tr className="hover:bg-blue-50/50">
+                    <td className="p-3">وردة</td>
+                    <td className="p-3">العلي</td>
+                    <td className="p-3">المكرمة</td>
+                    <td className="p-3" dir="ltr">60222122</td>
+                    <td className="p-3">2</td>
                   </tr>
                 </tbody>
               </table>
             </div>
-            <div className="flex items-start gap-2 text-xs text-blue-700 bg-blue-100/50 p-2 rounded-lg">
-              <AlertCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
+            <div className="flex items-start gap-2 text-sm text-blue-800 bg-blue-200/50 p-3 rounded-lg font-medium">
+              <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
               <p>سيتم إضافة مفتاح دولة الكويت (+965) تلقائياً للأرقام إذا لم يكن موجوداً.</p>
             </div>
           </div>
 
-          <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-[#C1A286] hover:bg-gray-50 transition-all cursor-pointer relative group">
+          <div className="border-2 border-dashed border-amber-300 rounded-xl p-8 text-center hover:border-amber-400 hover:bg-amber-50/30 transition-all cursor-pointer relative group bg-gradient-to-br from-white to-amber-50/20">
             <input
               type="file"
               accept=".xlsx,.xls,.csv"
@@ -458,51 +458,51 @@ export default function ClientsPage() {
               }}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
             />
-            <div className="flex flex-col items-center gap-2">
-              <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-[#C1A286]/10 transition-colors">
-                <Upload className="w-5 h-5 text-gray-500 group-hover:text-[#C1A286]" />
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center group-hover:bg-amber-200 transition-colors shadow-sm">
+                <Upload className="w-8 h-8 text-amber-600" />
               </div>
-              <div className="text-sm font-medium text-gray-700">
+              <div className="text-base font-bold text-slate-700">
                 {contactsFile ? (
-                  <span className="text-green-600 flex items-center gap-1">
-                    <CheckCircle2 className="w-4 h-4" />
+                  <span className="text-green-600 flex items-center gap-2 text-lg">
+                    <CheckCircle2 className="w-5 h-5" />
                     {contactsFile.name}
                   </span>
                 ) : (
                   "اضغط لاختيار ملف Excel"
                 )}
               </div>
-              {!contactsFile && <p className="text-xs text-gray-500">xlsx, xls, csv</p>}
+              {!contactsFile && <p className="text-sm text-slate-500 font-medium">xlsx, xls, csv</p>}
             </div>
           </div>
 
           {uploadResult?.stats && (
-            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm">
-              <h5 className="font-bold text-gray-800 mb-2">نتيجة الرفع:</h5>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="bg-white p-2 rounded border">تمت المعالجة: <span className="font-bold">{uploadResult.stats.total}</span></div>
-                <div className="bg-white p-2 rounded border text-green-600">تم الإنشاء: <span className="font-bold">{uploadResult.stats.created}</span></div>
-                <div className="bg-white p-2 rounded border text-blue-600">تم التحديث: <span className="font-bold">{uploadResult.stats.updated}</span></div>
-                <div className="bg-white p-2 rounded border text-red-600">أخطاء: <span className="font-bold">{uploadResult.stats.errors}</span></div>
+            <div className="rounded-xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-white p-5 shadow-md">
+              <h5 className="font-bold text-slate-800 mb-3 text-base">نتيجة الرفع:</h5>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="bg-white p-3 rounded-lg border-2 border-slate-200 font-semibold shadow-sm">تمت المعالجة: <span className="font-bold text-slate-900">{uploadResult.stats.total}</span></div>
+                <div className="bg-white p-3 rounded-lg border-2 border-green-200 text-green-700 font-semibold shadow-sm">تم الإنشاء: <span className="font-bold">{uploadResult.stats.created}</span></div>
+                <div className="bg-white p-3 rounded-lg border-2 border-blue-200 text-blue-700 font-semibold shadow-sm">تم التحديث: <span className="font-bold">{uploadResult.stats.updated}</span></div>
+                <div className="bg-white p-3 rounded-lg border-2 border-red-200 text-red-700 font-semibold shadow-sm">أخطاء: <span className="font-bold">{uploadResult.stats.errors}</span></div>
               </div>
             </div>
           )}
 
           {Array.isArray(uploadResult?.errors) && uploadResult.errors.length > 0 && (
-            <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 max-h-40 overflow-y-auto">
-              <div className="font-bold mb-2 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4" />
+            <div className="rounded-xl border-2 border-red-200 bg-red-50 p-5 text-sm text-red-800 max-h-48 overflow-y-auto shadow-sm">
+              <div className="font-bold mb-3 flex items-center gap-2 text-base">
+                <AlertCircle className="w-5 h-5" />
                 أخطاء في المعالجة:
               </div>
-              <div className="space-y-1 text-xs">
+              <div className="space-y-2 text-sm">
                 {uploadResult.errors.slice(0, 10).map((er: any, idx: number) => (
-                  <div key={idx} className="bg-white/50 p-1 rounded">
-                    <span className="font-semibold">{er.name}</span> ({er.phone}): {er.error}
+                  <div key={idx} className="bg-white/70 p-2 rounded-lg font-medium border border-red-200">
+                    <span className="font-bold">{er.name}</span> ({er.phone}): {er.error}
                   </div>
                 ))}
               </div>
               {uploadResult.errors.length > 10 && (
-                <div className="mt-2 text-xs opacity-75">... والباقي {uploadResult.errors.length - 10} خطأ</div>
+                <div className="mt-3 text-sm opacity-75 font-medium">... والباقي {uploadResult.errors.length - 10} خطأ</div>
               )}
             </div>
           )}
@@ -512,53 +512,53 @@ export default function ClientsPage() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="إضافة عميل"
+        title="إضافة عميل جديد"
         actions={
-          <div className="flex gap-2 w-full">
+          <div className="flex gap-3 w-full">
             <button
               onClick={() => setIsModalOpen(false)}
-              className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              className="flex-1 px-6 py-3 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-semibold border-2 border-slate-200"
             >
               إلغاء
             </button>
             <button
               onClick={handleCreateClient}
               disabled={loading}
-              className={`flex-1 px-4 py-2 bg-[#1A2E26] text-white rounded-lg hover:bg-[#2a4a3d] transition-colors flex items-center justify-center gap-2 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className={`flex-1 px-6 py-3 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-colors font-bold shadow-md ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
               {loading ? 'جاري الحفظ...' : 'حفظ العميل'}
             </button>
           </div>
         }
       >
-        <div className="space-y-4">
+        <div className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">اسم العميل <span className="text-red-500">*</span></label>
+            <label className="block text-base font-bold text-slate-700 mb-2">اسم العميل <span className="text-red-500">*</span></label>
             <input
               value={formData.fullName}
               onChange={(e) => setFormData((p) => ({ ...p, fullName: e.target.value }))}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#C1A286] outline-none transition-all ${formErrors.fullName ? 'border-red-500' : 'border-gray-300'}`}
+              className={`w-full px-5 py-3 border-2 rounded-xl focus:ring-2 focus:ring-amber-300 outline-none transition-all text-lg ${formErrors.fullName ? 'border-red-500 bg-red-50' : 'border-amber-200 focus:border-amber-400'}`}
               placeholder="مثال: شركة الأفراح المتميزة"
             />
-            {formErrors.fullName && <p className="text-red-500 text-xs mt-1">{formErrors.fullName}</p>}
+            {formErrors.fullName && <p className="text-red-600 text-sm mt-2 font-medium flex items-center gap-1"><AlertCircle className="w-4 h-4" />{formErrors.fullName}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">البريد الإلكتروني (اختياري)</label>
+            <label className="block text-base font-bold text-slate-700 mb-2">البريد الإلكتروني (اختياري)</label>
             <input
               value={formData.email}
               onChange={(e) => setFormData((p) => ({ ...p, email: e.target.value }))}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C1A286] outline-none transition-all"
+              className="w-full px-5 py-3 border-2 border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-300 focus:border-amber-400 outline-none transition-all text-lg"
               placeholder="client@example.com"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">رقم الهاتف (اختياري)</label>
+            <label className="block text-base font-bold text-slate-700 mb-2">رقم الهاتف (اختياري)</label>
             <input
               value={formData.phone}
               onChange={(e) => setFormData((p) => ({ ...p, phone: e.target.value }))}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C1A286] outline-none transition-all"
+              className="w-full px-5 py-3 border-2 border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-300 focus:border-amber-400 outline-none transition-all text-lg"
               placeholder="+965xxxxxxxx"
               dir="ltr"
             />

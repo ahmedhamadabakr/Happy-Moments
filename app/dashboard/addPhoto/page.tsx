@@ -1,6 +1,11 @@
 'use client';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Image as ImageIcon, Upload, Edit, Trash2, Grid, Plus, X } from 'lucide-react';
 
 interface Photo {
   _id: string;
@@ -119,45 +124,79 @@ export default function UploadPage() {
     }
   };
 
+  const categoryLabels: Record<string, string> = {
+    corporate: 'حفلات شركات',
+    wedding: 'حفلات زفاف',
+    graduation: 'تخرج',
+    national: 'فعاليات وطنية',
+  };
+
   return (
     <DashboardLayout>
-
-      <div className="min-h-screen bg-gray-50 p-6" dir="rtl">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold text-[#1A2E26]">إدارة الصور</h1>
-            <button
+      <div className="space-y-6" dir="rtl">
+        {/* Header */}
+        <Card className="bg-gradient-to-br from-amber-50 via-white to-amber-50/30 rounded-2xl p-8 border-2 border-amber-100 shadow-lg">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex items-center gap-6">
+              <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <ImageIcon className="w-10 h-10 text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold text-slate-900 tracking-tight">إدارة الصور</h1>
+                <p className="text-lg text-slate-600 mt-2 font-medium">إضافة وتعديل صور المعرض</p>
+              </div>
+            </div>
+            <Button
               onClick={() => setShowGallery(!showGallery)}
-              className="px-4 py-2 bg-[#C1A286] text-white rounded-lg hover:bg-[#a08060] transition-colors"
+              className={showGallery 
+                ? "bg-amber-500 hover:bg-amber-600 text-white font-semibold shadow-md" 
+                : "bg-white hover:bg-amber-50 border-2 border-amber-200 hover:border-amber-300 text-slate-900 font-semibold shadow-sm"
+              }
             >
-              {showGallery ? 'إضافة صورة جديدة' : 'عرض المعرض'}
-            </button>
+              {showGallery ? (
+                <>
+                  <Plus className="ml-2 h-5 w-5" />
+                  إضافة صورة جديدة
+                </>
+              ) : (
+                <>
+                  <Grid className="ml-2 h-5 w-5" />
+                  عرض المعرض
+                </>
+              )}
+            </Button>
           </div>
+        </Card>
 
-          {!showGallery ? (
-            <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
-              <h2 className="text-2xl font-bold text-[#1A2E26] mb-6 text-center">
+        {!showGallery ? (
+          <Card className="border-2 border-amber-100 shadow-lg rounded-2xl overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-amber-50 to-white border-b-2 border-amber-100">
+              <CardTitle className="text-2xl font-bold text-slate-900">
                 {editingPhoto ? 'تعديل صورة' : 'إضافة صورة جديدة للمعرض'}
-              </h2>
+              </CardTitle>
+            </CardHeader>
 
-              <form onSubmit={editingPhoto ? handleEdit : handleSubmit} className="space-y-5">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">اسم المناسبة</label>
-                  <input
+            <CardContent className="p-8">
+              <form onSubmit={editingPhoto ? handleEdit : handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="title" className="text-base font-semibold text-slate-700">اسم المناسبة</Label>
+                  <Input
+                    id="title"
                     name="title"
                     required
                     defaultValue={editingPhoto?.title}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#C1A286] outline-none transition-all"
+                    className="text-lg p-6 border-2 border-amber-200 focus:border-amber-400 rounded-xl"
                     placeholder="مثال: حفل تخرج جامعة..."
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">نوع المناسبة</label>
+                <div className="space-y-2">
+                  <Label htmlFor="category" className="text-base font-semibold text-slate-700">نوع المناسبة</Label>
                   <select
+                    id="category"
                     name="category"
                     defaultValue={editingPhoto?.category}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#C1A286] outline-none"
+                    className="w-full text-lg p-6 border-2 border-amber-200 focus:border-amber-400 rounded-xl outline-none focus:ring-2 focus:ring-amber-300"
                   >
                     <option value="corporate">حفلات شركات</option>
                     <option value="wedding">حفلات زفاف</option>
@@ -167,84 +206,105 @@ export default function UploadPage() {
                 </div>
 
                 {!editingPhoto && (
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-[#C1A286] transition-colors cursor-pointer relative">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => setFile(e.target.files?.[0] || null)}
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                      required
-                    />
-                    <div className="text-gray-500">
-                      {file ? <span className="text-green-600 font-semibold">{file.name}</span> : "اضغط هنا لاختيار صورة"}
+                  <div className="space-y-2">
+                    <Label className="text-base font-semibold text-slate-700">الصورة</Label>
+                    <div className="border-2 border-dashed border-amber-300 rounded-xl p-8 text-center hover:border-amber-400 hover:bg-amber-50/30 transition-all cursor-pointer relative bg-gradient-to-br from-white to-amber-50/20">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setFile(e.target.files?.[0] || null)}
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        required
+                      />
+                      <Upload className="w-12 h-12 text-amber-500 mx-auto mb-3" />
+                      <div className="text-slate-700 font-medium">
+                        {file ? (
+                          <span className="text-green-600 font-bold text-lg">{file.name}</span>
+                        ) : (
+                          <span className="text-lg">اضغط هنا لاختيار صورة</span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}
 
-                <div className="flex gap-3">
-                  <button
+                <div className="flex gap-3 pt-4">
+                  <Button
                     type="submit"
                     disabled={loading}
-                    className={`flex-1 py-3 rounded-lg font-bold text-white transition-all ${loading ? 'bg-gray-400' : 'bg-[#1A2E26] hover:bg-[#2a4a3d]'
-                      }`}
+                    className="flex-1 py-6 text-lg rounded-xl font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-md"
                   >
                     {loading ? 'جاري الحفظ...' : (editingPhoto ? 'حفظ التعديل' : 'حفظ ونشر')}
-                  </button>
+                  </Button>
 
                   {editingPhoto && (
-                    <button
+                    <Button
                       type="button"
                       onClick={() => setEditingPhoto(null)}
-                      className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                      variant="outline"
+                      className="px-8 py-6 text-lg border-2 border-slate-300 hover:bg-slate-50 font-semibold rounded-xl"
                     >
+                      <X className="ml-2 h-5 w-5" />
                       إلغاء
-                    </button>
+                    </Button>
                   )}
                 </div>
               </form>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {photos.map((photo) => (
-                <div key={photo._id} className="bg-white rounded-lg shadow-lg overflow-hidden">
-                  <img
-                    src={photo.imageUrl}
-                    alt={photo.title}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="p-4">
-                    <h3 className="font-bold text-lg mb-2">{photo.title}</h3>
-                    <p className="text-gray-600 text-sm mb-4">
-                      {photo.category === 'corporate' && 'حفلات شركات'}
-                      {photo.category === 'wedding' && 'حفلات زفاف'}
-                      {photo.category === 'graduation' && 'تخرج'}
-                      {photo.category === 'national' && 'فعاليات وطنية'}
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {photos.length === 0 ? (
+              <Card className="col-span-full border-2 border-amber-100 rounded-2xl">
+                <CardContent className="p-12 text-center">
+                  <ImageIcon className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                  <p className="text-slate-500 text-lg font-medium">لا توجد صور في المعرض</p>
+                </CardContent>
+              </Card>
+            ) : (
+              photos.map((photo) => (
+                <Card key={photo._id} className="border-2 border-amber-100 hover:border-amber-200 hover:shadow-xl transition-all rounded-2xl overflow-hidden group">
+                  <div className="relative overflow-hidden">
+                    <img
+                      src={photo.imageUrl}
+                      alt={photo.title}
+                      className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                  <CardContent className="p-5 bg-gradient-to-br from-white to-amber-50/20">
+                    <h3 className="font-bold text-xl mb-2 text-slate-900">{photo.title}</h3>
+                    <p className="text-amber-700 font-semibold text-sm mb-4 bg-amber-100 inline-block px-3 py-1 rounded-full">
+                      {categoryLabels[photo.category]}
                     </p>
-                    <div className="flex gap-2">
-                      <button
+                    <div className="flex gap-2 mt-4">
+                      <Button
                         onClick={() => {
                           setEditingPhoto(photo);
                           setShowGallery(false);
                         }}
-                        className="flex-1 px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-sm"
+                        variant="outline"
+                        className="flex-1 border-2 border-blue-200 hover:bg-blue-50 text-blue-700 font-semibold rounded-xl"
                       >
+                        <Edit className="ml-2 h-4 w-4" />
                         تعديل
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         onClick={() => handleDelete(photo._id)}
-                        className="flex-1 px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors text-sm"
+                        variant="outline"
+                        className="flex-1 border-2 border-red-200 hover:bg-red-50 text-red-700 font-semibold rounded-xl"
                       >
+                        <Trash2 className="ml-2 h-4 w-4" />
                         حذف
-                      </button>
+                      </Button>
                     </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
-
 }

@@ -1,258 +1,117 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { CheckCircle, X, Loader2, User, Mail, Lock, Sparkles, Shield } from 'lucide-react';
+import { Loader2, User, Mail, Shield, Calendar, Briefcase, Phone, MapPin } from 'lucide-react';
 import { useAuthStore } from '@/lib/store/authStore';
 
 export default function ProfilePage() {
-  const { user, isLoading: userLoading, setUser } = useAuthStore();
-  
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    password: '',
-    passwordConfirmation: '',
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (user) {
-      setFormData({
-        fullName: user.fullName || '',
-        email: user.email || '',
-        password: '',
-        passwordConfirmation: '',
-      });
-    }
-  }, [user]);
-
-  const handleUpdateProfile = async () => {
-    setLoading(true);
-    setError(null);
-    setSuccessMessage(null);
-
-    if (formData.password && formData.password !== formData.passwordConfirmation) {
-      setError('كلمتا المرور غير متطابقتين');
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const res = await fetch('/api/auth/profile', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fullName: formData.fullName,
-          email: formData.email,
-          ...(formData.password && { password: formData.password }),
-        }),
-      });
-
-      const json = await res.json();
-      if (!res.ok || !json.success) {
-        throw new Error(json.error || 'فشل في تحديث الملف الشخصي');
-      }
-      
-      if(json.user) {
-        setUser(json.user);
-      }
-
-      setSuccessMessage('تم تحديث الملف الشخصي بنجاح!');
-      setFormData(prev => ({ ...prev, password: '', passwordConfirmation: '' }));
-
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'خطأ غير معروف');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { user, isLoading: userLoading } = useAuthStore();
 
   if (userLoading || !user) {
     return (
       <DashboardLayout>
         <div className="flex justify-center items-center h-96">
           <div className="text-center">
-            <Loader2 className="h-12 w-12 animate-spin text-[#F08784] mx-auto mb-4" />
-            <p className="text-slate-600">جاري تحميل البيانات...</p>
+            <Loader2 className="h-12 w-12 animate-spin text-amber-500 mx-auto mb-4" />
+            <p className="text-slate-600 font-medium">جاري تحميل البيانات...</p>
           </div>
         </div>
       </DashboardLayout>
     );
   }
 
+  const userInfo = [
+    { label: 'الاسم الكامل', value: user.fullName, icon: User },
+    { label: 'البريد الإلكتروني', value: user.email, icon: Mail },
+    { label: 'الصلاحية', value: user.role === 'manager' ? 'مدير' : 'موظف', icon: Shield },
+    { label: 'رقم الجوال', value: user.phone || 'غير محدد', icon: Phone },
+    { label: 'الشركة', value: user.company?.name || 'غير محدد', icon: Briefcase },
+    { label: 'تاريخ الانضمام', value: user.createdAt ? new Date(user.createdAt).toLocaleDateString('ar-SA', { dateStyle: 'long' }) : 'غير محدد', icon: Calendar },
+  ];
+
   return (
     <DashboardLayout>
-      <div className="space-y-8" dir="rtl">
+      <div className="space-y-6" dir="rtl">
         {/* Header Section */}
-        <div className="bg-gradient-to-br from-[#F08784]/5 via-white to-violet-50/30 rounded-3xl p-8 border border-slate-100 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-[#F08784]/10 rounded-2xl flex items-center justify-center">
-              <User className="w-8 h-8 text-[#F08784]" />
+        <Card className="bg-gradient-to-br from-amber-50 via-white to-amber-50/30 rounded-2xl p-8 border-2 border-amber-100 shadow-lg">
+          <div className="flex items-center gap-6">
+            <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <User className="w-10 h-10 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-black text-slate-900">الملف الشخصي</h1>
-              <p className="text-lg text-slate-600 mt-1">إدارة معلوماتك الشخصية وإعدادات الحساب</p>
+              <h1 className="text-4xl font-bold text-slate-900 tracking-tight">الملف الشخصي</h1>
+              <p className="text-lg text-slate-600 mt-2 font-medium">عرض معلوماتك الشخصية وبيانات الحساب</p>
             </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Profile Info Card */}
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* User Info Sidebar */}
+        {/* Profile Content */}
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* User Avatar Card */}
           <div className="lg:col-span-1">
-            <Card className="border-slate-200 shadow-md rounded-3xl bg-white">
+            <Card className="border-2 border-amber-100 shadow-lg rounded-2xl bg-gradient-to-br from-white to-amber-50/20">
               <CardContent className="p-8 text-center">
-                <div className="w-24 h-24 bg-gradient-to-br from-[#F08784] to-[#D97673] rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-                  <span className="text-3xl font-black text-white">
+                <div className="w-32 h-32 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
+                  <span className="text-5xl font-bold text-white">
                     {user.fullName?.charAt(0)?.toUpperCase() || 'U'}
                   </span>
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-2">{user.fullName}</h3>
-                <p className="text-slate-600 mb-4">{user.email}</p>
+                <h3 className="text-2xl font-bold text-slate-900 mb-2">{user.fullName}</h3>
+                <p className="text-slate-600 mb-6 font-medium">{user.email}</p>
                 
-                <div className="inline-flex items-center gap-2 bg-[#F08784]/10 text-[#F08784] px-4 py-2 rounded-full text-sm font-bold">
-                  <Shield size={16} />
-                  <span>{user.role === 'manager' ? 'مدير' : 'موظف'}</span>
+                <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-800 px-5 py-2.5 rounded-full font-bold shadow-sm border-2 border-amber-200">
+                  <Shield size={18} />
+                  <span className="text-base">{user.role === 'manager' ? 'مدير' : 'موظف'}</span>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Edit Form */}
+          {/* User Information Card */}
           <div className="lg:col-span-2">
-            <Card className="border-slate-200 shadow-md rounded-3xl bg-white">
-              <CardHeader className="bg-gradient-to-r from-slate-50 to-[#F08784]/5 border-b border-slate-100 rounded-t-3xl">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#F08784]/10 rounded-xl flex items-center justify-center">
-                    <Sparkles className="w-5 h-5 text-[#F08784]" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-2xl font-bold text-slate-900">تحديث البيانات</CardTitle>
-                    <CardDescription className="text-slate-600">قم بتعديل معلوماتك الشخصية</CardDescription>
-                  </div>
-                </div>
+            <Card className="border-2 border-amber-100 shadow-lg rounded-2xl bg-white">
+              <CardHeader className="bg-gradient-to-r from-amber-50 to-white border-b-2 border-amber-100">
+                <CardTitle className="text-2xl font-bold text-slate-900">المعلومات الشخصية</CardTitle>
+                <CardDescription className="text-slate-600 font-medium">بيانات الحساب والمعلومات الأساسية</CardDescription>
               </CardHeader>
               
-              <CardContent className="p-8 space-y-6">
-                {/* Form Fields */}
-                <div className="space-y-6">
-                  {/* Full Name */}
-                  <div className="space-y-2">
-                    <Label htmlFor="fullName" className="font-bold text-slate-700 flex items-center gap-2">
-                      <User size={16} />
-                      الاسم الكامل
-                    </Label>
-                    <Input 
-                      id="fullName" 
-                      value={formData.fullName} 
-                      onChange={(e) => setFormData(p => ({ ...p, fullName: e.target.value }))}
-                      className="rounded-xl border-slate-300 focus:ring-[#F08784] focus:border-transparent bg-slate-50 focus:bg-white transition-all py-3"
-                      placeholder="أدخل اسمك الكامل"
-                    />
-                  </div>
-
-                  {/* Email */}
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="font-bold text-slate-700 flex items-center gap-2">
-                      <Mail size={16} />
-                      البريد الإلكتروني
-                    </Label>
-                    <Input 
-                      id="email" 
-                      type="email" 
-                      value={formData.email} 
-                      onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))}
-                      className="rounded-xl border-slate-300 focus:ring-[#F08784] focus:border-transparent bg-slate-50 focus:bg-white transition-all py-3"
-                      placeholder="example@email.com"
-                    />
-                  </div>
-
-                  {/* Password Section */}
-                  <div className="bg-slate-50 rounded-2xl p-6 space-y-4">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Lock size={18} className="text-slate-600" />
-                      <h4 className="font-bold text-slate-800">تغيير كلمة المرور</h4>
-                      <span className="text-sm text-slate-500">(اختياري)</span>
-                    </div>
-                    
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="password" className="font-semibold text-slate-700">كلمة المرور الجديدة</Label>
-                        <Input 
-                          id="password" 
-                          type="password" 
-                          value={formData.password} 
-                          onChange={(e) => setFormData(p => ({ ...p, password: e.target.value }))}
-                          className="rounded-xl border-slate-300 focus:ring-[#F08784] focus:border-transparent bg-white transition-all py-3"
-                          placeholder="••••••••"
-                        />
+              <CardContent className="p-8">
+                <div className="grid gap-6">
+                  {userInfo.map((info, index) => (
+                    <div 
+                      key={index} 
+                      className="flex items-start gap-4 p-5 bg-gradient-to-r from-amber-50/50 to-white rounded-xl border-2 border-amber-100 hover:border-amber-200 hover:shadow-md transition-all"
+                    >
+                      <div className="p-3 bg-amber-100 rounded-lg flex-shrink-0">
+                        <info.icon className="w-6 h-6 text-amber-600" />
                       </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="passwordConfirmation" className="font-semibold text-slate-700">تأكيد كلمة المرور</Label>
-                        <Input 
-                          id="passwordConfirmation" 
-                          type="password" 
-                          value={formData.passwordConfirmation} 
-                          onChange={(e) => setFormData(p => ({ ...p, passwordConfirmation: e.target.value }))}
-                          className="rounded-xl border-slate-300 focus:ring-[#F08784] focus:border-transparent bg-white transition-all py-3"
-                          placeholder="••••••••"
-                        />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-slate-600 mb-1">{info.label}</p>
+                        <p className="text-lg font-bold text-slate-900 break-words">{info.value}</p>
                       </div>
                     </div>
-                  </div>
-                </div>
-
-                {/* Alerts */}
-                {error && (
-                  <Alert variant="destructive" className="rounded-xl border-red-200 bg-red-50">
-                    <X className="h-5 w-5 text-red-600" />
-                    <AlertTitle className="font-bold text-red-800">حدث خطأ</AlertTitle>
-                    <AlertDescription className="text-red-700">{error}</AlertDescription>
-                  </Alert>
-                )}
-
-                {successMessage && (
-                  <Alert variant="default" className="bg-emerald-50 border-emerald-200 text-emerald-800 rounded-xl">
-                    <CheckCircle className="h-5 w-5 text-emerald-600" />
-                    <AlertTitle className="font-bold text-emerald-900">تم بنجاح ✓</AlertTitle>
-                    <AlertDescription className="text-emerald-700">{successMessage}</AlertDescription>
-                  </Alert>
-                )}
-
-                {/* Save Button */}
-                <div className="flex justify-end pt-6 border-t border-slate-200">
-                  <Button 
-                    onClick={handleUpdateProfile} 
-                    disabled={loading} 
-                    className="bg-[#F08784] hover:bg-[#D97673] text-white px-8 py-3 rounded-xl font-bold text-base shadow-lg hover:shadow-xl transition-all"
-                    size="lg"
-                  >
-                    {loading ? (
-                      <span className="flex items-center gap-2">
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        جاري الحفظ...
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-2">
-                        <CheckCircle size={20} />
-                        حفظ التغييرات
-                      </span>
-                    )}
-                  </Button>
+                  ))}
                 </div>
               </CardContent>
             </Card>
           </div>
         </div>
+
+        {/* Additional Info Card */}
+        <Card className="border-2 border-amber-100 shadow-lg rounded-2xl bg-gradient-to-br from-white to-amber-50/10">
+          <CardHeader className="bg-gradient-to-r from-amber-50 to-white border-b-2 border-amber-100">
+            <CardTitle className="text-xl font-bold text-slate-900">ملاحظة</CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="flex items-start gap-3 text-slate-700">
+              <Shield className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+              <p className="font-medium leading-relaxed">
+                هذه الصفحة مخصصة لعرض معلوماتك الشخصية فقط. لتحديث أي بيانات، يرجى التواصل مع المسؤول أو مدير النظام.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </DashboardLayout>
   );

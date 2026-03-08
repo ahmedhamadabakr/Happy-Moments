@@ -119,44 +119,80 @@ export default function CreateEventPage() {
   }
 
   const renderStep1 = () => (
-    <Card className="border-slate-200 shadow-md rounded-3xl overflow-hidden bg-white">
-      <CardHeader className="bg-gradient-to-r from-slate-50 to-amber-50/20 border-b border-slate-100">
+    <Card className="border-2 border-amber-100 shadow-lg rounded-2xl overflow-hidden bg-white">
+      <CardHeader className="bg-gradient-to-r from-amber-50 to-white border-b-2 border-amber-100">
         <CardTitle className="text-2xl font-bold text-slate-900">خطوة 1: تفاصيل الفعالية</CardTitle>
-        <CardDescription className="text-slate-600 text-base">املأ المعلومات الأساسية لفعاليتك</CardDescription>
+        <CardDescription className="text-slate-600 text-base font-medium">املأ المعلومات الأساسية لفعاليتك</CardDescription>
       </CardHeader>
-      <CardContent className="p-6 space-y-6">
-        <div className="grid md:grid-cols-2 gap-6">
+      <CardContent className="p-8 space-y-6">
+        <div className="grid md:grid-cols-2 gap-8">
           {/* Right Column */}
           <div className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="title" className="font-semibold">عنوان الفعالية</Label>
-              <Input id="title" value={formData.title} onChange={(e) => setFormData(p => ({ ...p, title: e.target.value }))} placeholder="مثال: حفل إطلاق المنتج الجديد" />
+              <Label htmlFor="title" className="font-bold text-slate-700 text-base">عنوان الفعالية</Label>
+              <Input 
+                id="title" 
+                value={formData.title} 
+                onChange={(e) => setFormData(p => ({ ...p, title: e.target.value }))} 
+                placeholder="مثال: حفل إطلاق المنتج الجديد" 
+                className="text-lg p-6 border-2 border-amber-200 focus:border-amber-400 rounded-xl"
+              />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description" className="font-semibold">وصف الفعالية (اختياري)</Label>
-              <Textarea id="description" value={formData.description} onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))} placeholder="تفاصيل إضافية عن الفعالية..." />
+              <Label htmlFor="description" className="font-bold text-slate-700 text-base">وصف الفعالية (اختياري)</Label>
+              <Textarea 
+                id="description" 
+                value={formData.description} 
+                onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))} 
+                placeholder="تفاصيل إضافية عن الفعالية..." 
+                className="text-lg p-4 border-2 border-amber-200 focus:border-amber-400 rounded-xl min-h-[100px]"
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="eventDate" className="font-semibold">تاريخ الفعالية</Label>
-                    <Input id="eventDate" type="date" value={formData.eventDate} onChange={(e) => setFormData(p => ({ ...p, eventDate: e.target.value }))} />
+                    <Label htmlFor="eventDate" className="font-bold text-slate-700 text-base">تاريخ الفعالية</Label>
+                    <Input 
+                      id="eventDate" 
+                      type="date" 
+                      value={formData.eventDate} 
+                      onChange={(e) => setFormData(p => ({ ...p, eventDate: e.target.value }))} 
+                      className="text-lg p-6 border-2 border-amber-200 focus:border-amber-400 rounded-xl"
+                    />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="eventTime" className="font-semibold">الوقت</Label>
-                    <Input id="eventTime" type="time" value={formData.eventTime} onChange={(e) => setFormData(p => ({ ...p, eventTime: e.target.value }))} />
+                    <Label htmlFor="eventTime" className="font-bold text-slate-700 text-base">الوقت</Label>
+                    <Input 
+                      id="eventTime" 
+                      type="time" 
+                      value={formData.eventTime} 
+                      onChange={(e) => setFormData(p => ({ ...p, eventTime: e.target.value }))} 
+                      className="text-lg p-6 border-2 border-amber-200 focus:border-amber-400 rounded-xl"
+                    />
                 </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="location" className="font-semibold">الموقع</Label>
-              <Input id="location" value={formData.location} onChange={(e) => setFormData(p => ({ ...p, location: e.target.value }))} placeholder="مثال: فندق الريتز كارلتون" />
+              <Label htmlFor="location" className="font-bold text-slate-700 text-base">الموقع</Label>
+              <Input 
+                id="location" 
+                value={formData.location} 
+                onChange={(e) => setFormData(p => ({ ...p, location: e.target.value }))} 
+                placeholder="مثال: فندق الريتز كارلتون" 
+                className="text-lg p-6 border-2 border-amber-200 focus:border-amber-400 rounded-xl"
+              />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="locationUrl" className="font-semibold">رابط الموقع (Google Maps)</Label>
-              <Input id="locationUrl" value={formData.locationUrl} onChange={(e) => setFormData(p => ({ ...p, locationUrl: e.target.value }))} placeholder="https://maps.app.goo.gl/..." />
+              <Label htmlFor="locationUrl" className="font-bold text-slate-700 text-base">رابط الموقع (Google Maps)</Label>
+              <Input 
+                id="locationUrl" 
+                value={formData.locationUrl} 
+                onChange={(e) => setFormData(p => ({ ...p, locationUrl: e.target.value }))} 
+                placeholder="https://maps.app.goo.gl/..." 
+                className="text-lg p-6 border-2 border-amber-200 focus:border-amber-400 rounded-xl"
+              />
             </div>
 
           </div>
@@ -164,11 +200,11 @@ export default function CreateEventPage() {
           {/* Left Column */}
           <div className="space-y-6">
             <div className="space-y-2">
-              <Label className="font-semibold">صورة الدعوة (اختياري)</Label>
-              <div className="p-4 border-2 border-dashed rounded-xl text-center cursor-pointer hover:border-amber-400 transition-colors relative" onClick={() => !imagePreview && document.getElementById('invitationImage')?.click()}>
+              <Label className="font-bold text-slate-700 text-base">صورة الدعوة (اختياري)</Label>
+              <div className="p-6 border-2 border-dashed border-amber-300 rounded-xl text-center cursor-pointer hover:border-amber-400 hover:bg-amber-50/30 transition-all relative bg-gradient-to-br from-white to-amber-50/20" onClick={() => !imagePreview && document.getElementById('invitationImage')?.click()}>
                 {imagePreview ? (
                   <div className="relative w-full">
-                    <div className="relative max-h-[700px] overflow-auto rounded-lg bg-slate-50">
+                    <div className="relative max-h-[700px] overflow-auto rounded-lg bg-slate-50 border-2 border-amber-200">
                       <img src={imagePreview} alt="Preview" className="w-full h-auto object-contain" />
                       <div 
                         className="absolute border-2 border-dashed border-red-500 bg-white/30 backdrop-blur-sm"
@@ -183,42 +219,42 @@ export default function CreateEventPage() {
                         <div className='text-red-500 font-bold text-xs bg-white/50 p-px rounded-sm absolute -top-5 right-0'>QR Preview</div>
                       </div>
                     </div>
-                    <Button variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 z-10" onClick={(e) => { e.stopPropagation(); setImagePreview(null); setInvitationImage(null); }}>
-                      <X className="h-4 w-4"/>
+                    <Button variant="destructive" size="icon" className="absolute top-2 right-2 h-8 w-8 z-10 shadow-lg" onClick={(e) => { e.stopPropagation(); setImagePreview(null); setInvitationImage(null); }}>
+                      <X className="h-5 w-5"/>
                     </Button>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center space-y-2 text-slate-500 py-10">
-                    <Upload className="w-10 h-10" />
-                    <p>اسحب وأفلت الصورة هنا، أو انقر للاختيار</p>
-                    <p className="text-xs">سيتم دمج QR Code على هذه الصورة</p>
-                    <p className="text-xs text-amber-600 font-semibold mt-2">يُفضل استخدام صورة بالطول (Portrait)</p>
+                  <div className="flex flex-col items-center justify-center space-y-3 text-slate-600 py-12">
+                    <Upload className="w-12 h-12 text-amber-500" />
+                    <p className="font-semibold text-lg">اسحب وأفلت الصورة هنا، أو انقر للاختيار</p>
+                    <p className="text-sm">سيتم دمج QR Code على هذه الصورة</p>
+                    <p className="text-sm text-amber-600 font-bold mt-2 bg-amber-100 px-4 py-2 rounded-full">يُفضل استخدام صورة بالطول (Portrait)</p>
                   </div>
                 )}
                 <Input id="invitationImage" type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
               </div>
             </div>
              {imagePreview && (
-              <Card className="bg-slate-50/80">
-                <CardContent className='p-4 space-y-4'>
+              <Card className="bg-gradient-to-br from-amber-50 to-white border-2 border-amber-200 shadow-md rounded-xl">
+                <CardContent className='p-6 space-y-5'>
                     <div>
-                      <Label className='font-medium'>المحور الأفقي (X): {formData.qrX}%</Label>
-                      <Slider value={[parseInt(formData.qrX)]} onValueChange={([val]) => setFormData(p => ({ ...p, qrX: String(val) }))} />
+                      <Label className='font-bold text-slate-700 mb-2 block'>المحور الأفقي (X): {formData.qrX}%</Label>
+                      <Slider value={[parseInt(formData.qrX)]} onValueChange={([val]) => setFormData(p => ({ ...p, qrX: String(val) }))} className="cursor-pointer" />
                     </div>
                      <div>
-                      <Label className='font-medium'>المحور العامودي (Y): {formData.qrY}%</Label>
-                      <Slider value={[parseInt(formData.qrY)]} onValueChange={([val]) => setFormData(p => ({ ...p, qrY: String(val) }))} />
+                      <Label className='font-bold text-slate-700 mb-2 block'>المحور العامودي (Y): {formData.qrY}%</Label>
+                      <Slider value={[parseInt(formData.qrY)]} onValueChange={([val]) => setFormData(p => ({ ...p, qrY: String(val) }))} className="cursor-pointer" />
                     </div>
                      <div>
-                      <Label className='font-medium'>حجم الرمز: {formData.qrSize}%</Label>
-                      <Slider value={[parseInt(formData.qrSize)]} onValueChange={([val]) => setFormData(p => ({ ...p, qrSize: String(val) }))} />
+                      <Label className='font-bold text-slate-700 mb-2 block'>حجم الرمز: {formData.qrSize}%</Label>
+                      <Slider value={[parseInt(formData.qrSize)]} onValueChange={([val]) => setFormData(p => ({ ...p, qrSize: String(val) }))} className="cursor-pointer" />
                     </div>
                 </CardContent>
               </Card>
             )}
 
             <div className="space-y-2">
-                <Label className="font-semibold">ربط بعميل (اختياري)</Label>
+                <Label className="font-bold text-slate-700 text-base">ربط بعميل (اختياري)</Label>
                 <Select 
                     onValueChange={(value) => {
                         const finalValue = value === 'no-client' ? '' : value;
@@ -226,7 +262,7 @@ export default function CreateEventPage() {
                     }}
                     value={formData.clientId || 'no-client'}
                 >
-                    <SelectTrigger>
+                    <SelectTrigger className="text-lg p-6 border-2 border-amber-200 focus:border-amber-400 rounded-xl">
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -236,22 +272,28 @@ export default function CreateEventPage() {
                         ))}
                     </SelectContent>
                 </Select>
-                <p className="text-xs text-slate-500 pt-1">إذا اخترت عميل، سيتم إنشاء دعوات لجهات الاتصال الخاصة به.</p>
+                <p className="text-sm text-slate-600 pt-2 font-medium bg-amber-50 p-3 rounded-lg border border-amber-200">إذا اخترت عميل، سيتم إنشاء دعوات لجهات الاتصال الخاصة به.</p>
             </div>
           </div>
         </div>
 
         {error && (
-            <Alert variant="destructive">
-                <X className="h-4 w-4" />
-                <AlertTitle>خطأ</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
+            <Alert variant="destructive" className="rounded-xl border-2 border-red-200 bg-red-50">
+                <X className="h-5 w-5" />
+                <AlertTitle className="font-bold">خطأ</AlertTitle>
+                <AlertDescription className="font-medium">{error}</AlertDescription>
             </Alert>
         )}
 
-        <div className="flex justify-end pt-4">
-            <Button onClick={handleCreateEvent} disabled={loading || !formData.title || !formData.eventDate} loading={loading} size="lg">
-                متابعة <ArrowRight className="mr-2 h-4 w-4"/>
+        <div className="flex justify-end pt-6 border-t-2 border-amber-100">
+            <Button 
+              onClick={handleCreateEvent} 
+              disabled={loading || !formData.title || !formData.eventDate} 
+              loading={loading} 
+              size="lg"
+              className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-lg px-8 py-6 rounded-xl shadow-md"
+            >
+                متابعة <ArrowRight className="mr-2 h-5 w-5"/>
             </Button>
         </div>
       </CardContent>
@@ -259,28 +301,42 @@ export default function CreateEventPage() {
   );
 
   const renderStep2 = () => (
-     <Card className="border-slate-200 shadow-md rounded-3xl overflow-hidden bg-white text-center">
-      <CardHeader>
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-            <CheckCircle className="h-10 w-10 text-green-600" />
+     <Card className="border-2 border-green-200 shadow-lg rounded-2xl overflow-hidden bg-gradient-to-br from-white to-green-50/20 text-center">
+      <CardHeader className="pt-12 pb-6">
+        <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-green-600 shadow-xl">
+            <CheckCircle className="h-14 w-14 text-white" />
         </div>
-        <CardTitle className="text-2xl font-bold text-slate-900 mt-4">تم إنشاء الفعالية بنجاح!</CardTitle>
-        <CardDescription className="text-slate-600 text-base">"{createdEvent?.title}" جاهزة الآن. ما هي خطوتك التالية؟</CardDescription>
+        <CardTitle className="text-3xl font-bold text-slate-900 mt-6">تم إنشاء الفعالية بنجاح!</CardTitle>
+        <CardDescription className="text-slate-600 text-lg font-medium mt-3">"{createdEvent?.title}" جاهزة الآن. ما هي خطوتك التالية؟</CardDescription>
       </CardHeader>
-      <CardContent className="p-6 space-y-4">
+      <CardContent className="p-8 space-y-6">
         <div className="grid md:grid-cols-2 gap-4">
             {createdEvent?.clientId && (
-                <Button variant="outline" size="lg" onClick={() => router.push(`/dashboard/events/${createdEvent._id}/send-invitations`)}>
-                    <Send className="ml-2 h-4 w-4"/> إرسال الدعوات للضيوف
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  onClick={() => router.push(`/dashboard/events/${createdEvent._id}/send-invitations`)}
+                  className="bg-white hover:bg-blue-50 border-2 border-blue-200 hover:border-blue-300 text-blue-700 font-bold py-6 text-lg rounded-xl shadow-sm"
+                >
+                    <Send className="ml-2 h-5 w-5"/> إرسال الدعوات للضيوف
                 </Button>
             )}
-            <Button variant="outline" size="lg" onClick={() => router.push(`/dashboard/events/${createdEvent._id}/guests`)}>
-                <Users className="ml-2 h-4 w-4"/> إضافة ضيوف يدويًا
+            <Button 
+              variant="outline" 
+              size="lg" 
+              onClick={() => router.push(`/dashboard/events/${createdEvent._id}/guests`)}
+              className="bg-white hover:bg-purple-50 border-2 border-purple-200 hover:border-purple-300 text-purple-700 font-bold py-6 text-lg rounded-xl shadow-sm"
+            >
+                <Users className="ml-2 h-5 w-5"/> إضافة ضيوف يدويًا
             </Button>
         </div>
         <div className="pt-4">
-            <Button size="lg" onClick={() => router.push(`/dashboard/events/${createdEvent._id}`)}>
-                <PartyPopper className="ml-2 h-4 w-4"/> الذهاب إلى صفحة الفعالية
+            <Button 
+              size="lg" 
+              onClick={() => router.push(`/dashboard/events/${createdEvent._id}`)}
+              className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-lg px-10 py-6 rounded-xl shadow-md"
+            >
+                <PartyPopper className="ml-2 h-5 w-5"/> الذهاب إلى صفحة الفعالية
             </Button>
         </div>
       </CardContent>
@@ -290,6 +346,19 @@ export default function CreateEventPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6" dir="rtl">
+        {/* Header */}
+        <Card className="bg-gradient-to-br from-amber-50 via-white to-amber-50/30 rounded-2xl p-8 border-2 border-amber-100 shadow-lg">
+          <div className="flex items-center gap-6">
+            <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <PartyPopper className="w-10 h-10 text-white" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold text-slate-900 tracking-tight">إنشاء فعالية جديدة</h1>
+              <p className="text-lg text-slate-600 mt-2 font-medium">أضف تفاصيل الفعالية وابدأ في إدارة الضيوف</p>
+            </div>
+          </div>
+        </Card>
+
         {step === 1 ? renderStep1() : renderStep2()}
       </div>
     </DashboardLayout>
