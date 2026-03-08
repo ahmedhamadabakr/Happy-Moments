@@ -75,9 +75,9 @@
 }
 
 @theme inline {
-  --font-sans: 'Geist', 'Geist Fallback';
-  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
-  --font-arabic: var(--font-arabic);
+  --font-sans: 'GE SS Two Bold', 'GE SS Two', sans-serif;
+  --font-mono: 'GE SS Two Bold', 'GE SS Two', monospace;
+  --font-arabic: 'GE SS Two Bold', 'GE SS Two', sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -119,9 +119,14 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    font-family: 'GE SS Two Bold', 'GE SS Two', sans-serif !important;
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'GE SS Two Bold', 'GE SS Two', sans-serif !important;
+  }
+  input, textarea, select, button {
+    font-family: 'GE SS Two Bold', 'GE SS Two', sans-serif !important;
   }
 }
 
