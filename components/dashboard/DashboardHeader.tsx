@@ -70,7 +70,7 @@ export function DashboardHeader() {
                 className="cursor-pointer p-2 text-base"
               >
                 <UserIcon className="ml-2 h-4 w-4" />
-                <span></span>
+                <span>الملف الشخصي</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
