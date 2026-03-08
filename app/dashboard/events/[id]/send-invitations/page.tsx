@@ -87,32 +87,45 @@ export default function SendInvitationsPage() {
 
     return (
         <DashboardLayout>
+            {/* Header */}
+            <Card className="bg-gradient-to-br from-[#F08784]/5 via-white to-violet-50/30 rounded-3xl p-8 border-none shadow-lg mb-6">
+                <div className="flex items-center gap-6">
+                    <div className="w-20 h-20 bg-gradient-to-br from-[#F08784] to-[#D97673] rounded-2xl flex items-center justify-center shadow-lg">
+                        <Send className="w-10 h-10 text-white" />
+                    </div>
+                    <div>
+                        <h1 className="text-4xl font-black text-slate-900 tracking-tight">إرسال الدعوات</h1>
+                        <p className="text-lg text-slate-600 mt-2 font-medium">اختر الضيوف الذين تود إرسال دعوات واتساب إليهم</p>
+                    </div>
+                </div>
+            </Card>
+
             <Card className="border-slate-200 shadow-md rounded-3xl overflow-hidden bg-white">
-                <CardHeader className="p-6">
-                    <CardTitle className="text-2xl font-bold">إرسال الدعوات</CardTitle>
-                    <CardDescription>اختر الضيوف الذين تود إرسال دعوات واتساب إليهم.</CardDescription>
+                <CardHeader className="p-6 bg-gradient-to-r from-slate-50 to-white border-b">
+                    <CardTitle className="text-2xl font-bold text-slate-900">قائمة الضيوف</CardTitle>
+                    <CardDescription className="text-slate-600">حدد الضيوف لإرسال الدعوات</CardDescription>
                 </CardHeader>
                 <CardContent className="p-6 space-y-6">
                     {(sendingLoading || jobId) && (
-                        <div className="space-y-2">
-                            <p>جاري إرسال الدعوات... ({Math.round(sendingProgress)}%)</p>
-                            <Progress value={sendingProgress} />
+                        <div className="space-y-3 p-4 bg-[#F08784]/5 rounded-xl border border-[#F08784]/20">
+                            <p className="font-semibold text-slate-900">جاري إرسال الدعوات... ({Math.round(sendingProgress)}%)</p>
+                            <Progress value={sendingProgress} className="h-2" />
                         </div>
                     )}
 
                     {sendError && (
-                        <Alert variant="destructive">
-                            <XCircle className="h-4 w-4" />
-                            <AlertTitle>فشل الإرسال</AlertTitle>
+                        <Alert variant="destructive" className="border-red-200 bg-red-50">
+                            <XCircle className="h-5 w-5" />
+                            <AlertTitle className="font-bold">فشل الإرسال</AlertTitle>
                             <AlertDescription>{sendError.message}</AlertDescription>
                         </Alert>
                     )}
 
                     {sendData && !jobId && (
-                         <Alert variant="success">
-                            <CheckCircle className="h-4 w-4" />
-                            <AlertTitle>اكتمل الإرسال</AlertTitle>
-                            <AlertDescription>تم وضع طلبات الإرسال في قائمة الانتظار بنجاح.</AlertDescription>
+                         <Alert className="border-emerald-200 bg-emerald-50">
+                            <CheckCircle className="h-5 w-5 text-emerald-600" />
+                            <AlertTitle className="font-bold text-emerald-900">اكتمل الإرسال</AlertTitle>
+                            <AlertDescription className="text-emerald-700">تم وضع طلبات الإرسال في قائمة الانتظار بنجاح.</AlertDescription>
                         </Alert>
                     )
                     }
@@ -147,8 +160,12 @@ export default function SendInvitationsPage() {
                         </Table>
                     </div>
                     <div className="flex justify-end">
-                        <Button onClick={handleSend} disabled={sendingLoading || jobId !== null || selectedGuestIds.length === 0} loading={sendingLoading}>
-                            <Send className="mr-2 h-4 w-4" /> إرسال لـ ({selectedGuestIds.length}) ضيف
+                        <Button 
+                            onClick={handleSend} 
+                            disabled={sendingLoading || jobId !== null || selectedGuestIds.length === 0} 
+                            className="bg-[#F08784] hover:bg-[#D97673] text-white font-semibold shadow-md px-8"
+                        >
+                            <Send className="mr-2 h-5 w-5" /> إرسال لـ ({selectedGuestIds.length}) ضيف
                         </Button>
                     </div>
                 </CardContent>

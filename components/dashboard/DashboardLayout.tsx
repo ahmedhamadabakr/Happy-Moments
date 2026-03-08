@@ -37,7 +37,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   if (status === 'loading') {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-slate-50">
-        <Loader2 className="h-12 w-12 animate-spin text-amber-600" />
+        <Loader2 className="h-12 w-12 animate-spin text-[#F08784]" />
       </div>
     );
   }

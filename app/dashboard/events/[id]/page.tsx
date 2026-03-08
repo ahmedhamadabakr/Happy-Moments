@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 // Guests Table Component
 const GuestList = ({ guests }: { guests: Guest[] }) => {
     const rsvpStatusMap: { [key: string]: { text: string; icon: React.ElementType; color: string } } = {
-        PENDING: { text: 'لم يرد', icon: HelpCircle, color: 'bg-amber-50 text-amber-700 border border-amber-200' },
+        PENDING: { text: 'لم يرد', icon: HelpCircle, color: 'bg-slate-50 text-slate-700 border border-slate-200' },
         ATTENDING: { text: 'سيحضر', icon: CheckCircle, color: 'bg-emerald-50 text-emerald-700 border border-emerald-200' },
         DECLINED: { text: 'لن يحضر', icon: XCircle, color: 'bg-red-50 text-red-700 border border-red-200' },
     };

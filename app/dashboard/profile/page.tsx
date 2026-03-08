@@ -13,7 +13,7 @@ export default function ProfilePage() {
       <DashboardLayout>
         <div className="flex justify-center items-center h-96">
           <div className="text-center">
-            <Loader2 className="h-12 w-12 animate-spin text-amber-500 mx-auto mb-4" />
+            <Loader2 className="h-12 w-12 animate-spin text-[#F08784] mx-auto mb-4" />
             <p className="text-slate-600 font-medium">جاري تحميل البيانات...</p>
           </div>
         </div>
@@ -34,13 +34,13 @@ export default function ProfilePage() {
     <DashboardLayout>
       <div className="space-y-6" dir="rtl">
         {/* Header Section */}
-        <Card className="bg-gradient-to-br from-amber-50 via-white to-amber-50/30 rounded-2xl p-8 border-2 border-amber-100 shadow-lg">
+        <Card className="bg-gradient-to-br from-[#F08784]/5 via-white to-violet-50/30 rounded-3xl p-8 border-none shadow-lg">
           <div className="flex items-center gap-6">
-            <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg">
+            <div className="w-20 h-20 bg-gradient-to-br from-[#F08784] to-[#D97673] rounded-2xl flex items-center justify-center shadow-lg">
               <User className="w-10 h-10 text-white" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold text-slate-900 tracking-tight">الملف الشخصي</h1>
+              <h1 className="text-4xl font-black text-slate-900 tracking-tight">الملف الشخصي</h1>
               <p className="text-lg text-slate-600 mt-2 font-medium">عرض معلوماتك الشخصية وبيانات الحساب</p>
             </div>
           </div>
@@ -50,9 +50,9 @@ export default function ProfilePage() {
         <div className="grid lg:grid-cols-3 gap-6">
           {/* User Avatar Card */}
           <div className="lg:col-span-1">
-            <Card className="border-2 border-amber-100 shadow-lg rounded-2xl bg-gradient-to-br from-white to-amber-50/20">
+            <Card className="border-slate-200 shadow-lg rounded-3xl bg-gradient-to-br from-white to-slate-50/50">
               <CardContent className="p-8 text-center">
-                <div className="w-32 h-32 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
+                <div className="w-32 h-32 bg-gradient-to-br from-[#F08784] to-[#D97673] rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
                   <span className="text-5xl font-bold text-white">
                     {user.fullName?.charAt(0)?.toUpperCase() || 'U'}
                   </span>
@@ -60,7 +60,7 @@ export default function ProfilePage() {
                 <h3 className="text-2xl font-bold text-slate-900 mb-2">{user.fullName}</h3>
                 <p className="text-slate-600 mb-6 font-medium">{user.email}</p>
                 
-                <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-800 px-5 py-2.5 rounded-full font-bold shadow-sm border-2 border-amber-200">
+                <div className="inline-flex items-center gap-2 bg-[#F08784]/10 text-[#F08784] px-5 py-2.5 rounded-full font-bold shadow-sm border-2 border-[#F08784]/20">
                   <Shield size={18} />
                   <span className="text-base">{user.role === 'manager' ? 'مدير' : 'موظف'}</span>
                 </div>
@@ -70,8 +70,8 @@ export default function ProfilePage() {
 
           {/* User Information Card */}
           <div className="lg:col-span-2">
-            <Card className="border-2 border-amber-100 shadow-lg rounded-2xl bg-white">
-              <CardHeader className="bg-gradient-to-r from-amber-50 to-white border-b-2 border-amber-100">
+            <Card className="border-slate-200 shadow-lg rounded-3xl bg-white">
+              <CardHeader className="bg-gradient-to-r from-slate-50 to-white border-b">
                 <CardTitle className="text-2xl font-bold text-slate-900">المعلومات الشخصية</CardTitle>
                 <CardDescription className="text-slate-600 font-medium">بيانات الحساب والمعلومات الأساسية</CardDescription>
               </CardHeader>
@@ -81,13 +81,13 @@ export default function ProfilePage() {
                   {userInfo.map((info, index) => (
                     <div 
                       key={index} 
-                      className="flex items-start gap-4 p-5 bg-gradient-to-r from-amber-50/50 to-white rounded-xl border-2 border-amber-100 hover:border-amber-200 hover:shadow-md transition-all"
+                      className="flex items-start gap-4 p-5 bg-gradient-to-r from-slate-50 to-white rounded-xl border border-slate-200 hover:border-[#F08784]/30 hover:shadow-md transition-all"
                     >
-                      <div className="p-3 bg-amber-100 rounded-lg flex-shrink-0">
-                        <info.icon className="w-6 h-6 text-amber-600" />
+                      <div className="p-3 bg-[#F08784]/10 rounded-xl flex-shrink-0">
+                        <info.icon className="w-6 h-6 text-[#F08784]" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-slate-600 mb-1">{info.label}</p>
+                        <p className="text-sm font-bold text-slate-600 mb-1">{info.label}</p>
                         <p className="text-lg font-bold text-slate-900 break-words">{info.value}</p>
                       </div>
                     </div>
@@ -99,13 +99,13 @@ export default function ProfilePage() {
         </div>
 
         {/* Additional Info Card */}
-        <Card className="border-2 border-amber-100 shadow-lg rounded-2xl bg-gradient-to-br from-white to-amber-50/10">
-          <CardHeader className="bg-gradient-to-r from-amber-50 to-white border-b-2 border-amber-100">
+        <Card className="border-slate-200 shadow-lg rounded-3xl bg-gradient-to-br from-white to-slate-50/50">
+          <CardHeader className="bg-gradient-to-r from-slate-50 to-white border-b">
             <CardTitle className="text-xl font-bold text-slate-900">ملاحظة</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             <div className="flex items-start gap-3 text-slate-700">
-              <Shield className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+              <Shield className="w-5 h-5 text-[#F08784] mt-0.5 flex-shrink-0" />
               <p className="font-medium leading-relaxed">
                 هذه الصفحة مخصصة لعرض معلوماتك الشخصية فقط. لتحديث أي بيانات، يرجى التواصل مع المسؤول أو مدير النظام.
               </p>

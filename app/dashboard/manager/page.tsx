@@ -72,10 +72,10 @@ export default function ManagerDashboardPage() {
 
   if (!authorized || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-[#C1A286] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">{!authorized ? 'جاري التحقق من الصلاحيات...' : 'جاري تحميل البيانات...'}</p>
+          <div className="w-16 h-16 border-4 border-[#F08784] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600 font-medium">{!authorized ? 'جاري التحقق من الصلاحيات...' : 'جاري تحميل البيانات...'}</p>
         </div>
       </div>
     );
@@ -86,21 +86,21 @@ export default function ManagerDashboardPage() {
       title: 'إضافة موظف جديد',
       description: 'إضافة موظف للنظام',
       icon: UserPlus,
-      color: 'bg-blue-500',
+      color: 'bg-[#F08784]',
       href: '/register'
     },
     {
       title: 'إدارة الموظفين',
       description: 'عرض وإدارة جميع الموظفين',
       icon: Users,
-      color: 'bg-green-500',
+      color: 'bg-emerald-500',
       href: '/dashboard/users'
     },
     {
       title: 'التقارير والإحصائيات',
       description: 'عرض تقارير الأداء',
       icon: BarChart3,
-      color: 'bg-orange-500',
+      color: 'bg-violet-500',
       href: '/dashboard/events'
     }
   ];
@@ -108,105 +108,115 @@ export default function ManagerDashboardPage() {
   return (
         <DashboardLayout>
     
-    <div className="min-h-screen bg-gray-50 p-6" dir="rtl">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white p-6" dir="rtl">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="bg-gradient-to-r from-[#1A2E26] to-[#2a4a3d] rounded-xl shadow-lg p-8 mb-6 text-white">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-              <Shield className="w-8 h-8 text-white" />
+        <Card className="bg-gradient-to-br from-[#F08784]/5 via-white to-violet-50/30 rounded-3xl shadow-lg p-8 border-none">
+          <div className="flex items-center gap-6 mb-6">
+            <div className="w-20 h-20 bg-gradient-to-br from-[#F08784] to-[#D97673] rounded-2xl flex items-center justify-center shadow-lg">
+              <Shield className="w-10 h-10 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold">لوحة تحكم المدير</h1>
-              <p className="text-white/80 mt-1">مرحباً بك في لوحة التحكم الخاصة بالمدير العام</p>
+              <h1 className="text-4xl font-black text-slate-900 tracking-tight">لوحة تحكم المدير</h1>
+              <p className="text-lg text-slate-600 mt-2 font-medium">مرحباً بك في لوحة التحكم الخاصة بالمدير العام</p>
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-5 border border-slate-200 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-white/70 text-sm">إجمالي الموظفين</p>
-                  <p className="text-3xl font-bold mt-1">{stats?.totalEmployees || 0}</p>
+                  <p className="text-slate-600 text-sm font-medium">إجمالي الموظفين</p>
+                  <p className="text-4xl font-black mt-2 text-slate-900">{stats?.totalEmployees || 0}</p>
                 </div>
-                <Users className="w-8 h-8 text-white/50" />
+                <div className="p-3 bg-[#F08784]/10 rounded-xl">
+                  <Users className="w-8 h-8 text-[#F08784]" />
+                </div>
               </div>
             </div>
             
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-5 border border-slate-200 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-white/70 text-sm">إجمالي الفعاليات</p>
-                  <p className="text-3xl font-bold mt-1">{stats?.totalEvents || 0}</p>
+                  <p className="text-slate-600 text-sm font-medium">إجمالي الفعاليات</p>
+                  <p className="text-4xl font-black mt-2 text-slate-900">{stats?.totalEvents || 0}</p>
                 </div>
-                <Calendar className="w-8 h-8 text-white/50" />
+                <div className="p-3 bg-violet-100 rounded-xl">
+                  <Calendar className="w-8 h-8 text-violet-600" />
+                </div>
               </div>
             </div>
             
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-5 border border-slate-200 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-white/70 text-sm">الفعاليات النشطة</p>
-                  <p className="text-3xl font-bold mt-1">{stats?.activeEvents || 0}</p>
+                  <p className="text-slate-600 text-sm font-medium">الفعاليات النشطة</p>
+                  <p className="text-4xl font-black mt-2 text-slate-900">{stats?.activeEvents || 0}</p>
                 </div>
-                <Activity className="w-8 h-8 text-white/50" />
+                <div className="p-3 bg-emerald-100 rounded-xl">
+                  <Activity className="w-8 h-8 text-emerald-600" />
+                </div>
               </div>
             </div>
             
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-5 border border-slate-200 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-white/70 text-sm">إجمالي الضيوف</p>
-                  <p className="text-3xl font-bold mt-1">{stats?.totalGuests || 0}</p>
+                  <p className="text-slate-600 text-sm font-medium">إجمالي الضيوف</p>
+                  <p className="text-4xl font-black mt-2 text-slate-900">{stats?.totalGuests || 0}</p>
                 </div>
-                <TrendingUp className="w-8 h-8 text-white/50" />
+                <div className="p-3 bg-blue-100 rounded-xl">
+                  <TrendingUp className="w-8 h-8 text-blue-600" />
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* Quick Actions */}
-        <div className="mb-6">
-          <h2 className="text-xl font-bold text-[#1A2E26] mb-4">إجراءات سريعة</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div>
+          <h2 className="text-2xl font-black text-slate-900 mb-4">إجراءات سريعة</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {quickActions.map((action, index) => (
               <button
                 key={index}
                 onClick={() => router.push(action.href)}
-                className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-all transform hover:scale-105 text-right"
+                className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 hover:shadow-lg hover:border-[#F08784]/30 transition-all transform hover:scale-105 text-right"
               >
-                <div className={`w-12 h-12 ${action.color} rounded-lg flex items-center justify-center mb-4`}>
-                  <action.icon className="w-6 h-6 text-white" />
+                <div className={`w-14 h-14 ${action.color} rounded-2xl flex items-center justify-center mb-4 shadow-md`}>
+                  <action.icon className="w-7 h-7 text-white" />
                 </div>
-                <h3 className="font-bold text-gray-900 mb-2">{action.title}</h3>
-                <p className="text-sm text-gray-600">{action.description}</p>
+                <h3 className="font-bold text-slate-900 mb-2 text-lg">{action.title}</h3>
+                <p className="text-sm text-slate-600">{action.description}</p>
               </button>
             ))}
           </div>
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <Card className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-[#1A2E26]">النشاط الأخير</h2>
-            <Clock className="w-5 h-5 text-gray-400" />
+            <h2 className="text-2xl font-black text-slate-900">النشاط الأخير</h2>
+            <div className="p-2 bg-slate-100 rounded-xl">
+              <Clock className="w-5 h-5 text-slate-600" />
+            </div>
           </div>
           
           {stats?.recentActivity && stats.recentActivity.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {stats.recentActivity.slice(0, 10).map((activity) => (
-                <div key={activity._id} className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
-                  <div className="w-10 h-10 bg-[#C1A286] rounded-full flex items-center justify-center flex-shrink-0">
-                    <CheckCircle className="w-5 h-5 text-white" />
+                <div key={activity._id} className="flex items-start gap-4 p-4 bg-gradient-to-r from-slate-50 to-white rounded-2xl border border-slate-200 hover:border-[#F08784]/30 hover:shadow-md transition-all">
+                  <div className="w-12 h-12 bg-gradient-to-br from-[#F08784] to-[#D97673] rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <CheckCircle className="w-6 h-6 text-white" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-bold text-slate-900">
                       {activity.userId?.firstName} {activity.userId?.lastName}
                     </p>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm text-slate-600 mt-1 font-medium">
                       {getActivityDescription(activity)}
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-slate-400 mt-1">
                       {new Date(activity.createdAt).toLocaleString('ar-SA')}
                     </p>
                   </div>
@@ -215,11 +225,13 @@ export default function ManagerDashboardPage() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <Activity className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-600">لا يوجد نشاط حديث</p>
+              <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Activity className="w-10 h-10 text-slate-400" />
+              </div>
+              <p className="text-slate-600 font-medium">لا يوجد نشاط حديث</p>
             </div>
           )}
-        </div>
+        </Card>
       </div>
     </div>
     </DashboardLayout>

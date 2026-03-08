@@ -135,22 +135,22 @@ export default function UploadPage() {
     <DashboardLayout>
       <div className="space-y-6" dir="rtl">
         {/* Header */}
-        <Card className="bg-gradient-to-br from-amber-50 via-white to-amber-50/30 rounded-2xl p-8 border-2 border-amber-100 shadow-lg">
+        <Card className="bg-gradient-to-br from-[#F08784]/5 via-white to-violet-50/30 rounded-3xl p-8 border-none shadow-lg">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex items-center gap-6">
-              <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <div className="w-20 h-20 bg-gradient-to-br from-[#F08784] to-[#D97673] rounded-2xl flex items-center justify-center shadow-lg">
                 <ImageIcon className="w-10 h-10 text-white" />
               </div>
               <div>
-                <h1 className="text-4xl font-bold text-slate-900 tracking-tight">إدارة الصور</h1>
+                <h1 className="text-4xl font-black text-slate-900 tracking-tight">إدارة الصور</h1>
                 <p className="text-lg text-slate-600 mt-2 font-medium">إضافة وتعديل صور المعرض</p>
               </div>
             </div>
             <Button
               onClick={() => setShowGallery(!showGallery)}
               className={showGallery 
-                ? "bg-amber-500 hover:bg-amber-600 text-white font-semibold shadow-md" 
-                : "bg-white hover:bg-amber-50 border-2 border-amber-200 hover:border-amber-300 text-slate-900 font-semibold shadow-sm"
+                ? "bg-[#F08784] hover:bg-[#D97673] text-white font-semibold shadow-md" 
+                : "bg-white hover:bg-[#F08784]/5 border-2 border-slate-300 hover:border-[#F08784] text-slate-900 font-semibold shadow-sm"
               }
             >
               {showGallery ? (
@@ -169,8 +169,8 @@ export default function UploadPage() {
         </Card>
 
         {!showGallery ? (
-          <Card className="border-2 border-amber-100 shadow-lg rounded-2xl overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-amber-50 to-white border-b-2 border-amber-100">
+          <Card className="border-slate-200 shadow-lg rounded-3xl overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-slate-50 to-white border-b">
               <CardTitle className="text-2xl font-bold text-slate-900">
                 {editingPhoto ? 'تعديل صورة' : 'إضافة صورة جديدة للمعرض'}
               </CardTitle>
@@ -179,24 +179,24 @@ export default function UploadPage() {
             <CardContent className="p-8">
               <form onSubmit={editingPhoto ? handleEdit : handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="title" className="text-base font-semibold text-slate-700">اسم المناسبة</Label>
+                  <Label htmlFor="title" className="text-base font-bold text-slate-700">اسم المناسبة</Label>
                   <Input
                     id="title"
                     name="title"
                     required
                     defaultValue={editingPhoto?.title}
-                    className="text-lg p-6 border-2 border-amber-200 focus:border-amber-400 rounded-xl"
+                    className="text-lg p-6 border-2 border-slate-300 focus:border-[#F08784] rounded-xl"
                     placeholder="مثال: حفل تخرج جامعة..."
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="category" className="text-base font-semibold text-slate-700">نوع المناسبة</Label>
+                  <Label htmlFor="category" className="text-base font-bold text-slate-700">نوع المناسبة</Label>
                   <select
                     id="category"
                     name="category"
                     defaultValue={editingPhoto?.category}
-                    className="w-full text-lg p-6 border-2 border-amber-200 focus:border-amber-400 rounded-xl outline-none focus:ring-2 focus:ring-amber-300"
+                    className="w-full text-lg p-6 border-2 border-slate-300 focus:border-[#F08784] rounded-xl outline-none focus:ring-2 focus:ring-[#F08784]/20"
                   >
                     <option value="corporate">حفلات شركات</option>
                     <option value="wedding">حفلات زفاف</option>
@@ -207,8 +207,8 @@ export default function UploadPage() {
 
                 {!editingPhoto && (
                   <div className="space-y-2">
-                    <Label className="text-base font-semibold text-slate-700">الصورة</Label>
-                    <div className="border-2 border-dashed border-amber-300 rounded-xl p-8 text-center hover:border-amber-400 hover:bg-amber-50/30 transition-all cursor-pointer relative bg-gradient-to-br from-white to-amber-50/20">
+                    <Label className="text-base font-bold text-slate-700">الصورة</Label>
+                    <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-[#F08784] hover:bg-[#F08784]/5 transition-all cursor-pointer relative bg-gradient-to-br from-white to-slate-50/50">
                       <input
                         type="file"
                         accept="image/*"
@@ -216,10 +216,10 @@ export default function UploadPage() {
                         className="absolute inset-0 opacity-0 cursor-pointer"
                         required
                       />
-                      <Upload className="w-12 h-12 text-amber-500 mx-auto mb-3" />
+                      <Upload className="w-12 h-12 text-[#F08784] mx-auto mb-3" />
                       <div className="text-slate-700 font-medium">
                         {file ? (
-                          <span className="text-green-600 font-bold text-lg">{file.name}</span>
+                          <span className="text-emerald-600 font-bold text-lg">{file.name}</span>
                         ) : (
                           <span className="text-lg">اضغط هنا لاختيار صورة</span>
                         )}
@@ -232,7 +232,7 @@ export default function UploadPage() {
                   <Button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 py-6 text-lg rounded-xl font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-md"
+                    className="flex-1 py-6 text-lg rounded-xl font-bold bg-[#F08784] hover:bg-[#D97673] text-white shadow-md"
                   >
                     {loading ? 'جاري الحفظ...' : (editingPhoto ? 'حفظ التعديل' : 'حفظ ونشر')}
                   </Button>
@@ -255,15 +255,17 @@ export default function UploadPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {photos.length === 0 ? (
-              <Card className="col-span-full border-2 border-amber-100 rounded-2xl">
+              <Card className="col-span-full border-slate-200 rounded-3xl">
                 <CardContent className="p-12 text-center">
-                  <ImageIcon className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                  <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <ImageIcon className="w-10 h-10 text-slate-400" />
+                  </div>
                   <p className="text-slate-500 text-lg font-medium">لا توجد صور في المعرض</p>
                 </CardContent>
               </Card>
             ) : (
               photos.map((photo) => (
-                <Card key={photo._id} className="border-2 border-amber-100 hover:border-amber-200 hover:shadow-xl transition-all rounded-2xl overflow-hidden group">
+                <Card key={photo._id} className="border-slate-200 hover:border-[#F08784]/30 hover:shadow-xl transition-all rounded-3xl overflow-hidden group">
                   <div className="relative overflow-hidden">
                     <img
                       src={photo.imageUrl}
@@ -272,9 +274,9 @@ export default function UploadPage() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
-                  <CardContent className="p-5 bg-gradient-to-br from-white to-amber-50/20">
+                  <CardContent className="p-5 bg-gradient-to-br from-white to-slate-50/50">
                     <h3 className="font-bold text-xl mb-2 text-slate-900">{photo.title}</h3>
-                    <p className="text-amber-700 font-semibold text-sm mb-4 bg-amber-100 inline-block px-3 py-1 rounded-full">
+                    <p className="text-[#F08784] font-semibold text-sm mb-4 bg-[#F08784]/10 inline-block px-3 py-1 rounded-full">
                       {categoryLabels[photo.category]}
                     </p>
                     <div className="flex gap-2 mt-4">
@@ -284,7 +286,7 @@ export default function UploadPage() {
                           setShowGallery(false);
                         }}
                         variant="outline"
-                        className="flex-1 border-2 border-blue-200 hover:bg-blue-50 text-blue-700 font-semibold rounded-xl"
+                        className="flex-1 border-2 border-slate-300 hover:border-[#F08784] hover:bg-[#F08784]/5 hover:text-[#F08784] font-semibold rounded-xl"
                       >
                         <Edit className="ml-2 h-4 w-4" />
                         تعديل
@@ -292,7 +294,7 @@ export default function UploadPage() {
                       <Button
                         onClick={() => handleDelete(photo._id)}
                         variant="outline"
-                        className="flex-1 border-2 border-red-200 hover:bg-red-50 text-red-700 font-semibold rounded-xl"
+                        className="flex-1 border-2 border-red-300 hover:border-red-500 hover:bg-red-50 hover:text-red-600 font-semibold rounded-xl"
                       >
                         <Trash2 className="ml-2 h-4 w-4" />
                         حذف

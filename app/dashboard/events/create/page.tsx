@@ -119,8 +119,8 @@ export default function CreateEventPage() {
   }
 
   const renderStep1 = () => (
-    <Card className="border-2 border-amber-100 shadow-lg rounded-2xl overflow-hidden bg-white">
-      <CardHeader className="bg-gradient-to-r from-amber-50 to-white border-b-2 border-amber-100">
+    <Card className="border-slate-200 shadow-lg rounded-3xl overflow-hidden bg-white">
+      <CardHeader className="bg-gradient-to-r from-slate-50 to-white border-b">
         <CardTitle className="text-2xl font-bold text-slate-900">خطوة 1: تفاصيل الفعالية</CardTitle>
         <CardDescription className="text-slate-600 text-base font-medium">املأ المعلومات الأساسية لفعاليتك</CardDescription>
       </CardHeader>
@@ -135,7 +135,7 @@ export default function CreateEventPage() {
                 value={formData.title} 
                 onChange={(e) => setFormData(p => ({ ...p, title: e.target.value }))} 
                 placeholder="مثال: حفل إطلاق المنتج الجديد" 
-                className="text-lg p-6 border-2 border-amber-200 focus:border-amber-400 rounded-xl"
+                className="text-lg p-6 border-2 border-slate-300 focus:border-[#F08784] rounded-xl"
               />
             </div>
 
@@ -146,7 +146,7 @@ export default function CreateEventPage() {
                 value={formData.description} 
                 onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))} 
                 placeholder="تفاصيل إضافية عن الفعالية..." 
-                className="text-lg p-4 border-2 border-amber-200 focus:border-amber-400 rounded-xl min-h-[100px]"
+                className="text-lg p-4 border-2 border-slate-300 focus:border-[#F08784] rounded-xl min-h-[100px]"
               />
             </div>
 
@@ -158,7 +158,7 @@ export default function CreateEventPage() {
                       type="date" 
                       value={formData.eventDate} 
                       onChange={(e) => setFormData(p => ({ ...p, eventDate: e.target.value }))} 
-                      className="text-lg p-6 border-2 border-amber-200 focus:border-amber-400 rounded-xl"
+                      className="text-lg p-6 border-2 border-slate-300 focus:border-[#F08784] rounded-xl"
                     />
                 </div>
                 <div className="space-y-2">
@@ -168,7 +168,7 @@ export default function CreateEventPage() {
                       type="time" 
                       value={formData.eventTime} 
                       onChange={(e) => setFormData(p => ({ ...p, eventTime: e.target.value }))} 
-                      className="text-lg p-6 border-2 border-amber-200 focus:border-amber-400 rounded-xl"
+                      className="text-lg p-6 border-2 border-slate-300 focus:border-[#F08784] rounded-xl"
                     />
                 </div>
             </div>
@@ -180,7 +180,7 @@ export default function CreateEventPage() {
                 value={formData.location} 
                 onChange={(e) => setFormData(p => ({ ...p, location: e.target.value }))} 
                 placeholder="مثال: فندق الريتز كارلتون" 
-                className="text-lg p-6 border-2 border-amber-200 focus:border-amber-400 rounded-xl"
+                className="text-lg p-6 border-2 border-slate-300 focus:border-[#F08784] rounded-xl"
               />
             </div>
             
@@ -191,7 +191,7 @@ export default function CreateEventPage() {
                 value={formData.locationUrl} 
                 onChange={(e) => setFormData(p => ({ ...p, locationUrl: e.target.value }))} 
                 placeholder="https://maps.app.goo.gl/..." 
-                className="text-lg p-6 border-2 border-amber-200 focus:border-amber-400 rounded-xl"
+                className="text-lg p-6 border-2 border-slate-300 focus:border-[#F08784] rounded-xl"
               />
             </div>
 
@@ -201,10 +201,10 @@ export default function CreateEventPage() {
           <div className="space-y-6">
             <div className="space-y-2">
               <Label className="font-bold text-slate-700 text-base">صورة الدعوة (اختياري)</Label>
-              <div className="p-6 border-2 border-dashed border-amber-300 rounded-xl text-center cursor-pointer hover:border-amber-400 hover:bg-amber-50/30 transition-all relative bg-gradient-to-br from-white to-amber-50/20" onClick={() => !imagePreview && document.getElementById('invitationImage')?.click()}>
+              <div className="p-6 border-2 border-dashed border-slate-300 rounded-xl text-center cursor-pointer hover:border-[#F08784] hover:bg-[#F08784]/5 transition-all relative bg-gradient-to-br from-white to-slate-50/50" onClick={() => !imagePreview && document.getElementById('invitationImage')?.click()}>
                 {imagePreview ? (
                   <div className="relative w-full">
-                    <div className="relative max-h-[700px] overflow-auto rounded-lg bg-slate-50 border-2 border-amber-200">
+                    <div className="relative max-h-[700px] overflow-auto rounded-lg bg-slate-50 border-2 border-slate-300">
                       <img src={imagePreview} alt="Preview" className="w-full h-auto object-contain" />
                       <div 
                         className="absolute border-2 border-dashed border-red-500 bg-white/30 backdrop-blur-sm"
@@ -235,7 +235,7 @@ export default function CreateEventPage() {
               </div>
             </div>
              {imagePreview && (
-              <Card className="bg-gradient-to-br from-amber-50 to-white border-2 border-amber-200 shadow-md rounded-xl">
+              <Card className="bg-gradient-to-br from-slate-50 to-white border border-slate-200 shadow-md rounded-xl">
                 <CardContent className='p-6 space-y-5'>
                     <div>
                       <Label className='font-bold text-slate-700 mb-2 block'>المحور الأفقي (X): {formData.qrX}%</Label>
@@ -262,7 +262,7 @@ export default function CreateEventPage() {
                     }}
                     value={formData.clientId || 'no-client'}
                 >
-                    <SelectTrigger className="text-lg p-6 border-2 border-amber-200 focus:border-amber-400 rounded-xl">
+                    <SelectTrigger className="text-lg p-6 border-2 border-slate-300 focus:border-[#F08784] rounded-xl">
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -272,7 +272,7 @@ export default function CreateEventPage() {
                         ))}
                     </SelectContent>
                 </Select>
-                <p className="text-sm text-slate-600 pt-2 font-medium bg-amber-50 p-3 rounded-lg border border-amber-200">إذا اخترت عميل، سيتم إنشاء دعوات لجهات الاتصال الخاصة به.</p>
+                <p className="text-sm text-slate-600 pt-2 font-medium bg-slate-50 p-3 rounded-lg border border-slate-200">إذا اخترت عميل، سيتم إنشاء دعوات لجهات الاتصال الخاصة به.</p>
             </div>
           </div>
         </div>
@@ -285,13 +285,13 @@ export default function CreateEventPage() {
             </Alert>
         )}
 
-        <div className="flex justify-end pt-6 border-t-2 border-amber-100">
+        <div className="flex justify-end pt-6 border-t border-slate-200">
             <Button 
               onClick={handleCreateEvent} 
               disabled={loading || !formData.title || !formData.eventDate} 
               loading={loading} 
               size="lg"
-              className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-lg px-8 py-6 rounded-xl shadow-md"
+              className="bg-[#F08784] hover:bg-[#D97673] text-white font-bold text-lg px-8 py-6 rounded-xl shadow-md"
             >
                 متابعة <ArrowRight className="mr-2 h-5 w-5"/>
             </Button>
@@ -334,7 +334,7 @@ export default function CreateEventPage() {
             <Button 
               size="lg" 
               onClick={() => router.push(`/dashboard/events/${createdEvent._id}`)}
-              className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-lg px-10 py-6 rounded-xl shadow-md"
+              className="bg-[#F08784] hover:bg-[#D97673] text-white font-bold text-lg px-10 py-6 rounded-xl shadow-md"
             >
                 <PartyPopper className="ml-2 h-5 w-5"/> الذهاب إلى صفحة الفعالية
             </Button>
@@ -347,9 +347,9 @@ export default function CreateEventPage() {
     <DashboardLayout>
       <div className="space-y-6" dir="rtl">
         {/* Header */}
-        <Card className="bg-gradient-to-br from-amber-50 via-white to-amber-50/30 rounded-2xl p-8 border-2 border-amber-100 shadow-lg">
+        <Card className="bg-gradient-to-br from-[#F08784]/5 via-white to-violet-50/30 rounded-3xl p-8 border-none shadow-lg">
           <div className="flex items-center gap-6">
-            <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg">
+            <div className="w-20 h-20 bg-gradient-to-br from-[#F08784] to-[#D97673] rounded-2xl flex items-center justify-center shadow-lg">
               <PartyPopper className="w-10 h-10 text-white" />
             </div>
             <div>

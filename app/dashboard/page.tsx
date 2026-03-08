@@ -36,7 +36,7 @@ export default function DashboardPage() {
       value: '0',
       description: 'الضيوف الذين أكدوا الحضور',
       icon: CheckCircle,
-      color: 'bg-amber-50 text-amber-600',
+      color: 'bg-violet-50 text-violet-600',
     },
   ];
 
@@ -70,8 +70,8 @@ export default function DashboardPage() {
       title: 'تتبع الردود',
       description: 'راقب الحضور وإدارة تأكيدات الضيوف في الوقت الفعلي',
       link: '/dashboard/events',
-      color: 'bg-amber-50 text-amber-600',
-      hoverColor: 'hover:bg-amber-600 hover:text-white',
+      color: 'bg-violet-50 text-violet-600',
+      hoverColor: 'hover:bg-violet-600 hover:text-white',
     },
   ];
 

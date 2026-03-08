@@ -173,7 +173,7 @@ export function DashboardSidebar() {
               className={cn(
                 'flex items-center gap-4 rounded-lg px-4 py-3 text-base font-medium transition-colors',
                 isActive
-                  ? 'bg-amber-50 text-amber-700 font-bold'
+                  ? 'bg-[#F08784]/10 text-[#F08784] font-bold'
                   : 'text-slate-700 hover:bg-slate-50'
               )}
             >

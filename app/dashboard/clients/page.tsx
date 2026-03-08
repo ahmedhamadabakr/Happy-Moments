@@ -396,7 +396,7 @@ export default function ClientsPage() {
             <button
               onClick={handleUploadContacts}
               disabled={loading}
-              className={`flex-1 px-6 py-3 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-colors font-bold shadow-md flex items-center justify-center gap-2 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className={`flex-1 px-6 py-3 bg-[#F08784] text-white rounded-xl hover:bg-[#D97673] transition-colors font-bold shadow-md flex items-center justify-center gap-2 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
               {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <Upload className="w-5 h-5" />}
               رفع الملف
@@ -448,7 +448,7 @@ export default function ClientsPage() {
             </div>
           </div>
 
-          <div className="border-2 border-dashed border-amber-300 rounded-xl p-8 text-center hover:border-amber-400 hover:bg-amber-50/30 transition-all cursor-pointer relative group bg-gradient-to-br from-white to-amber-50/20">
+          <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-[#F08784] hover:bg-[#F08784]/5 transition-all cursor-pointer relative group bg-gradient-to-br from-white to-slate-50/50">
             <input
               type="file"
               accept=".xlsx,.xls,.csv"
@@ -459,8 +459,8 @@ export default function ClientsPage() {
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
             />
             <div className="flex flex-col items-center gap-3">
-              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center group-hover:bg-amber-200 transition-colors shadow-sm">
-                <Upload className="w-8 h-8 text-amber-600" />
+              <div className="w-16 h-16 bg-[#F08784]/10 rounded-full flex items-center justify-center group-hover:bg-[#F08784]/20 transition-colors shadow-sm">
+                <Upload className="w-8 h-8 text-[#F08784]" />
               </div>
               <div className="text-base font-bold text-slate-700">
                 {contactsFile ? (
@@ -477,7 +477,7 @@ export default function ClientsPage() {
           </div>
 
           {uploadResult?.stats && (
-            <div className="rounded-xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-white p-5 shadow-md">
+            <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5 shadow-md">
               <h5 className="font-bold text-slate-800 mb-3 text-base">نتيجة الرفع:</h5>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="bg-white p-3 rounded-lg border-2 border-slate-200 font-semibold shadow-sm">تمت المعالجة: <span className="font-bold text-slate-900">{uploadResult.stats.total}</span></div>
@@ -524,7 +524,7 @@ export default function ClientsPage() {
             <button
               onClick={handleCreateClient}
               disabled={loading}
-              className={`flex-1 px-6 py-3 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-colors font-bold shadow-md ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className={`flex-1 px-6 py-3 bg-[#F08784] text-white rounded-xl hover:bg-[#D97673] transition-colors font-bold shadow-md ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
               {loading ? 'جاري الحفظ...' : 'حفظ العميل'}
             </button>
@@ -537,7 +537,7 @@ export default function ClientsPage() {
             <input
               value={formData.fullName}
               onChange={(e) => setFormData((p) => ({ ...p, fullName: e.target.value }))}
-              className={`w-full px-5 py-3 border-2 rounded-xl focus:ring-2 focus:ring-amber-300 outline-none transition-all text-lg ${formErrors.fullName ? 'border-red-500 bg-red-50' : 'border-amber-200 focus:border-amber-400'}`}
+              className={`w-full px-5 py-3 border-2 rounded-xl focus:ring-2 focus:ring-[#F08784]/20 outline-none transition-all text-lg ${formErrors.fullName ? 'border-red-500 bg-red-50' : 'border-slate-300 focus:border-[#F08784]'}`}
               placeholder="مثال: شركة الأفراح المتميزة"
             />
             {formErrors.fullName && <p className="text-red-600 text-sm mt-2 font-medium flex items-center gap-1"><AlertCircle className="w-4 h-4" />{formErrors.fullName}</p>}
@@ -548,7 +548,7 @@ export default function ClientsPage() {
             <input
               value={formData.email}
               onChange={(e) => setFormData((p) => ({ ...p, email: e.target.value }))}
-              className="w-full px-5 py-3 border-2 border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-300 focus:border-amber-400 outline-none transition-all text-lg"
+              className="w-full px-5 py-3 border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-[#F08784]/20 focus:border-[#F08784] outline-none transition-all text-lg"
               placeholder="client@example.com"
             />
           </div>
@@ -558,7 +558,7 @@ export default function ClientsPage() {
             <input
               value={formData.phone}
               onChange={(e) => setFormData((p) => ({ ...p, phone: e.target.value }))}
-              className="w-full px-5 py-3 border-2 border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-300 focus:border-amber-400 outline-none transition-all text-lg"
+              className="w-full px-5 py-3 border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-[#F08784]/20 focus:border-[#F08784] outline-none transition-all text-lg"
               placeholder="+965xxxxxxxx"
               dir="ltr"
             />

@@ -95,7 +95,11 @@ const GuestForm = ({
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 />
-                <Button onClick={handleSubmit} className="w-full" disabled={loading}>
+                <Button 
+                    onClick={handleSubmit} 
+                    className="w-full bg-[#F08784] hover:bg-[#D97673] text-white font-semibold" 
+                    disabled={loading}
+                >
                     {loading ? 'جارٍ الحفظ...' : guest ? 'حفظ التعديلات' : 'إضافة ضيف'}
                 </Button>
             </div>
@@ -159,7 +163,7 @@ export default function EventGuestsPage() {
         PENDING: {
             text: 'لم يرد',
             icon: HelpCircle,
-            color: 'bg-yellow-100 text-yellow-800',
+            color: 'bg-slate-100 text-slate-700',
         },
         ATTENDING: {
             text: 'سيحضر',
@@ -175,16 +179,29 @@ export default function EventGuestsPage() {
 
     return (
         <DashboardLayout>
+            {/* Header */}
+            <Card className="bg-gradient-to-br from-[#F08784]/5 via-white to-violet-50/30 rounded-3xl p-8 border-none shadow-lg mb-6">
+                <div className="flex items-center gap-6">
+                    <div className="w-20 h-20 bg-gradient-to-br from-[#F08784] to-[#D97673] rounded-2xl flex items-center justify-center shadow-lg">
+                        <UserPlus className="w-10 h-10 text-white" />
+                    </div>
+                    <div>
+                        <h1 className="text-4xl font-black text-slate-900 tracking-tight">إدارة الضيوف</h1>
+                        <p className="text-lg text-slate-600 mt-2 font-medium">إضافة وتعديل الضيوف لفعاليتك</p>
+                    </div>
+                </div>
+            </Card>
+
             <Card className="border-slate-200 shadow-md rounded-3xl overflow-hidden bg-white">
 
-                <CardHeader className="flex flex-row justify-between items-center p-6">
+                <CardHeader className="flex flex-row justify-between items-center p-6 bg-gradient-to-r from-slate-50 to-white border-b">
 
                     <div>
-                        <CardTitle className="text-2xl font-bold">
-                            إدارة الضيوف ({guests.length})
+                        <CardTitle className="text-2xl font-bold text-slate-900">
+                            قائمة الضيوف ({guests.length})
                         </CardTitle>
-                        <CardDescription>
-                            إضافة وتعديل الضيوف لفعاليتك
+                        <CardDescription className="text-slate-600">
+                            إدارة جميع ضيوف الفعالية
                         </CardDescription>
                     </div>
 
@@ -195,8 +212,9 @@ export default function EventGuestsPage() {
                                     setSelectedGuest(undefined);
                                     setIsFormOpen(true);
                                 }}
+                                className="bg-[#F08784] hover:bg-[#D97673] text-white font-semibold shadow-md"
                             >
-                                <UserPlus className="ml-2 h-4 w-4" />
+                                <UserPlus className="ml-2 h-5 w-5" />
                                 إضافة ضيف
                             </Button>
                         </DialogTrigger>
@@ -212,16 +230,16 @@ export default function EventGuestsPage() {
 
                 <CardContent className="p-6">
 
-                    <div className="mb-4 relative">
+                    <div className="mb-6 relative">
 
                         <Input
-                            placeholder="بحث بالاسم..."
+                            placeholder="بحث بالاسم أو رقم الجوال..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10 h-10"
+                            className="pl-10 h-12 border-slate-300 focus:border-[#F08784] rounded-xl"
                         />
 
-                        <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                        <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
 
                     </div>
 
@@ -307,15 +325,17 @@ export default function EventGuestsPage() {
                                                             setSelectedGuest(guest);
                                                             setIsFormOpen(true);
                                                         }}
+                                                        className="border-slate-300 hover:border-[#F08784] hover:bg-[#F08784]/5 hover:text-[#F08784]"
                                                     >
                                                         <Edit className="h-4 w-4 mr-1" />
                                                         تعديل
                                                     </Button>
 
                                                     <Button
-                                                        variant="destructive"
+                                                        variant="outline"
                                                         size="sm"
                                                         onClick={() => handleDeleteGuest(guest._id)}
+                                                        className="border-red-300 hover:border-red-500 hover:bg-red-50 hover:text-red-600"
                                                     >
                                                         <Trash2 className="h-4 w-4 mr-1" />
                                                         حذف
