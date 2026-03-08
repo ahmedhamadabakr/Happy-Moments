@@ -53,7 +53,7 @@ export function DashboardHeader() {
                 </div>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64" dir="rtl">
+            <DropdownMenuContent align="end" className="w-64">
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1 p-2">
                   <p className="text-md font-semibold text-slate-900">
