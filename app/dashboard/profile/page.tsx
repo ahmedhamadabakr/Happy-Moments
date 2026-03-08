@@ -2,13 +2,13 @@
 
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, User, Mail, Shield, Calendar, Briefcase, Phone, MapPin } from 'lucide-react';
+import { Loader2, User, Mail, Shield, Calendar } from 'lucide-react';
 import { useAuthStore } from '@/lib/store/authStore';
 
 export default function ProfilePage() {
-  const { user, isLoading: userLoading } = useAuthStore();
+  const { user } = useAuthStore();
 
-  if (userLoading || !user) {
+  if (!user) {
     return (
       <DashboardLayout>
         <div className="flex justify-center items-center h-96">
@@ -25,9 +25,7 @@ export default function ProfilePage() {
     { label: 'الاسم الكامل', value: user.fullName, icon: User },
     { label: 'البريد الإلكتروني', value: user.email, icon: Mail },
     { label: 'الصلاحية', value: user.role === 'manager' ? 'مدير' : 'موظف', icon: Shield },
-    { label: 'رقم الجوال', value: user.phone || 'غير محدد', icon: Phone },
-    { label: 'الشركة', value: user.company?.name || 'غير محدد', icon: Briefcase },
-    { label: 'تاريخ الانضمام', value: user.createdAt ? new Date(user.createdAt).toLocaleDateString('ar-SA', { dateStyle: 'long' }) : 'غير محدد', icon: Calendar },
+    { label: 'تاريخ الانضمام', value: new Date().toLocaleDateString('ar-SA', { dateStyle: 'long' }), icon: Calendar },
   ];
 
   return (
@@ -97,21 +95,6 @@ export default function ProfilePage() {
             </Card>
           </div>
         </div>
-
-        {/* Additional Info Card */}
-        <Card className="border-slate-200 shadow-lg rounded-3xl bg-gradient-to-br from-white to-slate-50/50">
-          <CardHeader className="bg-gradient-to-r from-slate-50 to-white border-b">
-            <CardTitle className="text-xl font-bold text-slate-900">ملاحظة</CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <div className="flex items-start gap-3 text-slate-700">
-              <Shield className="w-5 h-5 text-[#F08784] mt-0.5 flex-shrink-0" />
-              <p className="font-medium leading-relaxed">
-                هذه الصفحة مخصصة لعرض معلوماتك الشخصية فقط. لتحديث أي بيانات، يرجى التواصل مع المسؤول أو مدير النظام.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </DashboardLayout>
   );
