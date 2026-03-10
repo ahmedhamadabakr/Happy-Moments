@@ -99,7 +99,6 @@ const eventSchema = new Schema<IEvent>(
     deletedAt: {
       type: Date,
       default: null,
-      index: true,
     },
   },
   {

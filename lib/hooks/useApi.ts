@@ -34,9 +34,15 @@ export function useApi<T = any>(
           body: body ? JSON.stringify(body) : undefined,
         });
 
-        const result = await response.json();
+        const responseText = await response.text();
+        const result = responseText ? JSON.parse(responseText) : null;
 
-        if (!response.ok || !result.success) {
+        if (!response.ok) {
+          const message = (result && result.error) ? result.error : `Request failed with status: ${response.status}`;
+          throw new Error(message);
+        }
+
+        if (result && result.success === false) {
           throw new Error(result.error || 'An unknown error occurred.');
         }
 

@@ -55,7 +55,7 @@ export async function GET(
   }
 }
 
-export async function PUT(
+export async function PATCH(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
@@ -100,7 +100,7 @@ export async function PUT(
 
     await ActivityLog.create({
       companyId: user.companyId,
-      userId: user._id,
+      userId: user.userId,
       activityType: 'event_update',
       resourceType: 'Event',
       resourceId: event._id,
@@ -149,7 +149,7 @@ export async function DELETE(
 
     await ActivityLog.create({
       companyId: user.companyId,
-      userId: user._id,
+      userId: user.userId,
       activityType: 'event_delete',
       resourceType: 'Event',
       resourceId: event._id,
