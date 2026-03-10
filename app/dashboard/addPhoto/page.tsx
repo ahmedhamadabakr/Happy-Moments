@@ -133,6 +133,7 @@ export default function UploadPage() {
     men_invitation: 'دعوات رجال',
     ghabqa: 'غبقة',
     ramadan_congratulation: 'تهنئة رمضان',
+    eid_congratulation: 'تهنئة بالعيد',
     qarqiean: 'قرقيعان',
     other: 'أخرى',
   };
@@ -212,6 +213,7 @@ export default function UploadPage() {
                     <option value="men_invitation">دعوات رجال</option>
                     <option value="ghabqa">غبقة</option>
                     <option value="ramadan_congratulation">تهنئة رمضان</option>
+                    <option value="eid_congratulation">تهنئة بالعيد</option>
                     <option value="qarqiean">قرقيعان</option>
                     <option value="other">أخرى</option>
                   </select>
