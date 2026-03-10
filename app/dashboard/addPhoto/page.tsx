@@ -125,10 +125,16 @@ export default function UploadPage() {
   };
 
   const categoryLabels: Record<string, string> = {
-    corporate: 'حفلات شركات',
-    wedding: 'حفلات زفاف',
+    engagement: 'عقد قران',
+    wedding: 'زفاف',
+    birth: 'ولادة',
     graduation: 'تخرج',
-    national: 'فعاليات وطنية',
+    dazza: 'دزة',
+    men_invitation: 'دعوات رجال',
+    ghabqa: 'غبقة',
+    ramadan_congratulation: 'تهنئة رمضان',
+    qarqiean: 'قرقيعان',
+    other: 'أخرى',
   };
 
   return (
@@ -198,10 +204,16 @@ export default function UploadPage() {
                     defaultValue={editingPhoto?.category}
                     className="w-full text-lg p-6 border-2 border-slate-300 focus:border-[#F08784] rounded-xl outline-none focus:ring-2 focus:ring-[#F08784]/20"
                   >
-                    <option value="corporate">حفلات شركات</option>
-                    <option value="wedding">حفلات زفاف</option>
+                    <option value="engagement">عقد قران</option>
+                    <option value="wedding">زفاف</option>
+                    <option value="birth">ولادة</option>
                     <option value="graduation">تخرج</option>
-                    <option value="national">فعاليات وطنية</option>
+                    <option value="dazza">دزة</option>
+                    <option value="men_invitation">دعوات رجال</option>
+                    <option value="ghabqa">غبقة</option>
+                    <option value="ramadan_congratulation">تهنئة رمضان</option>
+                    <option value="qarqiean">قرقيعان</option>
+                    <option value="other">أخرى</option>
                   </select>
                 </div>
 
