@@ -91,14 +91,14 @@ export default function EventGrid() {
             </div>
 
             {loading ? (
-                <div className="max-w-7xl mx-auto text-center py-20">
+                <div className="max-w-5xl mx-auto text-center py-20">
                     <div className="inline-flex items-center gap-3 text-slate-600">
-                        <div className="w-6 h-6 border-3 border-[#F08784] border-t-transparent rounded-full animate-spin"></div>
+                        <div className="w-4 h-6 border-3 border-[#F08784] border-t-transparent rounded-full animate-spin"></div>
                         <span className="text-lg">جاري تحميل الصور...</span>
                     </div>
                 </div>
             ) : error ? (
-                <div className="max-w-7xl mx-auto text-center py-20">
+                <div className="max-w-5xl mx-auto text-center py-20">
                     <div className="inline-flex items-center gap-2 bg-red-50 text-red-600 px-6 py-3 rounded-full">
                         <span>⚠️</span>
                         <span>{error}</span>
@@ -120,7 +120,7 @@ export default function EventGrid() {
                             {/* عنوان الفئة */}
                             <div className="mb-8 flex items-center justify-between flex-wrap gap-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-2 h-8 bg-[#F08784] rounded-full"></div>
+                                    <div className="w-1 h-8 bg-[#F08784] rounded-full"></div>
                                     <h2 className="text-3xl font-bold text-slate-900">{category}</h2>
                                 </div>
                                 <span className="bg-slate-100 text-slate-700 px-4 py-2 rounded-full text-sm font-semibold">
