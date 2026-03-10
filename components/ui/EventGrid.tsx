@@ -130,38 +130,38 @@ export default function EventGrid() {
 
                             {/* Container with scroll buttons */}
                             <div className="relative group/slider">
-                                {/* Left Arrow */}
-                                <button
-                                    onClick={() => {
-                                        const container = document.getElementById(`scroll-${category}`);
-                                        if (container) container.scrollBy({ left: -400, behavior: 'smooth' });
-                                    }}
-                                    className="absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-white/95 hover:bg-white shadow-xl rounded-full p-4 opacity-0 group-hover/slider:opacity-100 transition-all duration-300 hover:scale-110 border border-slate-200"
-                                    aria-label="السابق"
-                                >
-                                    <svg className="w-6 h-6 text-slate-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                                    </svg>
-                                </button>
-
-                                {/* Right Arrow */}
+                                {/* Right Arrow (للأمام في RTL) */}
                                 <button
                                     onClick={() => {
                                         const container = document.getElementById(`scroll-${category}`);
                                         if (container) container.scrollBy({ left: 400, behavior: 'smooth' });
                                     }}
-                                    className="absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-white/95 hover:bg-white shadow-xl rounded-full p-4 opacity-0 group-hover/slider:opacity-100 transition-all duration-300 hover:scale-110 border border-slate-200"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-[#F08784] hover:bg-[#D97673] text-white shadow-2xl rounded-full p-4 transition-all duration-300 hover:scale-110"
                                     aria-label="التالي"
                                 >
-                                    <svg className="w-6 h-6 text-slate-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
+
+                                {/* Left Arrow (للخلف في RTL) */}
+                                <button
+                                    onClick={() => {
+                                        const container = document.getElementById(`scroll-${category}`);
+                                        if (container) container.scrollBy({ left: -400, behavior: 'smooth' });
+                                    }}
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-[#F08784] hover:bg-[#D97673] text-white shadow-2xl rounded-full p-4 transition-all duration-300 hover:scale-110"
+                                    aria-label="السابق"
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
                                     </svg>
                                 </button>
 
                                 {/* شبكة الصور - Horizontal Scroll */}
                                 <motion.div
                                     id={`scroll-${category}`}
-                                    className="flex gap-6 overflow-x-auto pb-6 scrollbar-hide scroll-smooth"
+                                    className="flex gap-6 overflow-x-auto pb-6 px-2 scrollbar-hide scroll-smooth"
                                     initial="hidden"
                                     whileInView="visible"
                                     viewport={{ once: true, margin: "-100px" }}
@@ -171,16 +171,18 @@ export default function EventGrid() {
                                         <motion.div
                                             key={img._id}
                                             variants={cardVariants}
-                                            className="group relative flex-shrink-0 h-96 rounded-3xl overflow-hidden bg-slate-50 shadow-md hover:shadow-2xl transition-all duration-500 cursor-pointer"
+                                            className="group relative flex-shrink-0 w-72 h-[450px] rounded-3xl overflow-hidden bg-gradient-to-br from-slate-50 to-white shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer border border-slate-200"
                                             whileHover={{ y: -8, scale: 1.02 }}
                                             whileTap={{ scale: 0.98 }}
                                         >
                                             {/* الصورة */}
-                                            <img
-                                                src={img.imageUrl}
-                                                alt={img.title}
-                                                className="h-full w-auto object-contain transition-transform duration-700 group-hover:scale-105"
-                                            />
+                                            <div className="absolute inset-0 p-3 flex items-center justify-center">
+                                                <img
+                                                    src={img.imageUrl}
+                                                    alt={img.title}
+                                                    className="max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-105"
+                                                />
+                                            </div>
 
                                             {/* تدرج لوني أنيق */}
                                             <div className="absolute inset-0 bg-gradient-to-t from-slate-900/95 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
