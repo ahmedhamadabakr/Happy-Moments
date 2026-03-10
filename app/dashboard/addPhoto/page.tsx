@@ -128,6 +128,7 @@ export default function UploadPage() {
     engagement: 'عقد قران',
     wedding: 'زفاف',
     birth: 'ولادة',
+    birth_reception: 'استقبال ولادة',
     graduation: 'تخرج',
     dazza: 'دزة',
     men_invitation: 'دعوات رجال',
@@ -208,6 +209,7 @@ export default function UploadPage() {
                     <option value="engagement">عقد قران</option>
                     <option value="wedding">زفاف</option>
                     <option value="birth">ولادة</option>
+                    <option value="birth_reception">استقبال ولادة</option>
                     <option value="graduation">تخرج</option>
                     <option value="dazza">دزة</option>
                     <option value="men_invitation">دعوات رجال</option>

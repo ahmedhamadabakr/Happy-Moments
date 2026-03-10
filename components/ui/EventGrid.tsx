@@ -128,36 +128,37 @@ export default function EventGrid() {
                                 </span>
                             </div>
 
-                            {/* شبكة الصور */}
+                            {/* شبكة الصور - Horizontal Scroll */}
                             <motion.div
-                                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                                className="flex gap-6 overflow-x-auto pb-6 scrollbar-thin scrollbar-thumb-[#F08784]/30 scrollbar-track-slate-100 hover:scrollbar-thumb-[#F08784]/50"
                                 initial="hidden"
                                 whileInView="visible"
                                 viewport={{ once: true, margin: "-100px" }}
                                 variants={containerVariants}
+                                style={{ scrollbarWidth: 'thin' }}
                             >
                                 {images.map((img) => (
                                     <motion.div
                                         key={img._id}
                                         variants={cardVariants}
-                                        className="group relative h-80 rounded-3xl overflow-hidden bg-white shadow-md hover:shadow-2xl transition-all duration-500 cursor-pointer"
+                                        className="group relative flex-shrink-0 w-80 h-96 rounded-3xl overflow-hidden bg-white shadow-md hover:shadow-2xl transition-all duration-500 cursor-pointer"
                                         whileHover={{ y: -8, scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
                                     >
                                         {/* الصورة */}
-                                        <div className="absolute inset-0 overflow-hidden">
+                                        <div className="absolute inset-0 overflow-hidden p-4">
                                             <img
                                                 src={img.imageUrl}
                                                 alt={img.title}
-                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
                                             />
                                         </div>
 
                                         {/* تدرج لوني أنيق */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/95 via-slate-900/50 to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-500" />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/95 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                                         {/* محتوى البطاقة */}
-                                        <div className="absolute inset-0 flex flex-col justify-end p-6 z-10">
+                                        <div className="absolute inset-0 flex flex-col justify-end p-6 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                                             <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
                                                 {/* عنوان التصميم */}
                                                 <h3 className="text-white text-xl font-bold mb-2 drop-shadow-lg">
@@ -165,7 +166,7 @@ export default function EventGrid() {
                                                 </h3>
                                                 
                                                 {/* شريط زخرفي */}
-                                                <div className="w-16 h-1 bg-[#F08784] rounded-full mb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                                <div className="w-16 h-1 bg-[#F08784] rounded-full mb-3"></div>
                                             
                                             </div>
                                         </div>
