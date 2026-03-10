@@ -171,18 +171,16 @@ export default function EventGrid() {
                                         <motion.div
                                             key={img._id}
                                             variants={cardVariants}
-                                            className="group relative flex-shrink-0 w-80 h-96 rounded-3xl overflow-hidden bg-slate-50 shadow-md hover:shadow-2xl transition-all duration-500 cursor-pointer"
+                                            className="group relative flex-shrink-0 h-96 rounded-3xl overflow-hidden bg-slate-50 shadow-md hover:shadow-2xl transition-all duration-500 cursor-pointer"
                                             whileHover={{ y: -8, scale: 1.02 }}
                                             whileTap={{ scale: 0.98 }}
                                         >
                                             {/* الصورة */}
-                                            <div className="absolute inset-0 flex items-center justify-center">
-                                                <img
-                                                    src={img.imageUrl}
-                                                    alt={img.title}
-                                                    className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
-                                                />
-                                            </div>
+                                            <img
+                                                src={img.imageUrl}
+                                                alt={img.title}
+                                                className="h-full w-auto object-contain transition-transform duration-700 group-hover:scale-105"
+                                            />
 
                                             {/* تدرج لوني أنيق */}
                                             <div className="absolute inset-0 bg-gradient-to-t from-slate-900/95 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
