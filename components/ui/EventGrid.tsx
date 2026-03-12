@@ -2,6 +2,7 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { Sparkles } from 'lucide-react';
 
 type GalleryImage = {
     _id: string;
@@ -65,6 +66,7 @@ export default function EventGrid() {
                 const res = await fetch('/api/photos', { cache: 'no-store' });
                 const data = await res.json();
                 if (!res.ok || !data?.success) {
+                    setLoading(false);
                     return;
                 }
                 if (!mounted) return;
@@ -92,65 +94,99 @@ export default function EventGrid() {
         };
     }, []);
 
-    if (loading || randomImages.length === 0) {
-        return null;
-    }
-
     return (
         <div className="relative py-16 px-4 md:px-8" dir="rtl">
-            <motion.div
-                className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12"
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-100px" }}
-                variants={containerVariants}
-            >
-                {randomImages.map((img) => (
-                    <motion.div
-                        key={img._id}
-                        variants={cardVariants}
-                        className="group relative w-full h-[480px] rounded-[2rem] overflow-hidden bg-gradient-to-br from-white via-slate-50 to-slate-100 shadow-xl hover:shadow-2xl transition-all duration-700 cursor-pointer border-2 border-slate-200/50"
-                        whileHover={{ y: -12, scale: 1.03 }}
-                        whileTap={{ scale: 0.97 }}
-                    >
-                        <div className="absolute inset-0 p-4 flex items-center justify-center">
-                            <img
-                                src={img.imageUrl}
-                                alt={img.title}
-                                className="max-w-full max-h-full object-contain transition-all duration-700 group-hover:scale-110 drop-shadow-2xl"
-                            />
-                        </div>
-
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/98 via-slate-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700" />
-
-                        <div className="absolute inset-0 flex flex-col justify-end p-7 z-10 opacity-0 group-hover:opacity-100 transition-all duration-700">
-                            <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-700">
-                                <h3 className="text-white text-2xl font-black mb-3 drop-shadow-2xl leading-tight">
-                                    {img.title}
-                                </h3>
-                                <div className="w-20 h-1.5 bg-gradient-to-r from-[#F08784] to-[#D97673] rounded-full mb-4 shadow-lg"></div>
-                                <span className="inline-block bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-full text-sm font-bold">
-                                    {categoryLabels[img.category] || img.category}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="absolute inset-0 rounded-[2rem] border-2 border-[#F08784]/0 group-hover:border-[#F08784]/50 transition-all duration-700"></div>
-                    </motion.div>
-                ))}
-            </motion.div>
-
-            <div className="text-center">
-                <Link 
-                    href="/gallery" 
-                    className="inline-flex items-center gap-2 bg-gradient-to-r from-[#F08784] to-[#D97673] hover:from-[#D97673] hover:to-[#C86562] text-white px-10 py-4 rounded-full font-bold text-lg transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
-                >
-                    <span>مشاهدة المزيد</span>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                </Link>
+            {/* عنوان المعرض */}
+            <div className="text-center mb-16">
+                <div className="inline-flex items-center gap-2 bg-[#F08784]/10 text-[#F08784] px-5 py-2 rounded-full text-sm font-bold mb-6">
+                    <Sparkles size={18} />
+                    <span>معرض أعمالنا</span>
+                </div>
+                <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-4">
+                    تصاميم <span className="text-[#F08784]">مميزة</span> لكل مناسبة
+                </h1>
+                <p className="text-lg text-slate-600 max-w-2xl mx-auto mb-6">
+                    استعرض مجموعة من أجمل تصاميمنا التي صممناها بحب لعملائنا
+                </p>
             </div>
+
+            {loading ? (
+                <div className="max-w-7xl mx-auto text-center py-12">
+                    <div className="inline-flex items-center gap-3 text-slate-600">
+                        <div className="w-6 h-6 border-3 border-[#F08784] border-t-transparent rounded-full animate-spin"></div>
+                        <span className="text-lg">جاري تحميل الصور...</span>
+                    </div>
+                </div>
+            ) : randomImages.length > 0 ? (
+                <>
+                    <motion.div
+                        className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12"
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, margin: "-100px" }}
+                        variants={containerVariants}
+                    >
+                        {randomImages.map((img) => (
+                            <motion.div
+                                key={img._id}
+                                variants={cardVariants}
+                                className="group relative w-full h-[480px] rounded-[2rem] overflow-hidden bg-gradient-to-br from-white via-slate-50 to-slate-100 shadow-xl hover:shadow-2xl transition-all duration-700 cursor-pointer border-2 border-slate-200/50"
+                                whileHover={{ y: -12, scale: 1.03 }}
+                                whileTap={{ scale: 0.97 }}
+                            >
+                                <div className="absolute inset-0 p-4 flex items-center justify-center">
+                                    <img
+                                        src={img.imageUrl}
+                                        alt={img.title}
+                                        className="max-w-full max-h-full object-contain transition-all duration-700 group-hover:scale-110 drop-shadow-2xl"
+                                    />
+                                </div>
+
+                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/98 via-slate-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700" />
+
+                                <div className="absolute inset-0 flex flex-col justify-end p-7 z-10 opacity-0 group-hover:opacity-100 transition-all duration-700">
+                                    <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-700">
+                                        <h3 className="text-white text-2xl font-black mb-3 drop-shadow-2xl leading-tight">
+                                            {img.title}
+                                        </h3>
+                                        <div className="w-20 h-1.5 bg-gradient-to-r from-[#F08784] to-[#D97673] rounded-full mb-4 shadow-lg"></div>
+                                        <span className="inline-block bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-full text-sm font-bold">
+                                            {categoryLabels[img.category] || img.category}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="absolute inset-0 rounded-[2rem] border-2 border-[#F08784]/0 group-hover:border-[#F08784]/50 transition-all duration-700"></div>
+                            </motion.div>
+                        ))}
+                    </motion.div>
+
+                    <div className="text-center">
+                        <Link 
+                            href="/gallery" 
+                            className="inline-flex items-center gap-2 bg-gradient-to-r from-[#F08784] to-[#D97673] hover:from-[#D97673] hover:to-[#C86562] text-white px-10 py-4 rounded-full font-bold text-lg transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+                        >
+                            <span>مشاهدة الكل</span>
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </Link>
+                    </div>
+                </>
+            ) : (
+                <div className="text-center py-12">
+                    <p className="text-slate-500 text-lg mb-6">لا توجد صور متاحة حالياً</p>
+                    <Link 
+                        href="/gallery" 
+                        className="inline-flex items-center gap-2 bg-gradient-to-r from-[#F08784] to-[#D97673] hover:from-[#D97673] hover:to-[#C86562] text-white px-10 py-4 rounded-full font-bold text-lg transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+                    >
+                        <span>مشاهدة الكل</span>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </Link>
+                </div>
+            )}
         </div>
     );
 }
