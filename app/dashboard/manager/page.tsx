@@ -7,6 +7,7 @@ import {
   UserPlus, BarChart3, Clock, CheckCircle 
 } from 'lucide-react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
+import { Card } from '@/components/shared/Card';
 
 interface DashboardStats {
   totalEmployees: number;

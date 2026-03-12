@@ -9,9 +9,34 @@ import { EmployeePermission } from '@/lib/types/roles';
 import { parseExcelFile, validateExcelFile } from '@/lib/utils/excelParser';
 import { generateSecureToken, generateGuestInvitationWithQR } from '@/lib/utils/qrGenerator';
 import { ActivityLog } from '@/lib/models/ActivityLog';
-import { writeFile, mkdir } from 'fs/promises';
-import { existsSync } from 'fs';
-import path from 'path';
+import { v2 as cloudinary } from 'cloudinary';
+import streamifier from 'streamifier';
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure: true,
+});
+
+const uploadToCloudinary = (
+  buffer: Buffer,
+  options: object
+): Promise<cloudinary.UploadApiResponse> => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      options,
+      (error, result) => {
+        if (result) {
+          resolve(result);
+        } else {
+          reject(error);
+        }
+      }
+    );
+    streamifier.createReadStream(buffer).pipe(uploadStream);
+  });
+};
 
 /**
  * POST /api/v1/events/create-with-contacts
@@ -78,19 +103,13 @@ export async function POST(request: NextRequest) {
       finalClientId = newClient._id.toString();
     }
 
-    // حفظ صورة الدعوة
+    // رفع صورة الدعوة إلى Cloudinary
     const invitationImageBuffer = Buffer.from(await invitationImageFile.arrayBuffer());
-    const invitationImageDir = path.join(process.cwd(), 'public', 'event-images');
-    
-    // إنشاء المجلد إذا لم يكن موجوداً
-    if (!existsSync(invitationImageDir)) {
-      await mkdir(invitationImageDir, { recursive: true });
-    }
-    
-    const invitationImageFilename = `${Date.now()}-${invitationImageFile.name}`;
-    const invitationImagePath = path.join(invitationImageDir, invitationImageFilename);
-    
-    await writeFile(invitationImagePath, invitationImageBuffer);
+    const invitationUploadResult = await uploadToCloudinary(invitationImageBuffer, {
+      folder: `events/templates`,
+      public_id: `${session.companyId}_${Date.now()}`
+    });
+
 
     // إنشاء الفعالية
     const event = await Event.create({
@@ -102,7 +121,7 @@ export async function POST(request: NextRequest) {
       eventTime,
       location,
       locationUrl,
-      invitationImage: `/event-images/${invitationImageFilename}`,
+      invitationImage: invitationUploadResult.public_id, // Save public_id
       qrCoordinates: {
         x: qrX,
         y: qrY,
@@ -178,14 +197,13 @@ export async function POST(request: NextRequest) {
         const qrResult = await generateGuestInvitationWithQR(
           event._id.toString(),
           eventGuest._id.toString(),
-          invitationImagePath,
+          event.invitationImage!, // Pass Cloudinary public_id
           event.qrCoordinates!,
           process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
         );
 
         // تحديث بيانات الضيف
-        eventGuest.qrImagePath = qrResult.qrImagePath;
-        eventGuest.finalInvitationImagePath = qrResult.finalInvitationImagePath;
+        eventGuest.finalInvitationUrl = qrResult.finalInvitationUrl;
         await eventGuest.save();
 
         guestsCreated.push({

@@ -24,8 +24,7 @@ export interface IEventGuest extends Document {
   checkedInAt?: Date | null
   invitationToken: string
   qrToken: string
-  qrImagePath?: string
-  finalInvitationImagePath?: string
+  finalInvitationUrl?: string
   scanCount: number
   firstCheckInAt?: Date | null
   lastCheckInAt?: Date | null
@@ -65,8 +64,7 @@ const eventGuestSchema = new Schema<IEventGuest>(
     checkedInAt: { type: Date, default: null },
     invitationToken: { type: String, required: true, unique: true, index: true },
     qrToken: { type: String, required: true, unique: true, index: true },
-    qrImagePath: { type: String },
-    finalInvitationImagePath: { type: String },
+    finalInvitationUrl: { type: String },
     scanCount: { type: Number, default: 0, min: 0 },
     firstCheckInAt: { type: Date, default: null },
     lastCheckInAt: { type: Date, default: null },

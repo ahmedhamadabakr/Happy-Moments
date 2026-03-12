@@ -19,16 +19,26 @@ export async function GET(req: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1')
     const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100)
     const status = searchParams.get('status')
+    const search = searchParams.get('search')
 
     const skip = (page - 1) * limit
 
     const query: any = {
       companyId: user.companyId,
-      deletedAt: null,
     }
 
-    if (status) {
-      query.status = status
+    const now = new Date();
+    if (status === 'active') {
+      query.eventDate = { $gte: now };
+    } else if (status === 'closed') {
+      query.eventDate = { $lt: now };
+    }
+
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+      ]
     }
 
     const events = await Event.find(query)

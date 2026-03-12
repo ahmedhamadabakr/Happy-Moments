@@ -1,8 +1,43 @@
 import QRCode from 'qrcode';
-import sharp from 'sharp';
 import crypto from 'crypto';
-import path from 'path';
-import fs from 'fs/promises';
+import { v2 as cloudinary } from 'cloudinary';
+import streamifier from 'streamifier';
+
+// ==============================================
+// تهيئة Cloudinary
+// ==============================================
+// استخدم متغيرات البيئة لتهيئة الخدمة
+// ستبحث المكتبة تلقائياً عن هذه المتغيرات
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure: true,
+});
+
+/**
+ * دالة لرفع Buffer إلى Cloudinary
+ * @param buffer - محتوى الملف
+ * @param options - خيارات الرفع (مثل public_id, folder)
+ */
+const uploadToCloudinary = (
+  buffer: Buffer,
+  options: object
+): Promise<cloudinary.UploadApiResponse> => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      options,
+      (error, result) => {
+        if (result) {
+          resolve(result);
+        } else {
+          reject(error);
+        }
+      }
+    );
+    streamifier.createReadStream(buffer).pipe(uploadStream);
+  });
+};
 
 /**
  * توليد Token فريد وآمن
@@ -16,7 +51,7 @@ export function generateSecureToken(): string {
  */
 export async function generateQRCode(data: string): Promise<Buffer> {
   try {
-    const qrBuffer = await QRCode.toBuffer(data, {
+    return await QRCode.toBuffer(data, {
       errorCorrectionLevel: 'H',
       type: 'png',
       width: 300,
@@ -26,8 +61,6 @@ export async function generateQRCode(data: string): Promise<Buffer> {
         light: '#FFFFFF',
       },
     });
-    
-    return qrBuffer;
   } catch (error) {
     console.error('Error generating QR code:', error);
     throw new Error('فشل في توليد رمز QR');
@@ -35,127 +68,75 @@ export async function generateQRCode(data: string): Promise<Buffer> {
 }
 
 /**
- * دمج QR Code مع صورة الدعوة
- */
-export async function overlayQROnInvitation(
-  invitationImagePath: string,
-  qrBuffer: Buffer,
-  coordinates: { x: number; y: number; width: number; height: number }
-): Promise<Buffer> {
-  try {
-    // قراءة صورة الدعوة
-    const invitationBuffer = await fs.readFile(invitationImagePath);
-    
-    // تغيير حجم QR Code
-    const resizedQR = await sharp(qrBuffer)
-      .resize(coordinates.width, coordinates.height)
-      .toBuffer();
-    
-    // دمج QR مع صورة الدعوة
-    const finalImage = await sharp(invitationBuffer)
-      .composite([
-        {
-          input: resizedQR,
-          top: coordinates.y,
-          left: coordinates.x,
-        },
-      ])
-      .toBuffer();
-    
-    return finalImage;
-  } catch (error) {
-    console.error('Error overlaying QR on invitation:', error);
-    throw new Error('فشل في دمج رمز QR مع صورة الدعوة');
-  }
-}
-
-/**
- * حفظ صورة في المسار المحدد
- */
-export async function saveImage(
-  buffer: Buffer,
-  directory: string,
-  filename: string
-): Promise<string> {
-  try {
-    // التأكد من وجود المجلد
-    await fs.mkdir(directory, { recursive: true });
-    
-    const filePath = path.join(directory, filename);
-    await fs.writeFile(filePath, buffer);
-    
-    return filePath;
-  } catch (error) {
-    console.error('Error saving image:', error);
-    throw new Error('فشل في حفظ الصورة');
-  }
-}
-
-/**
- * توليد QR Token وإنشاء الصورة النهائية
+ * توليد دعوة الضيف النهائية باستخدام Cloudinary
+ * @param eventId - معرف الفعالية
+ * @param guestId - معرف الضيف
+ * @param invitationPublicId - الـ Public ID الخاص بقالب الدعوة على Cloudinary
+ * @param qrCoordinates - إحداثيات وأبعاد الـ QR على الصورة
+ * @param baseUrl - الرابط الأساسي للتطبيق
  */
 export async function generateGuestInvitationWithQR(
   eventId: string,
   guestId: string,
-  invitationImagePath: string,
+  invitationPublicId: string,
   qrCoordinates: { x: number; y: number; width: number; height: number },
   baseUrl: string
 ): Promise<{
   qrToken: string;
-  qrImagePath: string;
-  finalInvitationImagePath: string;
+  finalInvitationUrl: string;
 }> {
   try {
-    // توليد Token فريد
+    // 1. توليد Token فريد للتحقق
     const qrToken = generateSecureToken();
     
-    // بيانات QR (رابط للتحقق)
-    const qrData = JSON.stringify({
-      eventId,
-      guestId,
-      token: qrToken,
-      url: `${baseUrl}/api/v1/check-in/verify/${qrToken}`,
-    });
-    
-    // توليد QR Code
+    // 2. إعداد بيانات QR (يمكن أن تكون رابط أو JSON)
+    const qrData = `${baseUrl}/rsvp/${qrToken}`;
+
+    // 3. توليد QR Code كـ Buffer
     const qrBuffer = await generateQRCode(qrData);
-    
-    // حفظ QR Code
-    const qrDirectory = path.join(process.cwd(), 'public', 'qr-codes', eventId);
-    const qrFilename = `${guestId}-qr.png`;
-    const qrImagePath = await saveImage(qrBuffer, qrDirectory, qrFilename);
-    
-    // دمج QR مع صورة الدعوة
-    const finalImageBuffer = await overlayQROnInvitation(
-      invitationImagePath,
-      qrBuffer,
-      qrCoordinates
-    );
-    
-    // حفظ الصورة النهائية
-    const invitationDirectory = path.join(process.cwd(), 'public', 'invitations', eventId);
-    const invitationFilename = `${guestId}-invitation.png`;
-    const finalInvitationImagePath = await saveImage(
-      finalImageBuffer,
-      invitationDirectory,
-      invitationFilename
-    );
-    
+
+    // 4. رفع QR Code إلى Cloudinary
+    const qrPublicId = `events/${eventId}/qrcodes/${guestId}_${Date.now()}`;
+    await uploadToCloudinary(qrBuffer, {
+      public_id: qrPublicId,
+      folder: `events/${eventId}/qrcodes`,
+      transformation: [{ width: qrCoordinates.width, height: qrCoordinates.height }]
+    });
+
+    // 5. إنشاء رابط الصورة النهائية مع دمج QR Code عبر Transformation
+    // يتم وضع الـ QR Code كطبقة (overlay) فوق صورة الدعوة الأساسية
+    const finalInvitationUrl = cloudinary.url(invitationPublicId, {
+      transformation: [
+        {
+          overlay: {
+            public_id: qrPublicId,
+          },
+          // تحديد أبعاد وموقع الـ QR
+          width: qrCoordinates.width,
+          height: qrCoordinates.height,
+          // تحديد موقع الـ QR. يمكن استخدام g_north_west مع x,y
+          gravity: 'north_west',
+          x: qrCoordinates.x,
+          y: qrCoordinates.y,
+          crop: 'fill',
+        },
+      ],
+    });
+
     return {
       qrToken,
-      qrImagePath: `/qr-codes/${eventId}/${qrFilename}`,
-      finalInvitationImagePath: `/invitations/${eventId}/${invitationFilename}`,
+      finalInvitationUrl,
     };
   } catch (error) {
-    console.error('Error generating guest invitation with QR:', error);
-    throw new Error('فشل في إنشاء دعوة الضيف');
+    console.error('Error generating guest invitation with Cloudinary QR:', error);
+    throw new Error('فشل في إنشاء دعوة الضيف باستخدام Cloudinary');
   }
 }
 
 /**
- * التحقق من صحة QR Token
+ * التحقق من صحة QR Token (يمكن تطويرها لاحقًا)
  */
 export function verifyQRToken(token: string): boolean {
-  // التحقق من أن Token بالطول الصحيح
+  // التحقق من أن Token بالطول الصحيح ويحتوي على أحرف وأرقام hexadecimal
   return token.length === 64 && /^[a-f0-9]+$/.test(token);
 }

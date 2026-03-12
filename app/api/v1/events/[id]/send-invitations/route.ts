@@ -9,14 +9,6 @@ import { handleApiError } from '@/lib/api/errors'
 import { connectDB } from '@/lib/db'
 import mongoose from 'mongoose'
 
-function buildPublicUrl(baseUrl: string, pathOrUrl?: string | null) {
-  if (!pathOrUrl) return null
-  if (pathOrUrl.startsWith('http://') || pathOrUrl.startsWith('https://')) return pathOrUrl
-  const normalizedBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl
-  const normalizedPath = pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`
-  return `${normalizedBase}${normalizedPath}`
-}
-
 function normalizePhoneE164Like(phone: string) {
   // Minimal normalization: keep digits and leading +.
   // WhatsApp Cloud API expects an E.164-like number without spaces.
@@ -172,13 +164,10 @@ export async function POST(
         // Generate RSVP link
         const rsvpLink = `${baseUrl}/rsvp/${guest.invitationToken}`
 
-        const invitationImageUrl = buildPublicUrl(
-          baseUrl,
-          guest.finalInvitationImagePath || event.invitationImage
-        )
+        const invitationImageUrl = guest.finalInvitationUrl
 
         if (!invitationImageUrl) {
-          throw new Error('Missing invitation image for guest')
+          throw new Error(`Missing finalInvitationUrl for guest ${guest._id}`)
         }
 
         const eventDate = event.eventDate.toISOString().split('T')[0]
