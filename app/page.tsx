@@ -1,15 +1,13 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Calendar, Users, Zap, CheckCircle, LogInIcon, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, Users, Zap, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import EventGrid from '@/components/ui/EventGrid';
 import { useState, useEffect } from 'react';
 
 export default function HomePage() {
-  const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
   const slides = ['/herosection1.png', '/herosection2.png', '/herosection3.png'];
 
@@ -44,7 +42,9 @@ export default function HomePage() {
         <div className="flex items-center gap-4">
           <Link href="/login" className="flex items-center gap-2 text-slate-600 hover:text-[#F08784] transition-colors font-medium">
             <span>تسجيل دخول</span>
-            <LogInIcon size={20} />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+            </svg>
           </Link>
           <Button onClick={() => window.open(whatsappLink, '_blank')} className="bg-[#F08784] hover:bg-[#D97673] text-white rounded-full px-6">
             ابدأ الآن
@@ -206,7 +206,6 @@ export default function HomePage() {
   );
 }
 
-// مكونات فرعية محسنة
 function FeatureCard({ icon, title, description }: any) {
   return (
     <article className="relative p-10 rounded-3xl transition-all duration-300 bg-white hover:shadow-xl group text-center">
@@ -219,24 +218,5 @@ function FeatureCard({ icon, title, description }: any) {
       <p className="text-slate-600 leading-relaxed text-sm">{description}</p>
 
     </article>
-  );
-}
-
-function Step({ number, title, desc }: any) {
-  return (
-    <div className="relative p-10 bg-white rounded-3xl transition-all duration-300 hover:shadow-xl group text-center">
-      {/* الأيقونة */}
-      <div className="h-20 w-20 flex items-center justify-center bg-[#F08784]/10 text-[#F08784] rounded-2xl mb-6 mx-auto text-2xl font-black group-hover:bg-[#F08784]/20 transition-colors">
-        {number}
-      </div>
-
-      <h3 className="text-xl font-bold mb-3 text-slate-900">{title}</h3>
-      <p className="text-slate-600 leading-relaxed text-sm">{desc}</p>
-
-      {/* زر Learn More */}
-      <button className="mt-6 text-[#F08784] text-sm font-semibold hover:text-[#D97673] transition-colors">
-        اعرف أكثر →
-      </button>
-    </div>
   );
 }

@@ -1,186 +1,344 @@
+'use client'
+import { useEffect, useState } from 'react'
 import { notFound } from 'next/navigation'
-import { connectDB } from '@/lib/db'
-import { Client } from '@/lib/models/Client'
-import { Event } from '@/lib/models/Event'
-import { EventGuest } from '@/lib/models/EventGuest'
+import Image from 'next/image'
+import { Calendar, MapPin, Users, CheckCircle, XCircle, Clock, UserCheck, Sparkles, ChevronDown } from 'lucide-react'
 
 interface PageProps {
   params: Promise<{ token: string }>
 }
 
-async function getClientView(token: string) {
-  await connectDB()
+export default function ClientViewPage({ params }: PageProps) {
+  const [token, setToken] = useState<string>('')
+  const [data, setData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [selectedEvent, setSelectedEvent] = useState<any>(null)
 
-  const client = await Client.findOne({ accessToken: token, isActive: true }).lean()
-  if (!client) return null
-
-  const events = await Event.find({ clientId: client._id, deletedAt: null })
-    .sort({ eventDate: -1 })
-    .lean()
-
-  const eventsWithStats = await Promise.all(
-    events.map(async (event) => {
-      const guests = await EventGuest.find({ eventId: event._id }).lean()
-
-      const stats = {
-        totalInvited: guests.length,
-        confirmed: guests.filter((g: any) => g.rsvpStatus === 'confirmed').length,
-        declined: guests.filter((g: any) => g.rsvpStatus === 'declined').length,
-        pending: guests.filter((g: any) => g.rsvpStatus === 'pending').length,
-        checkedIn: guests.filter((g: any) => g.checkInStatus === 'checked_in').length,
-        noShow: guests.filter(
-          (g: any) => g.rsvpStatus === 'confirmed' && g.checkInStatus === 'pending'
-        ).length,
-      }
-
-      const guestsList = guests.map((g: any) => ({
-        name: g.snapshotName,
-        phone: g.snapshotPhone,
-        rsvpStatus: g.rsvpStatus,
-        checkInStatus: g.checkInStatus,
-        rsvpMessage: g.rsvpMessage,
-        checkedInAt: g.checkedInAt,
-      }))
-
-      const messages = guests
-        .filter((g: any) => g.rsvpMessage)
-        .map((g: any) => ({
-          guestName: g.snapshotName,
-          message: g.rsvpMessage,
-          timestamp: g.rsvpConfirmedAt,
-        }))
-
-      return {
-        id: event._id.toString(),
-        title: (event as any).title,
-        description: (event as any).description,
-        eventDate: (event as any).eventDate,
-        eventTime: (event as any).eventTime,
-        location: (event as any).location,
-        locationUrl: (event as any).locationUrl,
-        status: (event as any).status,
-        stats,
-        guests: guestsList,
-        messages,
-      }
+  useEffect(() => {
+    params.then(p => {
+      setToken(p.token)
+      fetchData(p.token)
     })
-  )
+  }, [params])
 
-  return {
-    success: true,
-    client: {
-      name: (client as any).fullName,
-      email: (client as any).email,
-    },
-    events: eventsWithStats,
+  const fetchData = async (token: string) => {
+    try {
+      const res = await fetch(`/api/v1/client-view/${token}`)
+      const result = await res.json()
+      if (result.success) {
+        setData(result)
+        if (result.events?.length > 0) {
+          setSelectedEvent(result.events[0])
+        }
+      }
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setLoading(false)
+    }
   }
-}
 
-export default async function ClientViewPage({ params }: PageProps) {
-  const { token } = await params
-  const data = await getClientView(token)
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-[#F08784] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600 text-lg font-medium">جاري التحميل...</p>
+        </div>
+      </div>
+    )
+  }
 
   if (!data) {
-    notFound()
+    return notFound()
+  }
+
+  const statusLabels: Record<string, string> = {
+    confirmed: 'مؤكد',
+    declined: 'معتذر',
+    pending: 'قيد الانتظار',
+    maybe: 'ربما',
+  }
+
+  const checkInLabels: Record<string, string> = {
+    checked_in: 'حضر',
+    pending: 'لم يحضر',
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      <div className="mx-auto max-w-6xl space-y-6">
-        <div className="rounded-xl border bg-white p-6">
-          <div className="text-2xl font-semibold">{data.client?.name || 'Client'}</div>
-          {data.client?.email && (
-            <div className="text-sm text-slate-600">{data.client.email}</div>
-          )}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100" dir="rtl">
+      {/* Header */}
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm backdrop-blur-md bg-white/95">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Image src="/logo2.png" alt="هابي مومنتس" width={120} height={40} className="object-contain" />
+          </div>
+          <div className="text-right">
+            <div className="text-lg font-bold text-slate-900">{data.client?.name}</div>
+            {data.client?.email && (
+              <div className="text-sm text-slate-600">{data.client.email}</div>
+            )}
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        {/* Welcome Section */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 bg-[#F08784]/10 text-[#F08784] px-5 py-2 rounded-full text-sm font-bold mb-4">
+            <Sparkles size={18} />
+            <span>مرحباً بك</span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-4">
+            فعالياتك مع <span className="text-[#F08784]">هابي مومنتس</span>
+          </h1>
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            استعرض جميع فعالياتك وتفاصيل الضيوف بكل سهولة
+          </p>
         </div>
 
-        <div className="space-y-4">
-          {data.events?.map((event: any) => (
-            <div key={event.id} className="rounded-xl border bg-white p-6">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <div className="text-xl font-semibold">{event.title}</div>
-                  {event.description && (
-                    <div className="mt-1 text-sm text-slate-600">{event.description}</div>
-                  )}
-                  <div className="mt-2 text-sm text-slate-700">
-                    {event.eventDate ? new Date(event.eventDate).toLocaleDateString() : ''}
-                    {event.eventTime ? ` - ${event.eventTime}` : ''}
+        {/* Events Selection */}
+        {data.events?.length > 1 && (
+          <div className="mb-8">
+            <label className="block text-lg font-bold text-slate-900 mb-4">اختر الفعالية:</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {data.events.map((event: any) => (
+                <button
+                  key={event.id}
+                  onClick={() => setSelectedEvent(event)}
+                  className={`p-6 rounded-2xl border-2 transition-all duration-300 text-right ${
+                    selectedEvent?.id === event.id
+                      ? 'border-[#F08784] bg-gradient-to-br from-[#F08784]/10 to-[#D97673]/5 shadow-lg'
+                      : 'border-slate-200 bg-white hover:border-[#F08784]/50 hover:shadow-md'
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <h3 className="text-xl font-bold text-slate-900">{event.title}</h3>
+                    {selectedEvent?.id === event.id && (
+                      <CheckCircle className="text-[#F08784] flex-shrink-0" size={24} />
+                    )}
                   </div>
-                  {event.location && (
-                    <div className="mt-1 text-sm text-slate-700">
-                      {event.locationUrl ? (
-                        <a
-                          className="text-blue-600 hover:underline"
-                          href={event.locationUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          {event.location}
-                        </a>
-                      ) : (
-                        event.location
-                      )}
+                  <div className="flex items-center gap-2 text-sm text-slate-600 mb-2">
+                    <Calendar size={16} />
+                    <span>{new Date(event.eventDate).toLocaleDateString('ar-EG', { 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}</span>
+                  </div>
+                  {event.eventTime && (
+                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <Clock size={16} />
+                      <span>{event.eventTime}</span>
                     </div>
                   )}
-                </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div className="rounded-md bg-slate-50 p-2">
-                    <div className="text-slate-500">Invited</div>
-                    <div className="font-semibold">{event.stats?.totalInvited ?? 0}</div>
-                  </div>
-                  <div className="rounded-md bg-green-50 p-2">
-                    <div className="text-slate-500">Confirmed</div>
-                    <div className="font-semibold">{event.stats?.confirmed ?? 0}</div>
-                  </div>
-                  <div className="rounded-md bg-red-50 p-2">
-                    <div className="text-slate-500">Declined</div>
-                    <div className="font-semibold">{event.stats?.declined ?? 0}</div>
-                  </div>
-                  <div className="rounded-md bg-orange-50 p-2">
-                    <div className="text-slate-500">Pending</div>
-                    <div className="font-semibold">{event.stats?.pending ?? 0}</div>
-                  </div>
-                  <div className="rounded-md bg-purple-50 p-2 col-span-2">
-                    <div className="text-slate-500">Checked In</div>
-                    <div className="font-semibold">{event.stats?.checkedIn ?? 0}</div>
-                  </div>
+        {/* Selected Event Details */}
+        {selectedEvent && (
+          <div className="space-y-6">
+            {/* Event Info Card */}
+            <div className="bg-gradient-to-br from-white to-slate-50 rounded-3xl p-8 shadow-xl border border-slate-200">
+              <div className="flex items-start justify-between mb-6">
+                <div>
+                  <h2 className="text-3xl font-black text-slate-900 mb-2">{selectedEvent.title}</h2>
+                  {selectedEvent.description && (
+                    <p className="text-slate-600 text-lg">{selectedEvent.description}</p>
+                  )}
                 </div>
+                <span className={`px-4 py-2 rounded-full text-sm font-bold ${
+                  selectedEvent.status === 'active' 
+                    ? 'bg-green-100 text-green-700' 
+                    : 'bg-slate-100 text-slate-700'
+                }`}>
+                  {selectedEvent.status === 'active' ? 'نشط' : 'مغلق'}
+                </span>
               </div>
 
-              <div className="mt-6">
-                <div className="text-sm font-medium">Guests</div>
-                <div className="mt-2 grid gap-2">
-                  {event.guests?.map((g: any, idx: number) => (
-                    <div
-                      key={`${g.phone}-${idx}`}
-                      className="flex flex-col gap-2 rounded-lg bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between"
-                    >
-                      <div>
-                        <div className="font-medium">{g.name}</div>
-                        {g.rsvpMessage && (
-                          <div className="mt-1 text-sm text-slate-600">{g.rsvpMessage}</div>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-slate-200">
+                  <div className="w-12 h-12 bg-[#F08784]/10 rounded-full flex items-center justify-center">
+                    <Calendar className="text-[#F08784]" size={24} />
+                  </div>
+                  <div>
+                    <div className="text-sm text-slate-600">التاريخ</div>
+                    <div className="font-bold text-slate-900">
+                      {new Date(selectedEvent.eventDate).toLocaleDateString('ar-EG', { 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric',
+                        weekday: 'long'
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {selectedEvent.eventTime && (
+                  <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-slate-200">
+                    <div className="w-12 h-12 bg-[#F08784]/10 rounded-full flex items-center justify-center">
+                      <Clock className="text-[#F08784]" size={24} />
+                    </div>
+                    <div>
+                      <div className="text-sm text-slate-600">الوقت</div>
+                      <div className="font-bold text-slate-900">{selectedEvent.eventTime}</div>
+                    </div>
+                  </div>
+                )}
+
+                {selectedEvent.location && (
+                  <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-slate-200 md:col-span-2">
+                    <div className="w-12 h-12 bg-[#F08784]/10 rounded-full flex items-center justify-center flex-shrink-0">
+                      <MapPin className="text-[#F08784]" size={24} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-sm text-slate-600">الموقع</div>
+                      {selectedEvent.locationUrl ? (
+                        <a
+                          href={selectedEvent.locationUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-bold text-[#F08784] hover:text-[#D97673] transition-colors"
+                        >
+                          {selectedEvent.location}
+                        </a>
+                      ) : (
+                        <div className="font-bold text-slate-900">{selectedEvent.location}</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Statistics */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-2xl p-6 border border-blue-200">
+                <div className="flex items-center justify-between mb-2">
+                  <Users className="text-blue-600" size={24} />
+                </div>
+                <div className="text-3xl font-black text-blue-900 mb-1">
+                  {selectedEvent.stats?.totalInvited ?? 0}
+                </div>
+                <div className="text-sm font-bold text-blue-700">إجمالي المدعوين</div>
+              </div>
+
+              <div className="bg-gradient-to-br from-green-50 to-green-100/50 rounded-2xl p-6 border border-green-200">
+                <div className="flex items-center justify-between mb-2">
+                  <CheckCircle className="text-green-600" size={24} />
+                </div>
+                <div className="text-3xl font-black text-green-900 mb-1">
+                  {selectedEvent.stats?.confirmed ?? 0}
+                </div>
+                <div className="text-sm font-bold text-green-700">مؤكد الحضور</div>
+              </div>
+
+              <div className="bg-gradient-to-br from-red-50 to-red-100/50 rounded-2xl p-6 border border-red-200">
+                <div className="flex items-center justify-between mb-2">
+                  <XCircle className="text-red-600" size={24} />
+                </div>
+                <div className="text-3xl font-black text-red-900 mb-1">
+                  {selectedEvent.stats?.declined ?? 0}
+                </div>
+                <div className="text-sm font-bold text-red-700">معتذر</div>
+              </div>
+
+              <div className="bg-gradient-to-br from-orange-50 to-orange-100/50 rounded-2xl p-6 border border-orange-200">
+                <div className="flex items-center justify-between mb-2">
+                  <Clock className="text-orange-600" size={24} />
+                </div>
+                <div className="text-3xl font-black text-orange-900 mb-1">
+                  {selectedEvent.stats?.pending ?? 0}
+                </div>
+                <div className="text-sm font-bold text-orange-700">قيد الانتظار</div>
+              </div>
+
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-2xl p-6 border border-purple-200">
+                <div className="flex items-center justify-between mb-2">
+                  <UserCheck className="text-purple-600" size={24} />
+                </div>
+                <div className="text-3xl font-black text-purple-900 mb-1">
+                  {selectedEvent.stats?.checkedIn ?? 0}
+                </div>
+                <div className="text-sm font-bold text-purple-700">حضر فعلياً</div>
+              </div>
+            </div>
+
+            {/* Guests List */}
+            <div className="bg-white rounded-3xl p-8 shadow-xl border border-slate-200">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-2 h-8 bg-gradient-to-b from-[#F08784] to-[#D97673] rounded-full"></div>
+                <h3 className="text-2xl font-black text-slate-900">قائمة الضيوف</h3>
+                <span className="bg-slate-100 text-slate-700 px-4 py-1.5 rounded-full text-sm font-bold">
+                  {selectedEvent.guests?.length ?? 0} ضيف
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                {selectedEvent.guests?.map((guest: any, idx: number) => (
+                  <div
+                    key={`${guest.phone}-${idx}`}
+                    className="p-5 rounded-2xl bg-gradient-to-br from-slate-50 to-white border border-slate-200 hover:border-[#F08784]/30 hover:shadow-md transition-all duration-300"
+                  >
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="font-bold text-lg text-slate-900 mb-1">{guest.name}</div>
+                        {guest.phone && (
+                          <div className="text-sm text-slate-600 mb-2">{guest.phone}</div>
+                        )}
+                        {guest.rsvpMessage && (
+                          <div className="mt-2 p-3 bg-white rounded-xl border border-slate-200">
+                            <div className="text-xs text-slate-500 mb-1">رسالة:</div>
+                            <div className="text-sm text-slate-700">{guest.rsvpMessage}</div>
+                          </div>
                         )}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="rounded-full bg-white px-3 py-1 text-xs font-medium border">
-                          {g.rsvpStatus}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={`px-4 py-2 rounded-full text-sm font-bold border-2 ${
+                          guest.rsvpStatus === 'confirmed'
+                            ? 'bg-green-50 text-green-700 border-green-200'
+                            : guest.rsvpStatus === 'declined'
+                            ? 'bg-red-50 text-red-700 border-red-200'
+                            : 'bg-orange-50 text-orange-700 border-orange-200'
+                        }`}>
+                          {statusLabels[guest.rsvpStatus] || guest.rsvpStatus}
                         </span>
-                        {g.checkInStatus === 'checked_in' && (
-                          <span className="rounded-full bg-white px-3 py-1 text-xs font-medium border">
-                            checked_in
+                        {guest.checkInStatus === 'checked_in' && (
+                          <span className="px-4 py-2 rounded-full text-sm font-bold bg-purple-50 text-purple-700 border-2 border-purple-200">
+                            ✓ حضر
                           </span>
                         )}
                       </div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
+
+                {(!selectedEvent.guests || selectedEvent.guests.length === 0) && (
+                  <div className="text-center py-12">
+                    <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                    <p className="text-slate-500 text-lg">لا يوجد ضيوف بعد</p>
+                  </div>
+                )}
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        )}
+
+        {(!data.events || data.events.length === 0) && (
+          <div className="text-center py-20">
+            <Calendar className="w-20 h-20 text-slate-300 mx-auto mb-4" />
+            <p className="text-slate-500 text-xl font-medium">لا توجد فعاليات بعد</p>
+          </div>
+        )}
       </div>
+
+      {/* Footer */}
+      <footer className="py-8 border-t border-slate-200 bg-white text-center text-slate-600 text-sm mt-12">
+        <p>© {new Date().getFullYear()} هابي مومنتس. جميع الحقوق محفوظة - صنع بكل حب في الكويت 🇰🇼</p>
+      </footer>
     </div>
   )
 }

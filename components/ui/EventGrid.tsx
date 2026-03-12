@@ -102,9 +102,18 @@ export default function EventGrid() {
                 <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-4">
                     تصاميم <span className="text-[#F08784]">مميزة</span> لكل مناسبة
                 </h1>
-                <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+                <p className="text-lg text-slate-600 max-w-2xl mx-auto mb-6">
                     استعرض مجموعة من أجمل تصاميمنا التي صممناها بحب لعملائنا
                 </p>
+                <a 
+                    href="/gallery" 
+                    className="inline-flex items-center gap-2 bg-gradient-to-r from-[#F08784] to-[#D97673] hover:from-[#D97673] hover:to-[#C86562] text-white px-8 py-3 rounded-full font-bold transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+                >
+                    <span>مشاهدة الكل</span>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                </a>
             </div>
 
             {loading ? (
