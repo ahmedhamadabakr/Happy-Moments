@@ -10,14 +10,16 @@ import { EventGuest } from '@/lib/models/EventGuest';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { token: string } }
+  { params }: { params: Promise<{ token: string }> }
 ) {
   try {
     await connectDB();
 
+    const { token } = await params;
+
     // البحث عن العميل بالـ Token
     const client = await Client.findOne({
-      accessToken: params.token,
+      accessToken: token,
       isActive: true,
     });
 
