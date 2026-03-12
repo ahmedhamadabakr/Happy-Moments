@@ -10,6 +10,9 @@ export type ActivityType =
   | 'rsvp_response'
   | 'check_in'
   | 'export'
+  | 'client_create'
+  | 'client_update'
+  | 'client_delete'
 
 export interface IActivityLog extends Document {
   companyId: mongoose.Types.ObjectId
@@ -49,6 +52,9 @@ const activityLogSchema = new Schema<IActivityLog>(
         'rsvp_response',
         'check_in',
         'export',
+        'client_create',
+        'client_update',
+        'client_delete',
       ],
       required: true,
       index: true,
