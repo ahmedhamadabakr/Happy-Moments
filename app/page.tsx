@@ -197,7 +197,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 border-t border-slate-300 bg-slate-100" dir="rtl">
+      <footer className="py-12 border-t border-slate-300 bg-slate-100 mt-10" dir="rtl">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid md:grid-cols-3 gap-12 mb-10">
             {/* معلومات الشركة */}
