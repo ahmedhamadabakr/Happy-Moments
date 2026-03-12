@@ -9,36 +9,36 @@ export const metadata = {
 };
 
 export default function DashboardPage() {
-  const stats = [
-    {
-      title: 'إجمالي الفعاليات',
-      value: '0',
-      description: 'الفعاليات المنشأة هذا الشهر',
-      icon: Calendar,
-      color: 'bg-[#F08784]/10 text-[#F08784]',
-    },
-    {
-      title: 'إجمالي جهات الاتصال',
-      value: '0',
-      description: 'جهات الاتصال في قاعدة بياناتك',
-      icon: Users,
-      color: 'bg-emerald-50 text-emerald-600',
-    },
-    {
-      title: 'الدعوات المرسلة',
-      value: '0',
-      description: 'الدعوات المرسلة هذا الشهر',
-      icon: Eye,
-      color: 'bg-violet-50 text-violet-600',
-    },
-    {
-      title: 'الضيوف المؤكدون',
-      value: '0',
-      description: 'الضيوف الذين أكدوا الحضور',
-      icon: CheckCircle,
-      color: 'bg-violet-50 text-violet-600',
-    },
-  ];
+  // const stats = [
+  //   {
+  //     title: 'إجمالي الفعاليات',
+  //     value: '0',
+  //     description: 'الفعاليات المنشأة هذا الشهر',
+  //     icon: Calendar,
+  //     color: 'bg-[#F08784]/10 text-[#F08784]',
+  //   },
+  //   {
+  //     title: 'إجمالي جهات الاتصال',
+  //     value: '0',
+  //     description: 'جهات الاتصال في قاعدة بياناتك',
+  //     icon: Users,
+  //     color: 'bg-emerald-50 text-emerald-600',
+  //   },
+  //   {
+  //     title: 'الدعوات المرسلة',
+  //     value: '0',
+  //     description: 'الدعوات المرسلة هذا الشهر',
+  //     icon: Eye,
+  //     color: 'bg-violet-50 text-violet-600',
+  //   },
+  //   {
+  //     title: 'الضيوف المؤكدون',
+  //     value: '0',
+  //     description: 'الضيوف الذين أكدوا الحضور',
+  //     icon: CheckCircle,
+  //     color: 'bg-violet-50 text-violet-600',
+  //   },
+  // ];
 
   const gettingStartedSteps = [
     {
@@ -86,7 +86,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {/* <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat) => {
             const Icon = stat.icon;
             return (
@@ -104,7 +104,7 @@ export default function DashboardPage() {
               </Card>
             );
           })}
-        </div>
+        </div> */}
 
         {/* Getting Started Card */}
         <Card className="border-slate-200 shadow-md rounded-3xl overflow-hidden bg-white">

@@ -1,12 +1,27 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useAuthStore } from '@/lib/store/authStore';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Card } from '@/components/shared/Card';
 import { StatsCard } from '@/components/shared/StatsCard';
 import { DataTable, Column } from '@/components/shared/DataTable';
 import { useApi } from '@/lib/hooks/useApi';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { useToast } from '@/hooks/use-toast';
+
 
 interface Event {
   _id: string;
@@ -18,7 +33,23 @@ interface Event {
   checkedInCount: number;
 }
 
+// A simple debounce hook
+function useDebounce(value: string, delay: number) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+  return debouncedValue;
+}
+
+
 export default function Dashboard() {
+  const { toast } = useToast();
   const { user, company } = useAuthStore();
   const [events, setEvents] = useState<Event[]>([]);
   const [stats, setStats] = useState({
@@ -27,38 +58,97 @@ export default function Dashboard() {
     totalGuests: 0,
     totalRsvp: 0,
   });
+  const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  // State for delete confirmation
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+
 
   const { execute: fetchCompanyAnalytics } = useApi('/api/v1/analytics/company');
-  const { execute: fetchEvents } = useApi('/api/v1/events');
+  const { execute: fetchEvents, loading: loadingEvents } = useApi('/api/v1/events');
+  const { execute: deleteEvent } = useApi(`/api/v1/events`, { method: 'DELETE' });
+
+
+  const loadEvents = async () => {
+    try {
+      const queryParams = new URLSearchParams();
+      if (debouncedSearchTerm) {
+        queryParams.set('search', debouncedSearchTerm);
+      }
+      
+      const eventsData = await fetchEvents(null, `/api/v1/events?${queryParams.toString()}`);
+      if (eventsData && Array.isArray(eventsData.data)) {
+        setEvents(eventsData.data);
+      }
+    } catch (error) {
+      console.error('Failed to load events');
+      toast({
+        title: 'خطأ',
+        description: 'فشل في تحميل قائمة الفعاليات.',
+        variant: 'destructive',
+      })
+    }
+  };
 
   useEffect(() => {
-    const loadData = async () => {
+    const loadAnalytics = async () => {
       try {
-        const analyticsData = await fetchCompanyAnalytics('GET');
+        const analyticsData = await fetchCompanyAnalytics();
         if (analyticsData) {
           setStats({
-            totalEvents: analyticsData.totalEvents || 0,
-            activeEvents: analyticsData.activeEvents || 0,
-            totalGuests: analyticsData.totalGuests || 0,
-            totalRsvp: analyticsData.totalRsvp || 0,
+            totalEvents: analyticsData.summary?.إجمالي_الفعاليات || 0,
+            activeEvents: analyticsData.summary?.الفعاليات_النشطة || 0,
+            totalGuests: analyticsData.summary?.إجمالي_الضيوف || 0,
+            totalRsvp: analyticsData.summary?.إجمالي_الحضور || 0,
           });
         }
-
-        const eventsData = await fetchEvents('GET');
-        if (eventsData && Array.isArray(eventsData)) {
-          setEvents(eventsData.slice(0, 10));
-        }
       } catch (error) {
-        console.error('Failed to load dashboard data');
+        console.error('Failed to load dashboard analytics');
       }
     };
 
     if (user && company) {
-      loadData();
+      loadAnalytics();
     }
   }, [user, company]);
 
-  const eventColumns: Column<Event>[] = [
+
+  useEffect(() => {
+    if (user && company) {
+      loadEvents();
+    }
+  }, [user, company, debouncedSearchTerm]);
+
+
+  const handleDeleteClick = (event: Event) => {
+    setSelectedEvent(event);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedEvent) return;
+    try {
+      await deleteEvent(null, `/api/v1/events/${selectedEvent._id}`);
+      toast({
+        title: 'نجاح',
+        description: `تم حذف فعالية "${selectedEvent.title}" بنجاح.`,
+      });
+      loadEvents(); // Refresh the list
+    } catch (error) {
+      toast({
+        title: 'خطأ',
+        description: 'فشل في حذف الفعالية.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setSelectedEvent(null);
+    }
+  };
+
+  const eventColumns: Column<Event>[] = useMemo(() => [
     { key: 'title', label: 'عنوان الفعالية' },
     {
       key: 'status',
@@ -69,17 +159,32 @@ export default function Dashboard() {
           active: 'نشطة',
           closed: 'مغلقة',
         };
-        return <span>{statusText[value as keyof typeof statusText] || value}</span>;
+        const statusClasses = {
+          draft: 'bg-yellow-100 text-yellow-800',
+          active: 'bg-green-100 text-green-800',
+          closed: 'bg-gray-100 text-gray-800',
+        }
+        const a = value as keyof typeof statusText;
+        return <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusClasses[a]}`}>{statusText[a] || value}</span>;
       },
     },
-    { key: 'eventDate', label: 'التاريخ' },
+    { key: 'eventDate', label: 'التاريخ', render: (value) => new Date(value).toLocaleDateString('ar-EG') },
     { key: 'guestCount', label: 'عدد الضيوف' },
     {
       key: 'rsvpCount',
       label: 'الرد على الدعوة',
       render: (value, row) => `${value} / ${row.guestCount}`,
     },
-  ];
+    {
+      key: 'actions',
+      label: 'إجراءات',
+      render: (_, row) => (
+        <Button variant="ghost" size="sm" onClick={() => handleDeleteClick(row)}>
+          <Trash2 className="h-4 w-4 text-red-500" />
+        </Button>
+      ),
+    }
+  ], []);
 
   return (
     <DashboardLayout>
@@ -116,13 +221,38 @@ export default function Dashboard() {
 
         {/* Recent Events */}
         <Card title="الفعاليات الأخيرة">
+          <div className="p-4">
+              <Input
+                placeholder="ابحث عن فعالية..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="max-w-sm"
+              />
+          </div>
           <DataTable
             columns={eventColumns}
             data={events}
-            emptyMessage="لا توجد فعاليات حتى الآن"
+            loading={loadingEvents}
+            emptyMessage="لا توجد فعاليات تطابق بحثك"
           />
         </Card>
       </div>
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>هل أنت متأكد تماماً؟</AlertDialogTitle>
+            <AlertDialogDescription>
+              سيتم حذف فعالية "{selectedEvent?.title}". هذا الإجراء لا يمكن التراجع عنه.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete}>
+              نعم، قم بالحذف
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

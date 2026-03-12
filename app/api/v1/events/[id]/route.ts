@@ -29,7 +29,6 @@ export async function GET(
     const event = await Event.findOne({
       _id: id,
       companyId: user.companyId,
-      deletedAt: null,
     }).lean()
 
     if (!event) {
@@ -79,7 +78,6 @@ export async function PATCH(
     const event = await Event.findOne({
       _id: id,
       companyId: user.companyId,
-      deletedAt: null,
     })
 
     if (!event) {
@@ -134,19 +132,16 @@ export async function DELETE(
     const event = await Event.findOne({
       _id: id,
       companyId: user.companyId,
-      deletedAt: null,
-    })
+    });
 
     if (!event) {
       return NextResponse.json(
         { error: 'الفعالية غير موجودة' },
         { status: 404 }
-      )
+      );
     }
-
-    event.deletedAt = new Date()
-    await event.save()
-
+    
+    // Log activity before deleting
     await ActivityLog.create({
       companyId: user.companyId,
       userId: user.userId,
@@ -154,7 +149,10 @@ export async function DELETE(
       resourceType: 'Event',
       resourceId: event._id,
       details: { title: event.title },
-    })
+    });
+
+    await Event.deleteOne({ _id: id, companyId: user.companyId });
+
 
     return NextResponse.json({
       success: true,
