@@ -70,6 +70,17 @@ export default function ModernLoginForm() {
         <div className="absolute bottom-20 left-10 w-96 h-96 bg-violet-400/10 rounded-full blur-3xl" />
       </div>
 
+      {/* زر العودة للرئيسية */}
+      <a
+        href="/"
+        className="absolute top-6 right-6 z-20 flex items-center gap-2 bg-white/90 backdrop-blur-md hover:bg-white text-slate-700 hover:text-[#F08784] px-5 py-3 rounded-full font-bold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 border border-slate-200"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        <span>العودة للرئيسية</span>
+      </a>
+
       <div className="relative z-10 bg-white p-8 sm:p-12 rounded-3xl shadow-2xl w-full max-w-md border border-slate-200/50 backdrop-blur-sm">
         {/* Logo */}
         <div className="text-center mb-8">
