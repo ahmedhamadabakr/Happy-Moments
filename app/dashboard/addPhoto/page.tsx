@@ -126,6 +126,7 @@ export default function UploadPage() {
 
   const categoryLabels: Record<string, string> = {
     engagement: 'عقد قران',
+    betrothal: 'خطوبة',
     wedding: 'زفاف',
     birth: 'ولادة',
     birth_reception: 'استقبال ولادة',
@@ -207,6 +208,7 @@ export default function UploadPage() {
                     className="w-full text-lg p-6 border-2 border-slate-300 focus:border-[#F08784] rounded-xl outline-none focus:ring-2 focus:ring-[#F08784]/20"
                   >
                     <option value="engagement">عقد قران</option>
+                    <option value="betrothal">خطوبة</option>
                     <option value="wedding">زفاف</option>
                     <option value="birth">ولادة</option>
                     <option value="birth_reception">استقبال ولادة</option>

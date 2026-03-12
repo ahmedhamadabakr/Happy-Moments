@@ -29,8 +29,8 @@ export default function HomePage() {
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
   };
 
-  const whatsappNumber = '01012345678';
-  const whatsappMessage = 'مرحباً، أريد الاستفسار عن خدمات هابي مومنتس';
+  const whatsappNumber = '96565594787';
+  const whatsappMessage = 'مرحباً، أريد الاستفسار عن خدمات هابي مومنتس؟';
   const whatsappLink = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
