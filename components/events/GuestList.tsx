@@ -30,7 +30,9 @@ export default function GuestList({ guests }: { guests: Guest[] }) {
         <TableHeader className="bg-slate-50">
           <TableRow>
             <TableHead className="text-right">الضيف</TableHead>
+            <TableHead className="text-right">المرافقين </TableHead>
             <TableHead className="text-right">رقم الجوال</TableHead>
+
             <TableHead className="text-right">الدعوة</TableHead>
             <TableHead className="text-right">الرد</TableHead>
             <TableHead className="text-right">الدخول</TableHead>
@@ -61,6 +63,10 @@ export default function GuestList({ guests }: { guests: Guest[] }) {
                   <div className="font-bold">
                     {guest.snapshotName}
                   </div>
+                </TableCell>
+
+                <TableCell>
+                  {guest.companion}
                 </TableCell>
 
                 <TableCell>

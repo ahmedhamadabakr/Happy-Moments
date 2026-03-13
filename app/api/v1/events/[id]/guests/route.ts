@@ -114,23 +114,4 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
   }
 }
 
-export async function DELETE(req: NextRequest, context: { params: { id: string } }) {
-  try {
-    const { id } = context.params
-    const user = await auth(req)
-    if (!user) return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
-
-    await connectDB()
-    const urlParts = req.url.split('/')
-    const guestId = urlParts[urlParts.length - 1]
-
-    const guest = await EventGuest.findOneAndDelete({ _id: guestId, eventId: id, companyId: user.companyId })
-    if (!guest) return NextResponse.json({ error: 'الضيف غير موجود' }, { status: 404 })
-
-    return NextResponse.json({ success: true })
-  } catch (err) {
-    return handleApiError(err)
-  }
-}
-
 // GET بالباجنينش
