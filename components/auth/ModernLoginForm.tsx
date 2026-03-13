@@ -93,7 +93,7 @@ export default function ModernLoginForm() {
             <span>مرحباً بعودتك</span>
           </div>
           
-          <h1 className="text-3xl font-black text-slate-900 mb-2">تسجيل الدخول</h1>
+          <h1 className="text-3xl font-black text-slate-900 mb-2">تسجيل الدخول (للإدارة)</h1>
           <p className="text-slate-600 text-base">سجل دخولك لإدارة فعالياتك بكل سهولة</p>
         </div>
 

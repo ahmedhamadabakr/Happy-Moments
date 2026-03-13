@@ -89,8 +89,8 @@ contactSchema.pre('save', function(next) {
   next();
 });
 
-// Compound unique index on companyId and phone for deduplication
-contactSchema.index({ companyId: 1, phone: 1 }, { unique: true, sparse: true })
+// Compound unique index on companyId, clientId, and phone for deduplication per client
+contactSchema.index({ companyId: 1, clientId: 1, phone: 1 }, { unique: true, sparse: true })
 
 // Index for listing contacts per client
 contactSchema.index({ companyId: 1, clientId: 1 })

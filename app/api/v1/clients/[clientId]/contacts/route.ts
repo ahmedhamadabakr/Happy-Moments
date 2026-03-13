@@ -170,10 +170,19 @@ export async function POST(
       )
     }
 
-    const phones = parsedContacts.map((c) => c.phone)
+    // De-duplicate contacts from the uploaded file, last one wins
+    const uniqueParsedContactsMap = new Map()
+    for (const contact of parsedContacts) {
+      uniqueParsedContactsMap.set(contact.phone, contact)
+    }
+    const uniqueParsedContacts = Array.from(uniqueParsedContactsMap.values())
+    const skipped = parsedContacts.length - uniqueParsedContacts.length
+
+    const phones = uniqueParsedContacts.map((c) => c.phone)
 
     const existingContacts = await Contact.find({
       companyId: session.user.companyId,
+      clientId: client._id,
       phone: { $in: phones },
       deletedAt: null,
     })
@@ -182,16 +191,26 @@ export async function POST(
 
     let created = 0
     let updated = 0
-    let skipped = 0
 
     const dbErrors: any[] = []
     const newContacts: any[] = []
+    const updatePromises: Promise<any>[] = []
 
-    for (const parsed of parsedContacts) {
+    for (const parsed of uniqueParsedContacts) {
       try {
         const existing = existingMap.get(parsed.phone)
 
-        if (!existing) {
+        if (existing) {
+          // Update existing contact
+          existing.firstName = parsed.firstName
+          existing.lastName = parsed.lastName
+          existing.suffix = parsed.suffix
+          existing.companion = parsed.companion
+          existing.email = parsed.email
+          updatePromises.push(existing.save())
+          updated++
+        } else {
+          // Create new contact
           newContacts.push({
             companyId: session.user.companyId,
             clientId: client._id,
@@ -203,27 +222,7 @@ export async function POST(
             email: parsed.email,
           })
           created++
-          continue
         }
-
-        if (existing.clientId.toString() !== client._id.toString()) {
-          skipped++
-          dbErrors.push({
-            name: `${parsed.firstName} ${parsed.lastName}`,
-            phone: parsed.phone,
-            error: 'رقم الهاتف مسجل بالفعل لعميل آخر',
-          })
-          continue
-        }
-
-        existing.firstName = parsed.firstName
-        existing.lastName = parsed.lastName
-        existing.suffix = parsed.suffix
-        existing.companion = parsed.companion
-        existing.email = parsed.email
-
-        await existing.save()
-        updated++
       } catch (e: any) {
         dbErrors.push({
           name: `${parsed.firstName} ${parsed.lastName}`,
@@ -235,6 +234,10 @@ export async function POST(
 
     if (newContacts.length > 0) {
       await Contact.insertMany(newContacts)
+    }
+
+    if (updatePromises.length > 0) {
+      await Promise.all(updatePromises)
     }
 
     const allErrors = [...parsingErrors, ...dbErrors]
