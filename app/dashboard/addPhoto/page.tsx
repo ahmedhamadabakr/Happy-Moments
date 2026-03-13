@@ -22,6 +22,7 @@ export default function UploadPage() {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [editingPhoto, setEditingPhoto] = useState<Photo | null>(null);
   const [showGallery, setShowGallery] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<string>('all');
 
   useEffect(() => {
     fetchPhotos();
@@ -271,7 +272,43 @@ export default function UploadPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="space-y-6">
+            {/* فلتر الفئات */}
+            <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setActiveFilter('all')}
+                  className={`px-4 py-2 rounded-full text-sm font-bold transition-all duration-200 ${
+                    activeFilter === 'all'
+                      ? 'bg-gradient-to-r from-[#F08784] to-[#D97673] text-white shadow-md scale-105'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  الكل ({photos.length})
+                </button>
+                {Object.entries(categoryLabels)
+                  .filter(([key]) => photos.some(p => p.category === key))
+                  .map(([key, label]) => {
+                    const count = photos.filter(p => p.category === key).length;
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => setActiveFilter(key)}
+                        className={`px-4 py-2 rounded-full text-sm font-bold transition-all duration-200 ${
+                          activeFilter === key
+                            ? 'bg-gradient-to-r from-[#F08784] to-[#D97673] text-white shadow-md scale-105'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        }`}
+                      >
+                        {label} ({count})
+                      </button>
+                    );
+                  })}
+              </div>
+            </div>
+
+            {/* الصور */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {photos.length === 0 ? (
               <Card className="col-span-full border-slate-200 rounded-3xl">
                 <CardContent className="p-12 text-center">
@@ -282,13 +319,15 @@ export default function UploadPage() {
                 </CardContent>
               </Card>
             ) : (
-              photos.map((photo) => (
+              photos
+                .filter(p => activeFilter === 'all' || p.category === activeFilter)
+                .map((photo) => (
                 <Card key={photo._id} className="border-slate-200 hover:border-[#F08784]/30 hover:shadow-xl transition-all rounded-3xl overflow-hidden group">
-                  <div className="relative overflow-hidden">
+                  <div className="relative overflow-hidden bg-slate-50 flex items-center justify-center" style={{height: '280px'}}>
                     <img
                       src={photo.imageUrl}
                       alt={photo.title}
-                      className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300 p-2"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
@@ -321,6 +360,14 @@ export default function UploadPage() {
                   </CardContent>
                 </Card>
               ))
+            )}
+            </div>
+
+            {/* رسالة لو مفيش نتائج للفلتر */}
+            {activeFilter !== 'all' && photos.filter(p => p.category === activeFilter).length === 0 && (
+              <div className="text-center py-12 text-slate-500">
+                لا توجد صور في هذه الفئة
+              </div>
             )}
           </div>
         )}
