@@ -138,29 +138,6 @@ export default function ClientViewPage({ params }: PageProps) {
           </div>
         )}
 
-<<<<<<< HEAD
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div className="rounded-md bg-slate-50 p-2">
-                    <div className="text-slate-500">مدعو</div>
-                    <div className="font-semibold">{event.stats?.totalInvited ?? 0}</div>
-                  </div>
-                  <div className="rounded-md bg-green-50 p-2">
-                    <div className="text-slate-500">مؤكد</div>
-                    <div className="font-semibold">{event.stats?.confirmed ?? 0}</div>
-                  </div>
-                  <div className="rounded-md bg-red-50 p-2">
-                    <div className="text-slate-500">رفض</div>
-                    <div className="font-semibold">{event.stats?.declined ?? 0}</div>
-                  </div>
-                  <div className="rounded-md bg-orange-50 p-2">
-                    <div className="text-slate-500">قيد الانتظار</div>
-                    <div className="font-semibold">{event.stats?.pending ?? 0}</div>
-                  </div>
-                  <div className="rounded-md bg-purple-50 p-2 col-span-2">
-                    <div className="text-slate-500">تم تسجيل الوصول</div>
-                    <div className="font-semibold">{event.stats?.checkedIn ?? 0}</div>
-                  </div>
-=======
         {/* Selected Event Details */}
         {selectedEvent && (
           <div className="space-y-6">
@@ -172,7 +149,6 @@ export default function ClientViewPage({ params }: PageProps) {
                   {selectedEvent.description && (
                     <p className="text-slate-600 text-lg">{selectedEvent.description}</p>
                   )}
->>>>>>> 9b4a3b4a66a9e5ec0430fa5ff0bc5afa488162ea
                 </div>
                 <span className={`px-4 py-2 rounded-full text-sm font-bold ${
                   selectedEvent.status === 'active' 
