@@ -182,7 +182,6 @@ export async function POST(
 
     const existingContacts = await Contact.find({
       companyId: session.user.companyId,
-      clientId: client._id,
       phone: { $in: phones },
       deletedAt: null,
     })
@@ -201,12 +200,13 @@ export async function POST(
         const existing = existingMap.get(parsed.phone)
 
         if (existing) {
-          // Update existing contact
+          // Update existing contact and associate it with the current client
           existing.firstName = parsed.firstName
           existing.lastName = parsed.lastName
           existing.suffix = parsed.suffix
           existing.companion = parsed.companion
           existing.email = parsed.email
+          existing.clientId = client._id
           updatePromises.push(existing.save())
           updated++
         } else {
