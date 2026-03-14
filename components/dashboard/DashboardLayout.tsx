@@ -20,10 +20,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   // check authentication
   useEffect(() => {
-    if (status === 'loading') {
-      checkAuth();
-    }
-  }, [status, checkAuth]);
+    checkAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // redirect if not logged in
   useEffect(() => {
@@ -61,7 +60,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         )}
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-w-0">
 
           <DashboardHeader
             openSidebar={() => setSidebarOpen(true)}

@@ -4,30 +4,17 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Shield, Users, Calendar, TrendingUp, Activity,
-  UserPlus, BarChart3, Clock, CheckCircle
+  UserPlus, ArrowLeft, Sparkles, CheckCircle2
 } from 'lucide-react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
-import { Card } from '@/components/shared/Card';
-import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
+import { useAuthStore } from '@/lib/store/authStore';
 
 interface DashboardStats {
   totalEmployees: number;
   totalEvents: number;
   totalGuests: number;
   activeEvents: number;
-  recentActivity: ActivityItem[];
-}
-
-interface ActivityItem {
-  _id: string;
-  activityType: string;
-  details: any;
-  createdAt: string;
-  userId: {
-    firstName: string;
-    lastName: string;
-  };
 }
 
 export default function ManagerDashboardPage() {
@@ -35,6 +22,7 @@ export default function ManagerDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);
   const router = useRouter();
+  const { user } = useAuthStore();
 
   useEffect(() => {
     checkAuthorization();
@@ -44,16 +32,13 @@ export default function ManagerDashboardPage() {
     try {
       const response = await fetch('/api/auth/profile');
       const data = await response.json();
-
-      if (!data.success || !data.data || !data.data.user || data.data.user.role !== 'manager') {
+      if (!data.success || !data.data?.user || data.data.user.role !== 'manager') {
         router.push('/dashboard');
         return;
       }
-
       setAuthorized(true);
       fetchStats();
-    } catch (error) {
-      console.error('Authorization check failed:', error);
+    } catch {
       router.push('/dashboard');
     }
   };
@@ -62,12 +47,9 @@ export default function ManagerDashboardPage() {
     try {
       const response = await fetch('/api/v1/manager/stats');
       const data = await response.json();
-
-      if (data.success) {
-        setStats(data.stats);
-      }
-    } catch (error) {
-      console.error('Error fetching stats:', error);
+      if (data.success) setStats(data.stats);
+    } catch {
+      console.error('Error fetching stats');
     } finally {
       setLoading(false);
     }
@@ -75,181 +57,115 @@ export default function ManagerDashboardPage() {
 
   if (!authorized || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-[#F08784] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-600 font-medium">{!authorized ? 'جاري التحقق من الصلاحيات...' : 'جاري تحميل البيانات...'}</p>
+          <div className="w-16 h-16 border-4 border-[#F08784] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-slate-600 font-medium">جاري التحميل...</p>
         </div>
       </div>
     );
   }
 
-  const gettingStartedSteps = [
-    {
-      step: 1,
-      title: 'أنشئ أول فعالية لك',
-      description: 'اذهب إلى قسم الفعاليات لإنشاء فعالية جديدة وبدء إدارتها',
-      link: '/dashboard/events/create',
-      color: 'bg-[#F08784]/10 text-[#F08784]',
-      hoverColor: 'hover:bg-[#F08784] hover:text-white',
-    },
-    {
-      step: 2,
-      title: 'استيراد أو إضافة جهات اتصال',
-      description: 'ارفع قائمة جهات الاتصال الخاصة بك أو أضف الضيوف يدوياً لدعوتهم إلى الفعاليات',
-      link: '/dashboard/clients',
-      color: 'bg-emerald-50 text-emerald-600',
-      hoverColor: 'hover:bg-emerald-600 hover:text-white',
-    },
-    {
-      step: 3,
-      title: 'إرسال الدعوات',
-      description: 'أرسل دعوات شخصية عبر البريد الإلكتروني أو الواتساب',
-      link: '/dashboard/events',
-      color: 'bg-violet-50 text-violet-600',
-      hoverColor: 'hover:bg-violet-600 hover:text-white',
-    },
-    {
-      step: 4,
-      title: 'تتبع الردود',
-      description: 'راقب الحضور وإدارة تأكيدات الضيوف في الوقت الفعلي',
-      link: '/dashboard/events',
-      color: 'bg-violet-50 text-violet-600',
-      hoverColor: 'hover:bg-violet-600 hover:text-white',
-    },
+  const statsCards = [
+    { label: 'إجمالي الموظفين', value: stats?.totalEmployees ?? 0, icon: Users, color: 'text-[#F08784]', bg: 'bg-[#F08784]/10' },
+    { label: 'إجمالي الفعاليات', value: stats?.totalEvents ?? 0, icon: Calendar, color: 'text-violet-600', bg: 'bg-violet-100' },
+    { label: 'الفعاليات النشطة', value: stats?.activeEvents ?? 0, icon: Activity, color: 'text-emerald-600', bg: 'bg-emerald-100' },
+    { label: 'إجمالي الضيوف', value: stats?.totalGuests ?? 0, icon: TrendingUp, color: 'text-blue-600', bg: 'bg-blue-100' },
   ];
+
   const quickActions = [
-    {
-      title: 'إضافة موظف جديد',
-      description: 'إضافة موظف للنظام',
-      icon: UserPlus,
-      color: 'bg-[#F08784]',
-      href: '/register'
-    },
-    {
-      title: 'إدارة الموظفين',
-      description: 'عرض وإدارة جميع الموظفين',
-      icon: Users,
-      color: 'bg-emerald-500',
-      href: '/dashboard/users'
-    },
-  
+    { title: 'إضافة موظف جديد', description: 'إضافة موظف للنظام', icon: UserPlus, color: 'bg-[#F08784]', href: '/register' },
+    { title: 'إدارة الموظفين', description: 'عرض وإدارة جميع الموظفين', icon: Users, color: 'bg-emerald-500', href: '/dashboard/users' },
+  ];
+
+  const steps = [
+    { n: 1, title: 'أنشئ أول فعالية', desc: 'اذهب إلى قسم الفعاليات لإنشاء فعالية جديدة وبدء إدارتها', href: '/dashboard/events/create', color: 'bg-[#F08784] text-white' },
+    { n: 2, title: 'أضف جهات الاتصال', desc: 'ارفع قائمة جهات الاتصال أو أضف الضيوف يدوياً لدعوتهم', href: '/dashboard/clients', color: 'bg-emerald-500 text-white' },
+    { n: 3, title: 'أرسل الدعوات', desc: 'أرسل دعوات شخصية عبر البريد الإلكتروني أو الواتساب', href: '/dashboard/events', color: 'bg-violet-500 text-white' },
+    { n: 4, title: 'تتبع الحضور', desc: 'راقب الحضور وتأكيدات الضيوف في الوقت الفعلي', href: '/dashboard/events', color: 'bg-blue-500 text-white' },
   ];
 
   return (
     <DashboardLayout>
+      <div dir="rtl" className="space-y-8 pb-10">
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white p-6" dir="rtl">
-        <div className="max-w-7xl mx-auto space-y-6">
-          {/* Header */}
-          <Card className="bg-gradient-to-br from-[#F08784]/5 via-white to-violet-50/30 rounded-3xl shadow-lg p-8 border-none">
-            <div className="flex items-center gap-6 mb-6">
-              <div className="w-20 h-20 bg-gradient-to-br from-[#F08784] to-[#D97673] rounded-2xl flex items-center justify-center shadow-lg">
-                <Shield className="w-10 h-10 text-white" />
-              </div>
-              <div>
-                <h1 className="text-4xl font-black text-slate-900 tracking-tight">لوحة تحكم المدير</h1>
-                <p className="text-lg text-slate-600 mt-2 font-medium">مرحباً بك في لوحة التحكم الخاصة بالمدير العام</p>
-              </div>
+        {/* Header */}
+        <div className="bg-gradient-to-br from-[#F08784]/10 via-white to-violet-50/50 rounded-3xl p-8 border border-slate-100 shadow-sm">
+          <div className="flex items-center gap-5 mb-8">
+            <div className="w-16 h-16 bg-[#F08784] rounded-2xl flex items-center justify-center shadow-lg shadow-[#F08784]/20">
+              <Shield className="w-8 h-8 text-white" />
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-5 border border-slate-200 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-slate-600 text-sm font-medium">إجمالي الموظفين</p>
-                    <p className="text-4xl font-black mt-2 text-slate-900">{stats?.totalEmployees || 0}</p>
-                  </div>
-                  <div className="p-3 bg-[#F08784]/10 rounded-xl">
-                    <Users className="w-8 h-8 text-[#F08784]" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-5 border border-slate-200 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-slate-600 text-sm font-medium">إجمالي الفعاليات</p>
-                    <p className="text-4xl font-black mt-2 text-slate-900">{stats?.totalEvents || 0}</p>
-                  </div>
-                  <div className="p-3 bg-violet-100 rounded-xl">
-                    <Calendar className="w-8 h-8 text-violet-600" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-5 border border-slate-200 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-slate-600 text-sm font-medium">الفعاليات النشطة</p>
-                    <p className="text-4xl font-black mt-2 text-slate-900">{stats?.activeEvents || 0}</p>
-                  </div>
-                  <div className="p-3 bg-emerald-100 rounded-xl">
-                    <Activity className="w-8 h-8 text-emerald-600" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-5 border border-slate-200 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-slate-600 text-sm font-medium">إجمالي الضيوف</p>
-                    <p className="text-4xl font-black mt-2 text-slate-900">{stats?.totalGuests || 0}</p>
-                  </div>
-                  <div className="p-3 bg-blue-100 rounded-xl">
-                    <TrendingUp className="w-8 h-8 text-blue-600" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* Quick Actions */}
-          <div>
-            <h2 className="text-2xl font-black text-slate-900 mb-4">إجراءات سريعة</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {quickActions.map((action, index) => (
-                <button
-                  key={index}
-                  onClick={() => router.push(action.href)}
-                  className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 hover:shadow-lg hover:border-[#F08784]/30 transition-all transform hover:scale-105 text-right"
-                >
-                  <div className={`w-14 h-14 ${action.color} rounded-2xl flex items-center justify-center mb-4 shadow-md`}>
-                    <action.icon className="w-7 h-7 text-white" />
-                  </div>
-                  <h3 className="font-bold text-slate-900 mb-2 text-lg">{action.title}</h3>
-                  <p className="text-sm text-slate-600">{action.description}</p>
-                </button>
-              ))}
+            <div>
+              <h1 className="text-3xl md:text-4xl font-black text-slate-900">لوحة تحكم المدير</h1>
+              <p className="text-slate-500 mt-1 text-lg">
+                مرحباً{user?.fullName ? `، ${user.fullName}` : ''} 👋
+              </p>
             </div>
           </div>
 
-          <Card className="border-slate-200 shadow-md rounded-3xl overflow-hidden bg-white">
-            <CardHeader className="bg-gradient-to-r from-slate-50 to-[#F08784]/5 border-b border-slate-100">
-              <CardTitle className="text-2xl font-bold text-slate-900">ابدأ الآن</CardTitle>
-              <CardDescription className="text-slate-600 text-base">خطوات بسيطة لإطلاق فعاليتك الأولى</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-8 pb-8">
-              <div className="space-y-2">
-                {gettingStartedSteps.map((step) => (
-                  <Link href={step.link} key={step.step}>
-                    <div className="flex items-start gap-5 group p-4 rounded-2xl hover:bg-slate-50 transition-all duration-200 cursor-pointer">
-                      <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${step.color} font-black text-lg ${step.hoverColor} transition-all duration-300 group-hover:scale-110 flex-shrink-0`}>
-                        {step.step}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-bold text-slate-900 text-lg">{step.title}</h3>
-                        <p className="text-sm text-slate-600 mt-2 leading-relaxed">
-                          {step.description}
-                        </p>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
+          {/* Stats */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {statsCards.map((s, i) => (
+              <div key={i} className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-slate-500 text-sm font-medium">{s.label}</p>
+                  <div className={`p-2 ${s.bg} rounded-xl`}>
+                    <s.icon className={`w-5 h-5 ${s.color}`} />
+                  </div>
+                </div>
+                <p className={`text-4xl font-black ${s.color}`}>{s.value}</p>
               </div>
-            </CardContent>
-          </Card>
+            ))}
+          </div>
         </div>
+
+        {/* Quick Actions */}
+        <div>
+          <h2 className="text-2xl font-black text-slate-900 mb-4 flex items-center gap-2">
+            <Sparkles className="w-6 h-6 text-[#F08784]" />
+            إجراءات سريعة
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {quickActions.map((action, i) => (
+              <button
+                key={i}
+                onClick={() => router.push(action.href)}
+                className="bg-white rounded-3xl border border-slate-200 p-6 hover:shadow-lg hover:border-[#F08784]/30 transition-all hover:-translate-y-0.5 text-right group"
+              >
+                <div className={`w-14 h-14 ${action.color} rounded-2xl flex items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform`}>
+                  <action.icon className="w-7 h-7 text-white" />
+                </div>
+                <h3 className="font-bold text-slate-900 text-lg mb-1">{action.title}</h3>
+                <p className="text-sm text-slate-500">{action.description}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Getting Started */}
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-[#F08784]/5">
+            <h2 className="text-2xl font-black text-slate-900">ابدأ الآن</h2>
+            <p className="text-slate-500 mt-1">خطوات بسيطة لإطلاق فعاليتك الأولى</p>
+          </div>
+          <div className="p-6 space-y-3">
+            {steps.map((step) => (
+              <Link href={step.href} key={step.n}>
+                <div className="flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 transition-all group cursor-pointer border border-transparent hover:border-slate-200">
+                  <div className={`w-11 h-11 ${step.color} rounded-xl flex items-center justify-center font-black text-lg flex-shrink-0 group-hover:scale-110 transition-transform shadow-sm`}>
+                    {step.n}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-slate-900">{step.title}</h3>
+                    <p className="text-sm text-slate-500 mt-0.5">{step.desc}</p>
+                  </div>
+                  <ArrowLeft className="w-5 h-5 text-slate-300 group-hover:text-[#F08784] transition-colors flex-shrink-0" />
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+
       </div>
     </DashboardLayout>
   );

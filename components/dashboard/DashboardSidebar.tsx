@@ -128,9 +128,9 @@ export function DashboardSidebar({ open, setOpen }: SidebarProps) {
 
     <aside
       className={cn(
-        "fixed top-0 right-0 z-40 h-full w-72 bg-white border-l border-slate-200 flex flex-col transition-transform duration-300",
+        "fixed top-0 right-0 z-40 h-full w-64 bg-white border-l border-slate-200 flex flex-col transition-transform duration-300",
         open ? "translate-x-0" : "translate-x-full",
-        "lg:translate-x-0 lg:static"
+        "lg:translate-x-0 lg:static lg:h-screen lg:sticky lg:top-0 lg:shrink-0"
       )}
       dir="rtl"
     >
