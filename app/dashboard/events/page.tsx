@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
@@ -127,16 +127,6 @@ const EventsGrid = ({
                 })}
               </span>
             </div>
-
-            {/* نتحقق من وجود بيانات العميل سواء كان الحقل باسم client أو clientId لضمان الظهور */}
-            {((event as any).clientId?.fullName || (event as any).client?.fullName) && (
-              <div className="flex items-center gap-1.5 mt-1.5">
-                <div className="w-4 h-4 rounded-full bg-[#F08784]/20 flex items-center justify-center">
-                  <span className="text-[8px] text-[#F08784] font-black">ع</span>
-                </div>
-                <span className="text-sm text-[#F08784] font-semibold">{(event as any).clientId?.fullName || (event as any).client?.fullName}</span>
-              </div>
-            )}
           </CardHeader>
           
           <CardContent className="p-6 pt-0">
@@ -279,22 +269,6 @@ export default function EventsListPage() {
     if (newPage >= 1 && newPage <= pagination.pages) {
       setPagination(p => ({ ...p, page: newPage }));
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-      case 'closed': return 'bg-slate-50 text-slate-700 border-slate-200';
-      default: return 'bg-slate-50 text-slate-700 border-slate-200';
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'active': return 'نشطة';
-      case 'closed': return 'مغلقة';
-      default: return 'نشطة';
     }
   };
 
