@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, Model } from 'mongoose'
 
-export type EventStatus = 'draft' | 'active' | 'closed'
+export type EventStatus = 'draft' | 'active' | 'closed' | 'processing'
 
 export interface IEvent extends Document {
   companyId: mongoose.Types.ObjectId
@@ -88,7 +88,7 @@ const eventSchema = new Schema<IEvent>(
     },
     status: {
       type: String,
-      enum: ['draft', 'active', 'closed'],
+      enum: ['draft', 'active', 'closed', 'processing'],
       default: 'draft',
     },
     createdBy: {
