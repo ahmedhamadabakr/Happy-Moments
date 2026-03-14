@@ -9,36 +9,6 @@ export const metadata = {
 };
 
 export default function DashboardPage() {
-  // const stats = [
-  //   {
-  //     title: 'إجمالي الفعاليات',
-  //     value: '0',
-  //     description: 'الفعاليات المنشأة هذا الشهر',
-  //     icon: Calendar,
-  //     color: 'bg-[#F08784]/10 text-[#F08784]',
-  //   },
-  //   {
-  //     title: 'إجمالي جهات الاتصال',
-  //     value: '0',
-  //     description: 'جهات الاتصال في قاعدة بياناتك',
-  //     icon: Users,
-  //     color: 'bg-emerald-50 text-emerald-600',
-  //   },
-  //   {
-  //     title: 'الدعوات المرسلة',
-  //     value: '0',
-  //     description: 'الدعوات المرسلة هذا الشهر',
-  //     icon: Eye,
-  //     color: 'bg-violet-50 text-violet-600',
-  //   },
-  //   {
-  //     title: 'الضيوف المؤكدون',
-  //     value: '0',
-  //     description: 'الضيوف الذين أكدوا الحضور',
-  //     icon: CheckCircle,
-  //     color: 'bg-violet-50 text-violet-600',
-  //   },
-  // ];
 
   const gettingStartedSteps = [
     {
@@ -85,26 +55,7 @@ export default function DashboardPage() {
           <p className="mt-3 text-lg text-slate-600">إدارة فعالياتك وضيوفك بفعالية واحترافية</p>
         </div>
 
-        {/* Stats Grid */}
-        {/* <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <Card key={stat.title} className="border-slate-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-white rounded-2xl">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-semibold text-slate-700">{stat.title}</CardTitle>
-                  <div className={`rounded-xl p-2.5 ${stat.color} transition-transform hover:scale-110`}>
-                    <Icon className="h-5 w-5" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-black text-slate-900">{stat.value}</div>
-                  <p className="text-xs text-slate-500 pt-2">{stat.description}</p>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div> */}
+
 
         {/* Getting Started Card */}
         <Card className="border-slate-200 shadow-md rounded-3xl overflow-hidden bg-white">

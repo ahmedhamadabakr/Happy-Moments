@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store/authStore';
 import { DashboardHeader } from './DashboardHeader';
@@ -12,28 +12,27 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
-  // **THE FIX**: We are now using the new `status` field from our refactored store.
+
   const { user, status, checkAuth } = useAuthStore();
   const router = useRouter();
 
-  // This effect runs ONCE when the component mounts if the status is 'loading'.
-  // It's responsible for starting the authentication check.
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // check authentication
   useEffect(() => {
     if (status === 'loading') {
       checkAuth();
     }
   }, [status, checkAuth]);
 
-  // This effect is responsible for reacting to the *result* of the auth check.
+  // redirect if not logged in
   useEffect(() => {
-    // When the check is complete and the result is 'unauthenticated', redirect.
     if (status === 'unauthenticated') {
       router.replace('/login');
     }
   }, [status, router]);
 
-  // 1. If the status is 'loading', show a full-screen loader.
-  // This is the correct behavior while we wait for the server's response.
+  // loading state
   if (status === 'loading') {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-slate-50">
@@ -42,22 +41,41 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     );
   }
 
-  // 2. If the status is 'authenticated' and we have a user, render the full dashboard.
-  // This is the successful state.
+  // authenticated state
   if (status === 'authenticated' && user) {
     return (
       <div className="flex min-h-screen bg-slate-50" dir="rtl">
-        {/* These components now safely fetch their own data from the store */}
-        <DashboardSidebar />
+
+        {/* Sidebar */}
+        <DashboardSidebar
+          open={sidebarOpen}
+          setOpen={setSidebarOpen}
+        />
+
+        {/* Overlay for mobile */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/40 z-30 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {/* Main Content */}
         <div className="flex-1 flex flex-col">
-          <DashboardHeader />
-          <main className="flex-1 p-6 lg:p-8">{children}</main>
+
+          <DashboardHeader
+            openSidebar={() => setSidebarOpen(true)}
+          />
+
+          <main className="flex-1 p-6 lg:p-8">
+            {children}
+          </main>
+
         </div>
+
       </div>
     );
   }
 
-  // 3. If the status is 'unauthenticated', the redirection effect is handling it.
-  // We return null here to prevent any part of the dashboard from rendering and causing a flash.
   return null;
 }
