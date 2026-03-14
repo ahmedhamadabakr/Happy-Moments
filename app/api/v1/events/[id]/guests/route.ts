@@ -99,6 +99,7 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
         snapshotName: fullName,
         snapshotPhone: contact.phone,
         snapshotEmail: contact.email,
+        companion: contact.companion,
         invitationToken: generateToken(),
         qrToken: generateToken(),
         rsvpStatus: 'pending',

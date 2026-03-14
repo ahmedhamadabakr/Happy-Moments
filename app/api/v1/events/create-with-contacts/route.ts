@@ -185,6 +185,7 @@ export async function POST(request: NextRequest) {
           snapshotName: parsedContact.fullName,
           snapshotPhone: parsedContact.phone,
           snapshotEmail: parsedContact.email,
+          companion: contact.companion,
           invitationToken,
           qrToken,
           invitationStatus: 'pending',

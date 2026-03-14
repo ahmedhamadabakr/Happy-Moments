@@ -123,6 +123,7 @@ export async function POST(request: NextRequest) {
           snapshotName: fullName,
           snapshotPhone: (contact as any).phone,
           snapshotEmail: (contact as any).email,
+          companion: (contact as any).companion,
           invitationToken,
           qrToken,
           invitationStatus: 'pending',
