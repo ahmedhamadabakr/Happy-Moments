@@ -12,18 +12,13 @@ export default function EmployeeRegisterForm() {
     phone: '',
     password: '',
     confirmPassword: '',
-    role: 'EMPLOYEE', // EMPLOYEE only (MANAGER is the admin role)
-    roleKey: '', // مجموعة الصلاحيات
+    role: 'employee',
     agreeToTerms: false
   });
 
-  // مجموعات الصلاحيات المتاحة
-  const permissionGroups = [
-    { key: 'event_creator', label: 'منشئ فعاليات' },
-    { key: 'contact_manager', label: 'مدير جهات الاتصال' },
-    { key: 'invitation_sender', label: 'مرسل الدعوات' },
-    { key: 'viewer', label: 'مشاهد فقط' },
-    { key: 'checkin_staff', label: 'موظف تسجيل حضور' },
+  const roles = [
+    { key: 'manager', label: 'مدير' },
+    { key: 'employee', label: 'موظف' },
   ];
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -113,7 +108,6 @@ export default function EmployeeRegisterForm() {
           phone: formData.phone,
           password: formData.password,
           role: formData.role,
-          roleKey: formData.roleKey,
         }),
       });
 
@@ -287,22 +281,20 @@ export default function EmployeeRegisterForm() {
             </div>
           </div>
 
-          {/* اختيار مجموعة الصلاحيات */}
+          {/* اختيار الدور */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">مجموعة الصلاحيات</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">الدور</label>
             <select
-              name="roleKey"
-              value={formData.roleKey}
+              name="role"
+              value={formData.role}
               onChange={handleInputChange}
               required
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#C1A286] focus:border-transparent transition-all text-right ${errors.roleKey ? 'border-red-300' : 'border-gray-300'}`}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C1A286] focus:border-transparent transition-all text-right"
             >
-              <option value="">اختر مجموعة الصلاحيات</option>
-              {permissionGroups.map(group => (
-                <option key={group.key} value={group.key}>{group.label}</option>
+              {roles.map(r => (
+                <option key={r.key} value={r.key}>{r.label}</option>
               ))}
             </select>
-            {errors.roleKey && <p className="mt-1 text-xs text-red-600">{errors.roleKey}</p>}
           </div>
 
           {/* Password Fields */}

@@ -3,7 +3,7 @@ import { connectDB } from '@/lib/db';
 import { User } from '@/lib/models/User';
 import { requireManager } from '@/lib/middleware/permissions';
 import { hashPassword } from '@/lib/auth/helpers';
-import { UserRole, EmployeePermission, PERMISSION_GROUPS } from '@/lib/types/roles';
+import { UserRole, EmployeePermission } from '@/lib/types/roles';
 import { ActivityLog } from '@/lib/models/ActivityLog';
 
 /**
@@ -44,81 +44,40 @@ export async function POST(request: NextRequest) {
     if (session instanceof NextResponse) return session;
 
     const body = await request.json();
-    const {
-      firstName,
-      lastName,
-      email,
-      password,
-      phone,
-      roleKey, // مفتاح الدور المحدد مسبقاً
-      customPermissions, // صلاحيات مخصصة (اختياري)
-    } = body;
+    const { firstName, lastName, email, password, phone, role } = body;
 
-    // التحقق من البيانات المطلوبة
     if (!firstName || !lastName || !email || !password) {
-      return NextResponse.json(
-        { error: 'جميع الحقول مطلوبة' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'جميع الحقول مطلوبة' }, { status: 400 });
     }
 
-    // التحقق من صحة البريد الإلكتروني
     const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
     if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: 'البريد الإلكتروني غير صحيح' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'البريد الإلكتروني غير صحيح' }, { status: 400 });
     }
 
-    // التحقق من طول كلمة المرور
     if (password.length < 8) {
-      return NextResponse.json(
-        { error: 'كلمة المرور يجب أن تكون 8 أحرف على الأقل' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'كلمة المرور يجب أن تكون 8 أحرف على الأقل' }, { status: 400 });
     }
+
+    const assignedRole = role === 'manager' ? UserRole.MANAGER : UserRole.EMPLOYEE;
+    const permissions = assignedRole === UserRole.MANAGER ? Object.values(EmployeePermission) : [];
 
     await connectDB();
 
-    // التحقق من عدم وجود المستخدم مسبقاً
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
-      return NextResponse.json(
-        { error: 'البريد الإلكتروني مستخدم بالفعل' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'البريد الإلكتروني مستخدم بالفعل' }, { status: 400 });
     }
 
-    // تحديد الصلاحيات
-    let permissions: EmployeePermission[] = [];
-    
-    if (customPermissions && Array.isArray(customPermissions)) {
-      // استخدام الصلاحيات المخصصة
-      permissions = customPermissions.filter((p: string) =>
-        Object.values(EmployeePermission).includes(p as EmployeePermission)
-      );
-    } else if (roleKey && PERMISSION_GROUPS[roleKey as keyof typeof PERMISSION_GROUPS]) {
-      // استخدام الدور المحدد مسبقاً
-      permissions = PERMISSION_GROUPS[roleKey as keyof typeof PERMISSION_GROUPS];
-    } else {
-      return NextResponse.json(
-        { error: 'يجب تحديد دور أو صلاحيات للموظف' },
-        { status: 400 }
-      );
-    }
-
-    // تشفير كلمة المرور
     const hashedPassword = await hashPassword(password);
 
-    // إنشاء الموظف
     const employee = await User.create({
       firstName,
       lastName,
       email: email.toLowerCase(),
       password: hashedPassword,
       phone,
-      role: UserRole.EMPLOYEE,
+      role: assignedRole,
       permissions,
       createdBy: session.user.userId,
       isActive: true,
