@@ -8,6 +8,7 @@ const geSsTwo = localFont({
   src: '../public/fonts/GE_SS_Two_Bold.otf',
   variable: '--font-ge-ss-two',
   display: 'swap',
+  preload: true,
   weight: '700',
 });
 

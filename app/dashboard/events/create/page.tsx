@@ -12,6 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Upload, X, CheckCircle, ArrowRight, Send, PartyPopper, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Slider } from '@/components/ui/slider';
+import Image from 'next/image';
 
 interface ClientOption {
   _id: string;
@@ -205,7 +206,7 @@ export default function CreateEventPage() {
                 {imagePreview ? (
                   <div className="relative w-full">
                     <div className="relative max-h-[700px] overflow-auto rounded-lg bg-slate-50 border-2 border-slate-300">
-                      <img src={imagePreview} alt="Preview" className="w-full h-auto object-contain" />
+                      <Image src={imagePreview} alt="Preview" className="w-full h-auto object-contain" width={300} height={280} />
                       <div 
                         className="absolute border-2 border-dashed border-red-500 bg-white/30 backdrop-blur-sm"
                         style={{

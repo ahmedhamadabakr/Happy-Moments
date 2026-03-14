@@ -89,10 +89,12 @@ export default function ClientEventView({ data, eventToken }: ClientEventViewPro
             <Image src="/logo2.png" alt="هابي مومنتس" width={120} height={40} className="object-contain" />
           </div>
           {data.event.company?.logo && (
-            <img
+            <Image
               src={data.event.company.logo}
               alt={data.event.company.name}
               className="h-12 w-12 object-contain rounded-full border-2 border-slate-200"
+              width={48}
+              height={48}
             />
           )}
         </div>

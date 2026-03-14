@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Sparkles } from 'lucide-react';
+import Image from 'next/image';
 
 type GalleryImage = {
     _id: string;
@@ -99,12 +100,12 @@ export default function EventGrid() {
             {/* عنوان المعرض */}
             <div className="text-center mb-16">
                 <div className="inline-flex items-center gap-2 bg-[#F08784]/10 text-[#F08784] px-5 py-2 rounded-full text-sm font-bold mb-6">
-                    <Sparkles size={18} />
+                    <Sparkles size={18} className="text-[#F08784]" />
                     <span>معرض أعمالنا</span>
                 </div>
-                <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-4">
+                <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-4">
                     تصاميم <span className="text-[#F08784]">مميزة</span> لكل مناسبة
-                </h1>
+                </h2>
                 <p className="text-lg text-slate-600 max-w-2xl mx-auto mb-6">
                     استعرض مجموعة من أجمل تصاميمنا التي صممناها بحب لعملائنا
                 </p>
@@ -135,10 +136,12 @@ export default function EventGrid() {
                                 whileTap={{ scale: 0.97 }}
                             >
                                 <div className="absolute inset-0 p-4 flex items-center justify-center">
-                                    <img
+                                    <Image
                                         src={img.imageUrl}
                                         alt={img.title}
-                                        className="max-w-full max-h-full object-contain transition-all duration-700 group-hover:scale-110 drop-shadow-2xl"
+                                        fill
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                                        className="object-contain transition-all duration-700 group-hover:scale-110 drop-shadow-2xl p-4"
                                     />
                                 </div>
 

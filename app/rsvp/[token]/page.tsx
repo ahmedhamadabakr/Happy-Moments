@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import Image from 'next/image'
 
 type RsvpStatus = 'pending' | 'confirmed' | 'declined' | 'maybe'
 
@@ -162,7 +163,7 @@ export default function RsvpPage() {
           <CardContent className="space-y-4">
             {invitation.invitationImage && (
               <div className="overflow-hidden rounded-lg border bg-white">
-                <img
+                <Image
                   src={invitation.invitationImage}
                   alt="Invitation"
                   className="h-auto w-full"

@@ -59,7 +59,7 @@ export default function HomePage() {
             بوابتكم لأجمل اللحظات
           </span>
           <h1 className="text-5xl md:text-7xl font-black text-slate-900 mb-8 leading-[1.2]">
-            صمم <span className="text-[#F08784]">دعوات</span> تبيّض الوجه <br />
+            صمم <span className="text-[#F08784] dark:text-[#F08784]">دعوات</span> تبيّض الوجه <br />
             <span className="text-slate-700 text-4xl md:text-5xl font-bold">وإدارة ضيوفك.. بضغطة زر</span>
           </h1>
 
@@ -112,7 +112,7 @@ export default function HomePage() {
                     <button
                       key={index}
                       onClick={() => setCurrentSlide(index)}
-                      className={`w-3 h-3 rounded-full transition-all ${index === currentSlide
+                      className={`w-3 h-3 rounded-full transition-all touch-manipulation ${index === currentSlide
                           ? 'bg-[#F08784] w-8'
                           : 'bg-slate-300/80 hover:bg-slate-400'
                         }`}
@@ -135,9 +135,9 @@ export default function HomePage() {
       {/* About Section - براندينج الشركة */}
       <section id="about" className=" px-6 bg-slate-100">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl font-bold text-slate-800 mb-6 flex items-center justify-center gap-2">
+          <h2 className="text-4xl font-bold text-slate-800 mb-6 flex items-center justify-center gap-2">
             <Sparkles className="text-[#F08784]" /> نبذة عن هابي مومنتس
-          </h1>
+          </h2>
           <p className="text-2xl text-slate-600 leading-loose text-center">
             <strong className="text-slate-900">هابي مومنتس (Happy Moments)</strong> هي شركة كويتية متخصصة في تصميم دعوات التهنئة الإلكترونية بأسلوب عصري وأنيق. نقدم تصاميم مميزة لمختلف المناسبات مثل الأعراس، التخرج، والولادات، لنخلّد أجمل لحظاتكم بأسلوب رقمي راقي وسهل المشاركة.
           </p>
@@ -153,7 +153,7 @@ export default function HomePage() {
           {/* عنوان القسم */}
           <div className="text-center mb-16 mt-20">
             <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-4">
-              خدماتنا <span className="text-[#F08784]">المميزة</span>
+              خدماتنا <span className="text-[#F08784] dark:text-[#F08784]">المميزة</span>
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
               كل ما تحتاجه لإدارة فعالياتك باحترافية وسهولة

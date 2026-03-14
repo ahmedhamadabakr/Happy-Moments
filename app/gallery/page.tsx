@@ -233,10 +233,12 @@ export default function GalleryPage() {
                                 >
                                     {/* الصورة */}
                                     <div className="absolute inset-0 p-6 flex items-center justify-center">
-                                        <img
+                                        <Image
                                             src={img.imageUrl}
                                             alt={img.title}
-                                            className="max-w-full max-h-full object-contain transition-all duration-700 group-hover:scale-110 drop-shadow-2xl"
+                                            fill
+                                            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                            className="object-contain transition-all duration-700 group-hover:scale-110 drop-shadow-2xl p-6"
                                         />
                                     </div>
 
@@ -246,9 +248,9 @@ export default function GalleryPage() {
                                     {/* محتوى البطاقة */}
                                     <div className="absolute inset-0 flex flex-col justify-end p-7 z-10 opacity-0 group-hover:opacity-100 transition-all duration-700">
                                         <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-700">
-                                            <h3 className="text-white text-2xl font-black mb-3 drop-shadow-2xl leading-tight">
+                                            <h2 className="text-white text-2xl font-black mb-3 drop-shadow-2xl leading-tight">
                                                 {img.title}
-                                            </h3>
+                                            </h2>
                                             <div className="w-20 h-1.5 bg-gradient-to-r from-[#F08784] to-[#D97673] rounded-full mb-4 shadow-lg"></div>
                                             <span className="inline-block bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-full text-sm font-bold">
                                                 {categoryLabels[img.category] || img.category}
