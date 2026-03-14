@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import { EventGuest } from '@/lib/models/EventGuest';
-import { Event } from '@/lib/models/Event';
+import { Event, IEvent } from '@/lib/models/Event';
 import { CheckInLog } from '@/lib/models/CheckInLog';
 import { requireAnyPermission } from '@/lib/middleware/permissions';
 import { EmployeePermission } from '@/lib/types/roles';
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const event = eventGuest.eventId as any;
+    const event = eventGuest.eventId as IEvent;
 
     // التحقق من حالة الفعالية
     if (event.status === 'closed') {
@@ -85,8 +85,8 @@ export async function POST(request: NextRequest) {
 
     // تسجيل عملية المسح
     await CheckInLog.create({
-      eventGuestId: eventGuest._id,
-      eventId: event._id,
+      guest: eventGuest._id,
+      event: event._id,
       companyId: session.companyId,
       scannedBy: session.userId,
       scannedAt: now,

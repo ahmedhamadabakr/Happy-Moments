@@ -14,7 +14,7 @@ import {
   UserPlus,
   ImagePlus,
   User,
-  QrCode,
+  Briefcase,
   X
 } from 'lucide-react';
 
@@ -67,17 +67,16 @@ export function DashboardSidebar({ open, setOpen }: SidebarProps) {
       role: ['manager', 'employee']
     },
     {
-      label: 'تسجيل الحضور',
-      href: '#',
-      icon: QrCode,
-      role: ['manager', 'employee'],
-      isCheckIn: true
-    },
-    {
       label: 'إدارة الموظفين',
       href: '/dashboard/users',
       icon: UserPlus,
       role: ['manager']
+    }, {
+      label: 'مدير الفعاليات',
+      href: '/dashboard/manager',
+      icon: Briefcase,
+      role: ['manager'],
+
     }
   ], []);
 
@@ -204,81 +203,6 @@ export function DashboardSidebar({ open, setOpen }: SidebarProps) {
               item.href !== '#' &&
               pathname.startsWith(`${item.href}/`));
 
-          const isCheckInActive = pathname.includes('/check-in/');
-
-          if (item.isCheckIn) {
-
-            return (
-
-              <div key="check-in">
-
-                <button
-                  onClick={() => setShowCheckInMenu(!showCheckInMenu)}
-                  className={cn(
-                    'w-full flex items-center gap-4 rounded-lg px-4 py-3 text-base font-medium transition-colors',
-                    isCheckInActive
-                      ? 'bg-emerald-50 text-emerald-700 font-bold'
-                      : 'text-slate-700 hover:bg-slate-50'
-                  )}
-                >
-
-                  <Icon className="h-5 w-5" />
-
-                  <span className="flex-1 text-right">
-                    {item.label}
-                  </span>
-
-                </button>
-
-                {showCheckInMenu && (
-
-                  <div className="mr-9 mt-1 space-y-1">
-
-                    {loadingEvents ? (
-
-                      <div className="px-4 py-2 text-sm text-slate-500">
-                        جاري التحميل...
-                      </div>
-
-                    ) : activeEvents.length === 0 ? (
-
-                      <div className="px-4 py-2 text-sm text-slate-500">
-                        لا توجد فعاليات نشطة
-                      </div>
-
-                    ) : (
-
-                      activeEvents.map((event) => (
-                        <button
-                          key={event._id}
-                          onClick={() => {
-                            router.push(`/dashboard/check-in/${event._id}`)
-                            setOpen(false)
-                          }}
-                          className={cn(
-                            'w-full text-right px-4 py-2 text-sm rounded-lg transition-colors',
-                            pathname === `/dashboard/check-in/${event._id}`
-                              ? 'bg-emerald-50 text-emerald-700 font-semibold'
-                              : 'text-slate-600 hover:bg-slate-50'
-                          )}
-                        >
-
-                          {event.title}
-
-                        </button>
-                      ))
-
-                    )}
-
-                  </div>
-
-                )}
-
-              </div>
-
-            );
-
-          }
 
           return (
 

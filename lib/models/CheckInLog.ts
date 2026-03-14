@@ -1,12 +1,15 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface ICheckInLog extends Document {
+  companyId: mongoose.Types.ObjectId;
   event: mongoose.Types.ObjectId;
   guest: mongoose.Types.ObjectId;
   scannedBy: mongoose.Types.ObjectId;
   scannedAt: Date;
+  scanNumber: number;
   scanType: 'first' | 'repeated';
   scanMethod: 'qr' | 'manual';
+  notes?: string;
   location?: {
     latitude: number;
     longitude: number;
@@ -17,6 +20,12 @@ export interface ICheckInLog extends Document {
 
 const CheckInLogSchema = new Schema<ICheckInLog>(
   {
+    companyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Company',
+      required: true,
+      index: true,
+    },
     event: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Event',
@@ -37,6 +46,11 @@ const CheckInLogSchema = new Schema<ICheckInLog>(
       default: Date.now,
       required: true,
     },
+    scanNumber: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
     scanType: {
       type: String,
       enum: ['first', 'repeated'],
@@ -46,6 +60,10 @@ const CheckInLogSchema = new Schema<ICheckInLog>(
       type: String,
       enum: ['qr', 'manual'],
       default: 'qr',
+    },
+    notes: {
+      type: String,
+      trim: true,
     },
     location: {
       latitude: Number,
@@ -58,6 +76,7 @@ const CheckInLogSchema = new Schema<ICheckInLog>(
 
 // Indexes for efficient queries
 CheckInLogSchema.index({ event: 1, guest: 1 });
+CheckInLogSchema.index({ companyId: 1, scannedAt: -1 });
 CheckInLogSchema.index({ event: 1, scannedAt: -1 });
 CheckInLogSchema.index({ scannedBy: 1, scannedAt: -1 });
 

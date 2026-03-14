@@ -95,7 +95,7 @@ class WhatsAppService {
       }
 
       const data = await response.json();
-      
+
       return {
         success: true,
         messageId: data.messages?.[0]?.id,
@@ -117,21 +117,7 @@ class WhatsAppService {
     invitationData: WhatsAppInvitationData
   ): Promise<WhatsAppSendResult> {
     try {
-      // إرسال صورة الدعوة
-      const imageResult = await this.sendMessage({
-        to: phoneNumber,
-        type: 'image',
-        image: {
-          link: `${this.baseUrl}${invitationData.invitationImageUrl}`,
-          caption: `🎉 دعوة: ${invitationData.eventTitle}`,
-        },
-      });
-
-      if (!imageResult.success) {
-        return imageResult;
-      }
-
-      // إرسال رسالة نصية مع التفاصيل والأزرار
+      // تجهيز نص الرسالة
       const messageText = `
 مرحباً ${invitationData.guestName}! 👋
 
@@ -152,15 +138,15 @@ ${invitationData.locationUrl}
 نتطلع لرؤيتك! 🎊
       `.trim();
 
-      const textResult = await this.sendMessage({
+      // إرسال صورة الدعوة مع النص في الـ caption
+      return await this.sendMessage({
         to: phoneNumber,
-        type: 'text',
-        text: {
-          body: messageText,
+        type: 'image',
+        image: {
+          link: `${this.baseUrl}${invitationData.invitationImageUrl}`,
+          caption: messageText,
         },
       });
-
-      return textResult;
     } catch (error: any) {
       console.error('Error sending invitation:', error);
       return {
@@ -178,13 +164,13 @@ ${invitationData.locationUrl}
       // معالجة حالة التسليم
       if (payload.entry?.[0]?.changes?.[0]?.value?.statuses) {
         const statuses = payload.entry[0].changes[0].value.statuses;
-        
+
         for (const status of statuses) {
           const messageId = status.id;
           const statusType = status.status; // sent, delivered, read, failed
-          
+
           console.log(`WhatsApp message ${messageId} status: ${statusType}`);
-          
+
           // هنا يمكن تحديث حالة الرسالة في قاعدة البيانات
           // await updateMessageStatus(messageId, statusType);
         }
@@ -193,13 +179,13 @@ ${invitationData.locationUrl}
       // معالجة الرسائل الواردة
       if (payload.entry?.[0]?.changes?.[0]?.value?.messages) {
         const messages = payload.entry[0].changes[0].value.messages;
-        
+
         for (const message of messages) {
           const from = message.from;
           const text = message.text?.body;
-          
+
           console.log(`Received message from ${from}: ${text}`);
-          
+
           // هنا يمكن معالجة الرسائل الواردة من الضيوف
           // await handleGuestMessage(from, text);
         }
@@ -214,11 +200,11 @@ ${invitationData.locationUrl}
    */
   verifyWebhook(mode: string, token: string, challenge: string): string | null {
     const verifyToken = process.env.WHATSAPP_VERIFY_TOKEN || 'your-verify-token';
-    
+
     if (mode === 'subscribe' && token === verifyToken) {
       return challenge;
     }
-    
+
     return null;
   }
 }

@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "eslint .",
     "list-users": "tsx scripts/list-users.ts",
-    "create-admin": "tsx scripts/create-admin.ts"
+    "create-admin": "tsx scripts/create-admin.ts",
+    "cleanup-logs": "tsx scripts/cleanup-activity-logs.ts",
+    "cleanup-checkin-logs": "tsx scripts/cleanup-checkin-logs.ts",
+    "cleanup-whatsapp-messages": "tsx scripts/cleanup-whatsapp-messages.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
