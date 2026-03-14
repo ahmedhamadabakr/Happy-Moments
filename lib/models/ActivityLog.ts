@@ -1,5 +1,9 @@
 import mongoose, { Schema, Document, Model } from 'mongoose'
 
+if (mongoose.models.ActivityLog) {
+  delete mongoose.models.ActivityLog
+}
+
 export type ActivityType = 
   | 'contact_upload'
   | 'contact_delete'
@@ -89,4 +93,4 @@ activityLogSchema.index({ userId: 1, createdAt: -1 })
 activityLogSchema.index({ activityType: 1, createdAt: -1 })
 
 export const ActivityLog: Model<IActivityLog> = 
-  mongoose.models.ActivityLog || mongoose.model<IActivityLog>('ActivityLog', activityLogSchema)
+  mongoose.model<IActivityLog>('ActivityLog', activityLogSchema)
