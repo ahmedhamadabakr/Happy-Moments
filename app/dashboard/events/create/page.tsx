@@ -7,12 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Upload, X, CheckCircle, ArrowRight, Send, PartyPopper, Users } from 'lucide-react';
+import { Upload, X, CheckCircle, ArrowRight, Send, PartyPopper, Users, Info, Check, ChevronsUpDown, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Slider } from '@/components/ui/slider';
 import Image from 'next/image';
+import { cn } from '@/lib/utils';
 
 interface ClientOption {
   _id: string;
@@ -25,6 +26,8 @@ export default function CreateEventPage() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [step, setStep] = useState(1);
+  const [openClientPopover, setOpenClientPopover] = useState(false);
+  const [clientSearchTerm, setClientSearchTerm] = useState('');
 
   const [invitationImage, setInvitationImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -254,27 +257,82 @@ export default function CreateEventPage() {
               </Card>
             )}
 
-            <div className="space-y-2">
-                <Label className="font-bold text-slate-700 text-base">ربط بعميل (اختياري)</Label>
-                <Select 
-                    onValueChange={(value) => {
-                        const finalValue = value === 'no-client' ? '' : value;
-                        setFormData(p => ({ ...p, clientId: finalValue }));
-                    }}
-                    value={formData.clientId || 'no-client'}
-                >
-                    <SelectTrigger className="text-lg p-6 border-2 border-slate-300 focus:border-[#F08784] rounded-xl">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="no-client">بدون عميل</SelectItem>
-                        {clients.map((c) => (
-                            <SelectItem key={c._id} value={c._id}>{c.fullName}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-                <p className="text-sm text-slate-600 pt-2 font-medium bg-slate-50 p-3 rounded-lg border border-slate-200">إذا اخترت عميل، سيتم إنشاء دعوات لجهات الاتصال الخاصة به.</p>
+            <div className="space-y-3 p-4 rounded-2xl border border-slate-100 bg-white shadow-sm">
+  <div className="flex items-center justify-between">
+    <Label className="font-bold text-slate-800 text-lg flex items-center gap-2">
+      <Users className="w-5 h-5 text-[#F08784]" />
+      ربط بعميل
+    </Label>
+    {formData.clientId && (
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        className="text-xs text-rose-500 hover:text-rose-600 h-7"
+        onClick={() => setFormData(p => ({ ...p, clientId: '' }))}
+      >
+        إلغاء الاختيار
+      </Button>
+    )}
+  </div>
+  <Popover open={openClientPopover} onOpenChange={setOpenClientPopover}>
+    <PopoverTrigger asChild>
+      <Button
+        variant="outline"
+        role="combobox"
+        aria-expanded={openClientPopover}
+        className="h-14 w-full justify-between text-lg border-2 border-slate-200 focus:ring-offset-0 focus:ring-2 focus:ring-[#F08784]/20 focus:border-[#F08784] rounded-2xl transition-all bg-slate-50/50 hover:bg-white font-normal px-3"
+      >
+        {formData.clientId
+          ? clients.find((client) => client._id === formData.clientId)?.fullName
+          : "اختر العميل المستهدف"}
+        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+      </Button>
+    </PopoverTrigger>
+    <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+      <div className="flex items-center border-b px-3" dir="rtl">
+        <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        <input
+          className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+          placeholder="ابحث عن عميل..."
+          onChange={(e) => setClientSearchTerm(e.target.value)}
+          value={clientSearchTerm}
+        />
+      </div>
+      <div className="max-h-[300px] overflow-y-auto p-1" dir="rtl">
+        {clients
+          .filter((client) => client.fullName.toLowerCase().includes(clientSearchTerm.toLowerCase()))
+          .map((client) => (
+            <div
+              key={client._id}
+              className={cn(
+                "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
+                formData.clientId === client._id && "bg-accent"
+              )}
+              onClick={() => {
+                setFormData(p => ({ ...p, clientId: client._id }));
+                setOpenClientPopover(false);
+              }}
+            >
+              <Check className={cn("ml-2 h-4 w-4", formData.clientId === client._id ? "opacity-100" : "opacity-0")} />
+              <div className="flex flex-col">
+                <span className="font-semibold">{client.fullName}</span>
+              </div>
             </div>
+          ))}
+        {clients.filter((client) => client.fullName.toLowerCase().includes(clientSearchTerm.toLowerCase())).length === 0 && (
+          <div className="py-6 text-center text-sm text-muted-foreground">لا يوجد نتائج</div>
+        )}
+      </div>
+    </PopoverContent>
+  </Popover>
+
+  <div className="flex items-start gap-3 bg-blue-50/50 p-4 rounded-xl border border-blue-100/50">
+    <Info className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
+    <p className="text-sm text-blue-700 leading-relaxed">
+      عند اختيار عميل محدد، سيقوم النظام تلقائياً بإنشاء دعوات لجميع <span className="font-bold">جهات الاتصال</span> المسجلة تحت اسمه.
+    </p>
+  </div>
+</div>
           </div>
         </div>
 
@@ -301,48 +359,38 @@ export default function CreateEventPage() {
     </Card>
   );
 
-  const renderStep2 = () => (
-     <Card className="border-2 border-green-200 shadow-lg rounded-2xl overflow-hidden bg-gradient-to-br from-white to-green-50/20 text-center">
+  const renderStep2 = () => {
+    const clientName = formData.clientId 
+      ? clients.find(c => c._id === formData.clientId)?.fullName 
+      : null;
+
+    return (
+      <Card className="border-2 border-green-200 shadow-lg rounded-2xl overflow-hidden bg-gradient-to-br from-white to-green-50/20 text-center">
       <CardHeader className="pt-12 pb-6">
         <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-green-600 shadow-xl">
             <CheckCircle className="h-14 w-14 text-white" />
         </div>
         <CardTitle className="text-3xl font-bold text-slate-900 mt-6">تم إنشاء الفعالية بنجاح!</CardTitle>
-        <CardDescription className="text-slate-600 text-lg font-medium mt-3">"{createdEvent?.title}" جاهزة الآن. ما هي خطوتك التالية؟</CardDescription>
+        <CardDescription className="text-slate-600 text-lg font-medium mt-3">فعالية "{createdEvent?.title}" جاهزة الآن.</CardDescription>
+        {clientName && (
+          <p className="text-slate-500 text-md mt-2">تم ربطها بالعميل: <span className="font-bold text-slate-700">{clientName}</span></p>
+        )}
       </CardHeader>
       <CardContent className="p-8 space-y-6">
-        <div className="grid md:grid-cols-2 gap-4">
-            {createdEvent?.clientId && (
-                <Button 
-                  variant="outline" 
-                  size="lg" 
-                  onClick={() => router.push(`/dashboard/events/${createdEvent._id}/send-invitations`)}
-                  className="bg-white hover:bg-blue-50 border-2 border-blue-200 hover:border-blue-300 text-blue-700 font-bold py-6 text-lg rounded-xl shadow-sm"
-                >
-                    <Send className="ml-2 h-5 w-5"/> إرسال الدعوات للضيوف
-                </Button>
-            )}
-            <Button 
-              variant="outline" 
-              size="lg" 
-              onClick={() => router.push(`/dashboard/events/${createdEvent._id}/guests`)}
-              className="bg-white hover:bg-purple-50 border-2 border-purple-200 hover:border-purple-300 text-purple-700 font-bold py-6 text-lg rounded-xl shadow-sm"
-            >
-                <Users className="ml-2 h-5 w-5"/> إضافة ضيوف يدويًا
-            </Button>
-        </div>
+      
         <div className="pt-4">
             <Button 
               size="lg" 
-              onClick={() => router.push(`/dashboard/events/${createdEvent._id}`)}
+              onClick={() => router.push(`/dashboard/events`)}
               className="bg-[#F08784] hover:bg-[#D97673] text-white font-bold text-lg px-10 py-6 rounded-xl shadow-md"
             >
-                <PartyPopper className="ml-2 h-5 w-5"/> الذهاب إلى صفحة الفعالية
+                <PartyPopper className="ml-2 h-5 w-5"/> الذهاب إلى صفحة الفعاليات
             </Button>
         </div>
       </CardContent>
     </Card>
-  );
+    );
+  };
 
   return (
     <DashboardLayout>

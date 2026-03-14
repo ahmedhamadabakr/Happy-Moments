@@ -44,9 +44,9 @@ export function DashboardSidebar({ open, setOpen }: SidebarProps) {
   const navigationItems = useMemo(() => [
     {
       label: 'نظرة عامة',
-      href: '/dashboard',
+      href: '/dashboard/manager',
       icon: Home,
-      role: ['manager', 'employee']
+      role: ['manager']
     },
     {
       label: 'الفعاليات',
@@ -71,12 +71,6 @@ export function DashboardSidebar({ open, setOpen }: SidebarProps) {
       href: '/dashboard/users',
       icon: UserPlus,
       role: ['manager']
-    }, {
-      label: 'مدير الفعاليات',
-      href: '/dashboard/manager',
-      icon: Briefcase,
-      role: ['manager'],
-
     }
   ], []);
 

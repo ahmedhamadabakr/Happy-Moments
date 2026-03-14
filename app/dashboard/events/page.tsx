@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useApi } from '@/lib/hooks/useApi';
 import { Event } from '@/lib/types';
-import { PlusCircle, Calendar, Sparkles, Clock, Eye, QrCode, Search, Trash2, XCircle } from 'lucide-react';
+import { PlusCircle, Calendar, Sparkles, Clock, Eye, QrCode, Search, Trash2, XCircle, User } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatsCard } from '@/components/shared/StatsCard';
@@ -105,7 +105,7 @@ const EventsGrid = ({
               </div>
             </div>
             
-            <div className="flex items-center gap-2 text-slate-500">
+            <div className="flex items-center gap-2 text-slate-500 mb-2">
               <Clock className="w-4 h-4" />
               <span className="text-sm font-medium">
                 {new Date(event.eventDate).toLocaleDateString('ar-SA', {
@@ -115,6 +115,14 @@ const EventsGrid = ({
                 })}
               </span>
             </div>
+
+            {/* نتحقق من وجود بيانات العميل سواء كان الحقل باسم client أو clientId لضمان الظهور */}
+            {((event as any).clientId?.fullName || (event as any).client?.fullName) && (
+              <div className="flex items-center gap-2 text-slate-500">
+                <User className="w-4 h-4" />
+                <span className="text-sm font-medium">{(event as any).clientId?.fullName || (event as any).client?.fullName}</span>
+              </div>
+            )}
           </CardHeader>
           
           <CardContent className="p-6 pt-0">

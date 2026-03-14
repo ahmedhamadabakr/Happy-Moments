@@ -7,9 +7,6 @@ export const metadata = {
   title: 'لوحة التحكم | إدارة الفعاليات',
   description: 'لوحة تحكم إدارة الفعاليات الخاصة بك',
 };
-
-export default function DashboardPage() {
-
   const gettingStartedSteps = [
     {
       step: 1,
@@ -44,6 +41,9 @@ export default function DashboardPage() {
       hoverColor: 'hover:bg-violet-600 hover:text-white',
     },
   ];
+export default function DashboardPage() {
+
+  
 
   return (
     // The protection is now handled by DashboardLayout
@@ -56,33 +56,33 @@ export default function DashboardPage() {
         </div>
 
 
-
+<Card className="border-slate-200 shadow-md rounded-3xl overflow-hidden bg-white">
+            <CardHeader className="bg-gradient-to-r from-slate-50 to-[#F08784]/5 border-b border-slate-100">
+              <CardTitle className="text-2xl font-bold text-slate-900">ابدأ الآن</CardTitle>
+              <CardDescription className="text-slate-600 text-base">خطوات بسيطة لإطلاق فعاليتك الأولى</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-8 pb-8">
+              <div className="space-y-2">
+                {gettingStartedSteps.map((step) => (
+                  <Link href={step.link} key={step.step}>
+                    <div className="flex items-start gap-5 group p-4 rounded-2xl hover:bg-slate-50 transition-all duration-200 cursor-pointer">
+                      <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${step.color} font-black text-lg ${step.hoverColor} transition-all duration-300 group-hover:scale-110 flex-shrink-0`}>
+                        {step.step}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-slate-900 text-lg">{step.title}</h3>
+                        <p className="text-sm text-slate-600 mt-2 leading-relaxed">
+                          {step.description}
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         {/* Getting Started Card */}
-        <Card className="border-slate-200 shadow-md rounded-3xl overflow-hidden bg-white">
-          <CardHeader className="bg-gradient-to-r from-slate-50 to-[#F08784]/5 border-b border-slate-100">
-            <CardTitle className="text-2xl font-bold text-slate-900">ابدأ الآن</CardTitle>
-            <CardDescription className="text-slate-600 text-base">خطوات بسيطة لإطلاق فعاليتك الأولى</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-8 pb-8">
-            <div className="space-y-2">
-              {gettingStartedSteps.map((step) => (
-                <Link href={step.link} key={step.step}>
-                  <div className="flex items-start gap-5 group p-4 rounded-2xl hover:bg-slate-50 transition-all duration-200 cursor-pointer">
-                    <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${step.color} font-black text-lg ${step.hoverColor} transition-all duration-300 group-hover:scale-110 flex-shrink-0`}>
-                      {step.step}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-slate-900 text-lg">{step.title}</h3>
-                      <p className="text-sm text-slate-600 mt-2 leading-relaxed">
-                        {step.description}
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+
       </div>
     </DashboardLayout>
   );
