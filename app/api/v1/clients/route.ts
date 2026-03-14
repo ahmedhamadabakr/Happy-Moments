@@ -16,11 +16,7 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
 
-    const clients = await Client.find({
-      companyId: session.user.companyId,
-      isActive: true,
-    })
-      // accessToken is needed in dashboard to build client-view links
+    const clients = await Client.find({ isActive: true })
       .sort({ createdAt: -1 })
       .populate('createdBy', 'firstName lastName');
 
@@ -62,7 +58,6 @@ export async function POST(request: NextRequest) {
     const accessToken = generateSecureToken();
 
     const client = await Client.create({
-      companyId: session.user.companyId,
       fullName,
       email,
       phone,
@@ -71,16 +66,12 @@ export async function POST(request: NextRequest) {
       isActive: true,
     });
 
-    // تسجيل النشاط
     await ActivityLog.create({
-      companyId: session.user.companyId,
       userId: session.user.userId,
       activityType: 'client_create',
       resourceType: 'Client',
       resourceId: client._id,
-      details: {
-        clientName: fullName,
-      },
+      details: { clientName: fullName },
     });
 
     // إرجاع البيانات بدون Token
@@ -123,28 +114,21 @@ export async function DELETE(request: NextRequest) {
     await connectDB();
 
     const client = await Client.findOneAndUpdate(
-      { _id: clientId, companyId: session.user.companyId },
+      { _id: clientId },
       { isActive: false },
       { new: true }
     );
 
     if (!client) {
-      return NextResponse.json(
-        { success: false, message: 'العميل غير موجود أو لا تملك صلاحية حذفه' },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, message: 'العميل غير موجود' }, { status: 404 });
     }
-    
-    // تسجيل النشاط
+
     await ActivityLog.create({
-      companyId: session.user.companyId,
       userId: session.user.userId,
       activityType: 'client_delete',
       resourceType: 'Client',
       resourceId: client._id,
-      details: {
-        clientName: client.fullName,
-      },
+      details: { clientName: client.fullName },
     });
 
     return NextResponse.json({
@@ -192,28 +176,21 @@ export async function PUT(request: NextRequest) {
     await connectDB();
 
     const client = await Client.findOneAndUpdate(
-      { _id: clientId, companyId: session.user.companyId },
+      { _id: clientId },
       { fullName, email, phone },
       { new: true }
     );
 
     if (!client) {
-      return NextResponse.json(
-        { success: false, message: 'العميل غير موجود أو لا تملك صلاحية تعديله' },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, message: 'العميل غير موجود' }, { status: 404 });
     }
 
-    // تسجيل النشاط
     await ActivityLog.create({
-      companyId: session.user.companyId,
       userId: session.user.userId,
       activityType: 'client_update',
       resourceType: 'Client',
       resourceId: client._id,
-      details: {
-        clientName: client.fullName,
-      },
+      details: { clientName: client.fullName },
     });
 
     return NextResponse.json({

@@ -23,34 +23,20 @@ export async function GET(
       return NextResponse.json({ error: 'معرّف غير صحيح' }, { status: 400 })
     }
 
-    // Verify event exists
-    const event = await Event.findOne({
-      _id: params.eventId,
-      companyId: user.companyId,
-      deletedAt: null,
-    })
+    const event = await Event.findOne({ _id: params.eventId, deletedAt: null })
 
     if (!event) {
-      return NextResponse.json(
-        { error: 'الفعالية غير موجودة' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'الفعالية غير موجودة' }, { status: 404 })
     }
 
-    // Generate PDF
     const pdfBuffer = await generateEventPdf(params.eventId)
 
-    // Log activity
     await ActivityLog.create({
-      companyId: user.companyId,
-      userId: user._id,
+      userId: user.userId,
       activityType: 'export',
       resourceType: 'Event',
       resourceId: event._id,
-      details: {
-        format: 'PDF',
-        eventTitle: event.title,
-      },
+      details: { format: 'PDF', eventTitle: event.title },
     })
 
     // Generate filename with event title and date

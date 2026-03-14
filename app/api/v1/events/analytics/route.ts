@@ -15,17 +15,8 @@ export async function GET(req: NextRequest) {
 
     const now = new Date();
 
-    const activeEvents = await Event.countDocuments({
-      companyId: user.companyId,
-      deletedAt: null,
-      eventDate: { $gte: now },
-    })
-
-    const endedEvents = await Event.countDocuments({
-        companyId: user.companyId,
-        deletedAt: null,
-        eventDate: { $lt: now },
-      })
+    const activeEvents = await Event.countDocuments({ deletedAt: null, eventDate: { $gte: now } })
+    const endedEvents = await Event.countDocuments({ deletedAt: null, eventDate: { $lt: now } })
 
     return NextResponse.json({
       success: true,

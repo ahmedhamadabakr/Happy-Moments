@@ -19,31 +19,13 @@ export async function GET(request: NextRequest) {
     const { Event } = await import('@/lib/models/Event');
     const { EventGuest: Guest } = await import('@/lib/models/EventGuest');
 
-    // عدد الموظفين
-    const totalEmployees = await User.countDocuments({
-      company: session.user.companyId,
-    });
-
-    // عدد الفعاليات
-    const totalEvents = await Event.countDocuments({
-      company: session.user.companyId,
-    });
-
-    // عدد الفعاليات النشطة
+    const totalEmployees = await User.countDocuments({ role: 'employee' });
+    const totalEvents = await Event.countDocuments({});
     const activeEvents = await Event.countDocuments({
-      company: session.user.companyId,
       status: { $in: ['draft', 'scheduled', 'ongoing'] },
     });
-
-    // عدد الضيوف
-    const totalGuests = await Guest.countDocuments({
-      company: session.user.companyId,
-    });
-
-    // النشاط الأخير
-    const recentActivity = await ActivityLog.find({
-      companyId: session.user.companyId,
-    })
+    const totalGuests = await Guest.countDocuments({});
+    const recentActivity = await ActivityLog.find({})
       .sort({ createdAt: -1 })
       .limit(10)
       .populate('userId', 'firstName lastName')

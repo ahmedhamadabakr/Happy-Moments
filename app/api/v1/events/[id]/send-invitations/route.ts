@@ -127,17 +127,10 @@ export async function POST(
       return NextResponse.json({ error: 'معرّف غير صحيح' }, { status: 400 })
     }
 
-    const event = await Event.findOne({
-      _id: params.id,
-      companyId: user.companyId,
-      deletedAt: null,
-    })
+    const event = await Event.findOne({ _id: params.id, deletedAt: null })
 
     if (!event) {
-      return NextResponse.json(
-        { error: 'الفعالية غير موجودة' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'الفعالية غير موجودة' }, { status: 404 })
     }
 
     // Get all pending event guests
@@ -176,7 +169,6 @@ export async function POST(
         const invitation = await Invitation.create({
           eventGuestId: guest._id,
           eventId: params.id,
-          companyId: user.companyId,
           channel: 'whatsapp',
           recipientPhone: guest.snapshotPhone,
           deliveryStatus: 'pending',
@@ -204,15 +196,12 @@ export async function POST(
             invitationId: invitation._id,
             eventGuestId: guest._id,
             eventId: params.id,
-            companyId: user.companyId,
             phoneNumber: guest.snapshotPhone,
             messageText: `مرحباً ${guest.snapshotName}،\nتم دعوتك لحضور: ${event.title}\nالتاريخ: ${eventDate}\nللتأكيد: ${rsvpLink}`,
             externalMessageId: result.messageId,
             status: 'sent',
             sentAt: new Date(),
-            statusHistory: [
-              { status: 'sent', timestamp: new Date() },
-            ],
+            statusHistory: [{ status: 'sent', timestamp: new Date() }],
           })
 
           // Update guest invitation status
@@ -241,19 +230,12 @@ export async function POST(
       }
     }
 
-    // Log activity
     await ActivityLog.create({
-      companyId: user.companyId,
       userId: user.userId,
       activityType: 'invitation_send',
       resourceType: 'Event',
       resourceId: event._id,
-      details: {
-        eventTitle: event.title,
-        totalGuests: eventGuests.length,
-        sent,
-        failed,
-      },
+      details: { eventTitle: event.title, totalGuests: eventGuests.length, sent, failed },
     })
 
     return NextResponse.json({

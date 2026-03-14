@@ -24,9 +24,7 @@ export async function GET(req: NextRequest) {
 
     const skip = (page - 1) * limit
 
-    const query: any = {
-      companyId: user.companyId,
-    }
+    const query: any = {}
 
     const now = new Date();
     if (status === 'active') {
@@ -83,8 +81,7 @@ export async function POST(req: NextRequest) {
 
     // Create event
     const event = await Event.create({
-      companyId: user.companyId,
-      createdBy: user._id,
+      createdBy: user.userId,
       title: validated.title,
       description: validated.description,
       eventDate: new Date(validated.eventDate),
@@ -94,10 +91,8 @@ export async function POST(req: NextRequest) {
       status: 'draft',
     })
 
-    // Log activity
     await ActivityLog.create({
-      companyId: user.companyId,
-      userId: user._id,
+      userId: user.userId,
       activityType: 'event_create',
       resourceType: 'Event',
       resourceId: event._id,

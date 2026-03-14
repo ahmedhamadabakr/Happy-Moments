@@ -14,7 +14,7 @@ export async function GET(req: NextRequest, context: { params: { id: string, gue
 
     await connectDB()
 
-    const guest = await EventGuest.findOne({ _id: guestId, eventId: id, companyId: user.companyId }).select('-__v').lean()
+    const guest = await EventGuest.findOne({ _id: guestId, eventId: id }).select('-__v').lean()
     if (!guest) return NextResponse.json({ error: 'الضيف غير موجود' }, { status: 404 })
 
     return NextResponse.json({ success: true, data: guest })
@@ -34,14 +34,14 @@ export async function PUT(req: NextRequest, context: { params: { id: string, gue
 
     const { firstName, lastName, phone, companion } = body
 
-    const guest = await EventGuest.findOne({ _id: guestId, eventId: id, companyId: user.companyId })
+    const guest = await EventGuest.findOne({ _id: guestId, eventId: id })
     if (!guest) return NextResponse.json({ error: 'الضيف غير موجود' }, { status: 404 })
 
     const updateData: { [key: string]: any } = {}
     if (firstName) updateData.firstName = firstName
     if (lastName) updateData.lastName = lastName
     if (phone) {
-        const phoneExists = await EventGuest.findOne({ snapshotPhone: phone, eventId: id, companyId: user.companyId, _id: { $ne: guestId } })
+        const phoneExists = await EventGuest.findOne({ snapshotPhone: phone, eventId: id, _id: { $ne: guestId } })
         if (phoneExists) return NextResponse.json({ error: 'رقم الجوال موجود بالفعل' }, { status: 409 })
         updateData.phone = phone
         updateData.snapshotPhone = phone
@@ -69,7 +69,7 @@ export async function DELETE(req: NextRequest, context: { params: { id: string, 
 
     await connectDB()
 
-    const guest = await EventGuest.findOneAndDelete({ _id: guestId, eventId: id, companyId: user.companyId })
+    const guest = await EventGuest.findOneAndDelete({ _id: guestId, eventId: id })
     if (!guest) return NextResponse.json({ error: 'الضيف غير موجود' }, { status: 404 })
 
     return NextResponse.json({ success: true })

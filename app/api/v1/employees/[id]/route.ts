@@ -22,7 +22,6 @@ export async function GET(
 
     const employee = await User.findOne({
       _id: params.id,
-      company: session.user.companyId,
     }).select('-password -refreshTokens');
 
     if (!employee) {
@@ -67,7 +66,6 @@ async function updateEmployee(
 
   const employee = await User.findOne({
     _id: params.id,
-    company: session.user.companyId,
   });
 
   if (!employee) {
@@ -96,7 +94,6 @@ async function updateEmployee(
 
   // تسجيل النشاط
   await ActivityLog.create({
-    companyId: session.user.companyId,
     userId: session.user.userId,
     activityType: 'event_update',
     resourceType: 'User',
@@ -168,8 +165,7 @@ export async function PATCH(
     await connectDB();
 
     const employee = await User.findOne({
-      _id: id, // Use the unwrapped id
-      company: session.user.companyId,
+      _id: id,
     });
 
     if (!employee) {
@@ -186,14 +182,11 @@ export async function PATCH(
 
     // تسجيل النشاط
     await ActivityLog.create({
-      companyId: session.user.companyId,
       userId: session.user.userId,
       activityType: 'user_delete',
       resourceType: 'User',
       resourceId: employeeId,
-      details: {
-        employeeName,
-      },
+      details: { employeeName },
     });
 
     return NextResponse.json({

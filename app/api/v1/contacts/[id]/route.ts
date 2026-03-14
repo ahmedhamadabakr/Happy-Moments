@@ -24,15 +24,11 @@ export async function GET(
 
     const contact = await Contact.findOne({
       _id: params.id,
-      companyId: user.companyId,
       deletedAt: null,
     }).lean()
 
     if (!contact) {
-      return NextResponse.json(
-        { error: 'جهة الاتصال غير موجودة' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'جهة الاتصال غير موجودة' }, { status: 404 })
     }
 
     return NextResponse.json({ success: true, data: contact })
@@ -60,24 +56,17 @@ export async function PUT(
     const body = await req.json()
     const { fullName, phone, email } = body
 
-    // Check if contact exists
     const contact = await Contact.findOne({
       _id: params.id,
-      companyId: user.companyId,
       deletedAt: null,
     })
 
     if (!contact) {
-      return NextResponse.json(
-        { error: 'جهة الاتصال غير موجودة' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'جهة الاتصال غير موجودة' }, { status: 404 })
     }
 
-    // Check for phone duplicates if phone is being changed
     if (phone && phone !== contact.phone) {
       const existing = await Contact.findOne({
-        companyId: user.companyId,
         phone,
         deletedAt: null,
         _id: { $ne: params.id },
@@ -122,25 +111,18 @@ export async function DELETE(
 
     const contact = await Contact.findOne({
       _id: params.id,
-      companyId: user.companyId,
       deletedAt: null,
     })
 
     if (!contact) {
-      return NextResponse.json(
-        { error: 'جهة الاتصال غير موجودة' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'جهة الاتصال غير موجودة' }, { status: 404 })
     }
 
-    // Soft delete
     contact.deletedAt = new Date()
     await contact.save()
 
-    // Log activity
     await ActivityLog.create({
-      companyId: user.companyId,
-      userId: user._id,
+      userId: user.userId,
       activityType: 'contact_delete',
       resourceType: 'Contact',
       resourceId: contact._id,

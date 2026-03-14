@@ -23,18 +23,10 @@ export async function GET(
       return NextResponse.json({ error: 'معرّف غير صحيح' }, { status: 400 })
     }
 
-    // Verify event exists
-    const event = await Event.findOne({
-      _id: params.id,
-      companyId: user.companyId,
-      deletedAt: null,
-    }).lean()
+    const event = await Event.findOne({ _id: params.id, deletedAt: null }).lean()
 
     if (!event) {
-      return NextResponse.json(
-        { error: 'الفعالية غير موجودة' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'الفعالية غير موجودة' }, { status: 404 })
     }
 
     // Get event guests statistics

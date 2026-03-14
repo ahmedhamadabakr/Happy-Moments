@@ -26,22 +26,13 @@ export async function GET(
       return NextResponse.json({ error: 'معرّف غير صحيح' }, { status: 400 })
     }
 
-    const event = await Event.findOne({
-      _id: id,
-      companyId: user.companyId,
-    }).lean()
+    const event = await Event.findOne({ _id: id }).lean()
 
     if (!event) {
-      return NextResponse.json(
-        { error: 'الفعالية غير موجودة' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'الفعالية غير موجودة' }, { status: 404 })
     }
 
-    const guests = await EventGuest.find({
-      eventId: id,
-      companyId: user.companyId,
-    }).lean()
+    const guests = await EventGuest.find({ eventId: id }).lean()
 
     return NextResponse.json({
       success: true,
@@ -75,16 +66,10 @@ export async function PATCH(
     const body = await req.json()
     const validated = updateEventSchema.parse(body)
 
-    const event = await Event.findOne({
-      _id: id,
-      companyId: user.companyId,
-    })
+    const event = await Event.findOne({ _id: id })
 
     if (!event) {
-      return NextResponse.json(
-        { error: 'الفعالية غير موجودة' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'الفعالية غير موجودة' }, { status: 404 })
     }
 
     if (validated.title) event.title = validated.title
@@ -97,7 +82,6 @@ export async function PATCH(
     await event.save()
 
     await ActivityLog.create({
-      companyId: user.companyId,
       userId: user.userId,
       activityType: 'event_update',
       resourceType: 'Event',
@@ -129,21 +113,13 @@ export async function DELETE(
       return NextResponse.json({ error: 'معرّف غير صحيح' }, { status: 400 })
     }
 
-    const event = await Event.findOne({
-      _id: id,
-      companyId: user.companyId,
-    });
+    const event = await Event.findOne({ _id: id });
 
     if (!event) {
-      return NextResponse.json(
-        { error: 'الفعالية غير موجودة' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'الفعالية غير موجودة' }, { status: 404 });
     }
-    
-    // Log activity before deleting
+
     await ActivityLog.create({
-      companyId: user.companyId,
       userId: user.userId,
       activityType: 'event_delete',
       resourceType: 'Event',
@@ -151,7 +127,7 @@ export async function DELETE(
       details: { title: event.title },
     });
 
-    await Event.deleteOne({ _id: id, companyId: user.companyId });
+    await Event.deleteOne({ _id: id });
 
 
     return NextResponse.json({

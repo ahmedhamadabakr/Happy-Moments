@@ -23,21 +23,13 @@ export async function GET(
       return NextResponse.json({ error: 'معرّف غير صحيح' }, { status: 400 })
     }
 
-    const client = await Client.findOne({
-      _id: clientId,
-      companyId: session.user.companyId,
-      isActive: true,
-    })
+    const client = await Client.findOne({ _id: clientId, isActive: true })
 
     if (!client) {
       return NextResponse.json({ error: 'العميل غير موجود' }, { status: 404 })
     }
 
-    const contacts = await Contact.find({
-      companyId: session.user.companyId,
-      clientId: client._id,
-      deletedAt: null,
-    })
+    const contacts = await Contact.find({ clientId: client._id, deletedAt: null })
       .sort({ createdAt: -1 })
       .lean()
 
@@ -70,11 +62,7 @@ export async function POST(
       return NextResponse.json({ error: 'معرّف غير صحيح' }, { status: 400 })
     }
 
-    const client = await Client.findOne({
-      _id: clientId,
-      companyId: session.user.companyId,
-      isActive: true,
-    })
+    const client = await Client.findOne({ _id: clientId, isActive: true })
 
     if (!client) {
       return NextResponse.json({ error: 'العميل غير موجود' }, { status: 404 })
@@ -181,7 +169,6 @@ export async function POST(
     const phones = uniqueParsedContacts.map((c) => c.phone)
 
     const existingContacts = await Contact.find({
-      companyId: session.user.companyId,
       phone: { $in: phones },
       deletedAt: null,
     })
@@ -210,9 +197,7 @@ export async function POST(
           updatePromises.push(existing.save())
           updated++
         } else {
-          // Create new contact
           newContacts.push({
-            companyId: session.user.companyId,
             clientId: client._id,
             firstName: parsed.firstName,
             lastName: parsed.lastName,

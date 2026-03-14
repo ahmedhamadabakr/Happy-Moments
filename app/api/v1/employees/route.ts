@@ -17,10 +17,7 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
 
-    const employees = await User.find({
-      company: session.user.companyId,
-      role: UserRole.EMPLOYEE,
-    })
+    const employees = await User.find({ role: UserRole.EMPLOYEE })
       .select('-password -refreshTokens')
       .sort({ createdAt: -1 });
 
@@ -123,14 +120,12 @@ export async function POST(request: NextRequest) {
       phone,
       role: UserRole.EMPLOYEE,
       permissions,
-      company: session.user.companyId,
       createdBy: session.user.userId,
       isActive: true,
     });
 
     // تسجيل النشاط
     await ActivityLog.create({
-      companyId: session.user.companyId,
       userId: session.user.userId,
       activityType: 'event_create',
       resourceType: 'User',

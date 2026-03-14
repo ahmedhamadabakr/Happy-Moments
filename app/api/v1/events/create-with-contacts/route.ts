@@ -89,10 +89,8 @@ export async function POST(request: NextRequest) {
     let finalClientId = clientId;
     
     if (!clientId && newClientName) {
-      // إنشاء عميل جديد
       const accessToken = generateSecureToken();
       const newClient = await Client.create({
-        companyId: session.companyId,
         fullName: newClientName,
         email: newClientEmail,
         phone: newClientPhone,
@@ -103,17 +101,13 @@ export async function POST(request: NextRequest) {
       finalClientId = newClient._id.toString();
     }
 
-    // رفع صورة الدعوة إلى Cloudinary
     const invitationImageBuffer = Buffer.from(await invitationImageFile.arrayBuffer());
     const invitationUploadResult = await uploadToCloudinary(invitationImageBuffer, {
       folder: `events/templates`,
-      public_id: `${session.companyId}_${Date.now()}`
+      public_id: `event_${Date.now()}`
     });
 
-
-    // إنشاء الفعالية
     const event = await Event.create({
-      companyId: session.companyId,
       clientId: finalClientId,
       title,
       description,
@@ -121,13 +115,8 @@ export async function POST(request: NextRequest) {
       eventTime,
       location,
       locationUrl,
-      invitationImage: invitationUploadResult.public_id, // Save public_id
-      qrCoordinates: {
-        x: qrX,
-        y: qrY,
-        width: qrWidth,
-        height: qrHeight,
-      },
+      invitationImage: invitationUploadResult.public_id,
+      qrCoordinates: { x: qrX, y: qrY, width: qrWidth, height: qrHeight },
       status: 'draft',
       createdBy: session.userId,
     });
@@ -157,31 +146,22 @@ export async function POST(request: NextRequest) {
 
     for (const parsedContact of parseResult.contacts) {
       try {
-        // البحث عن جهة الاتصال أو إنشاؤها
-        let contact = await Contact.findOne({
-          companyId: session.companyId,
-          phone: parsedContact.phone,
-          deletedAt: null,
-        });
+        let contact = await Contact.findOne({ phone: parsedContact.phone, deletedAt: null });
 
         if (!contact) {
           contact = await Contact.create({
-            companyId: session.companyId,
             fullName: parsedContact.fullName,
             phone: parsedContact.phone,
             email: parsedContact.email,
           });
         }
 
-        // توليد Tokens
         const invitationToken = generateSecureToken();
         const qrToken = generateSecureToken();
 
-        // إنشاء ضيف الفعالية
         const eventGuest = await EventGuest.create({
           eventId: event._id,
           contactId: contact._id,
-          companyId: session.companyId,
           snapshotName: parsedContact.fullName,
           snapshotPhone: parsedContact.phone,
           snapshotEmail: parsedContact.email,
@@ -221,18 +201,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // تسجيل النشاط
     await ActivityLog.create({
-      companyId: session.companyId,
       userId: session.userId,
       activityType: 'event_create',
       resourceType: 'Event',
       resourceId: event._id,
-      details: {
-        eventTitle: title,
-        guestsCount: guestsCreated.length,
-        errorsCount: errors.length,
-      },
+      details: { eventTitle: title, guestsCount: guestsCreated.length, errorsCount: errors.length },
     });
 
     return NextResponse.json({

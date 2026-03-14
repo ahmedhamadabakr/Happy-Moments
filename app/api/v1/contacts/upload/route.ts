@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth/jwt'
 import { Contact } from '@/lib/models/Contact'
-import { Company } from '@/lib/models/Company'
 import { ActivityLog } from '@/lib/models/ActivityLog'
 import { parseExcelFile } from '@/lib/utils/excelParser'
 import { handleApiError } from '@/lib/api/errors'
@@ -9,27 +8,18 @@ import { connectDB } from '@/lib/db'
 
 export async function POST(req: NextRequest) {
   try {
-    // Verify authentication
     const user = await auth(req)
     if (!user) {
-      return NextResponse.json(
-        { error: 'غير مصرح' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
     }
 
-    // Connect to database
     await connectDB()
 
-    // Get file from request
     const formData = await req.formData()
     const file = formData.get('file') as File
 
     if (!file) {
-      return NextResponse.json(
-        { error: 'الملف مطلوب' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'الملف مطلوب' }, { status: 400 })
     }
 
     if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
@@ -39,11 +29,8 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Parse Excel file
     const buffer = await file.arrayBuffer()
-    const { contacts: parsedContacts, errors: parseErrors } = parseExcelFile(
-      Buffer.from(buffer)
-    )
+    const { contacts: parsedContacts, errors: parseErrors } = parseExcelFile(Buffer.from(buffer))
 
     if (parsedContacts.length === 0) {
       return NextResponse.json(
@@ -52,16 +39,6 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Verify company exists
-    const company = await Company.findById(user.companyId)
-    if (!company) {
-      return NextResponse.json(
-        { error: 'الشركة غير موجودة' },
-        { status: 404 }
-      )
-    }
-
-    // Insert contacts with deduplication
     let inserted = 0
     let duplicates = 0
     let skipped = 0
@@ -69,21 +46,14 @@ export async function POST(req: NextRequest) {
 
     for (const contactData of parsedContacts) {
       try {
-        // Check if contact with same phone exists in this company
-        const existing = await Contact.findOne({
-          companyId: user.companyId,
-          phone: contactData.phone,
-          deletedAt: null,
-        })
+        const existing = await Contact.findOne({ phone: contactData.phone, deletedAt: null })
 
         if (existing) {
           duplicates++
           continue
         }
 
-        // Create new contact
-        const contact = await Contact.create({
-          companyId: user.companyId,
+        await Contact.create({
           firstName: contactData.firstName,
           lastName: contactData.lastName,
           suffix: contactData.suffix,
@@ -102,13 +72,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Log activity
     await ActivityLog.create({
-      companyId: user.companyId,
-      userId: user._id,
+      userId: user.userId,
       activityType: 'contact_upload',
       resourceType: 'Contact',
-      resourceId: company._id,
       details: {
         fileName: file.name,
         totalRows: parsedContacts.length,

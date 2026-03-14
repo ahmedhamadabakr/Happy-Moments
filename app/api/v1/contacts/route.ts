@@ -22,10 +22,7 @@ export async function GET(req: NextRequest) {
     const skip = (page - 1) * limit
 
     // Build query
-    const query: any = {
-      companyId: user.companyId,
-      deletedAt: null,
-    }
+    const query: any = { deletedAt: null }
 
     if (search) {
       query.$text = { $search: search }
@@ -75,12 +72,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Check for duplicates
-    const existing = await Contact.findOne({
-      companyId: user.companyId,
-      phone,
-      deletedAt: null,
-    })
+    const existing = await Contact.findOne({ phone, deletedAt: null })
 
     if (existing) {
       return NextResponse.json(
@@ -89,12 +81,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const contact = await Contact.create({
-      companyId: user.companyId,
-      fullName,
-      phone,
-      email,
-    })
+    const contact = await Contact.create({ fullName, phone, email })
 
     return NextResponse.json(
       { success: true, data: contact },

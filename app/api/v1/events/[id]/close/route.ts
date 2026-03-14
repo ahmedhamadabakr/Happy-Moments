@@ -22,34 +22,21 @@ export async function POST(
       return NextResponse.json({ error: 'معرّف غير صحيح' }, { status: 400 })
     }
 
-    const event = await Event.findOne({
-      _id: params.id,
-      companyId: user.companyId,
-      deletedAt: null,
-    })
+    const event = await Event.findOne({ _id: params.id, deletedAt: null })
 
     if (!event) {
-      return NextResponse.json(
-        { error: 'الفعالية غير موجودة' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'الفعالية غير موجودة' }, { status: 404 })
     }
 
     if (event.status === 'closed') {
-      return NextResponse.json(
-        { error: 'الفعالية مغلقة بالفعل' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'الفعالية مغلقة بالفعل' }, { status: 400 })
     }
 
-    // Close the event
     event.status = 'closed'
     await event.save()
 
-    // Log activity
     await ActivityLog.create({
-      companyId: user.companyId,
-      userId: user._id,
+      userId: user.userId,
       activityType: 'event_update',
       resourceType: 'Event',
       resourceId: event._id,

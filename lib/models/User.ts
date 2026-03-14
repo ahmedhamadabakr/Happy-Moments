@@ -9,7 +9,7 @@ export interface IUser extends Document {
   phone?: string;
   role: UserRole;
   permissions: EmployeePermission[];
-  company: mongoose.Types.ObjectId;
+  company?: mongoose.Types.ObjectId;
   createdBy?: mongoose.Types.ObjectId; // المدير الذي أنشأ الموظف
   isActive: boolean;
   refreshTokens: {
@@ -66,7 +66,7 @@ const UserSchema = new Schema<IUser>(
     company: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Company',
-      required: [true, 'Company is required'],
+      required: false,
     },
     isActive: {
       type: Boolean,

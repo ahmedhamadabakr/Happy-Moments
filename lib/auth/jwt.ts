@@ -9,7 +9,7 @@ export interface JWTPayload {
   email: string;
   role: UserRole;
   permissions: EmployeePermission[];
-  companyId: string;
+  companyId?: string;
   iat?: number;
   exp?: number;
 }
@@ -34,7 +34,6 @@ export async function verifyJWT(token: string): Promise<JWTPayload | null> {
       typeof payload.userId === 'string' &&
       typeof payload.email === 'string' &&
       typeof payload.role === 'string' &&
-      typeof payload.companyId === 'string' &&
       Array.isArray(payload.permissions)
     ) {
       return {
@@ -42,7 +41,7 @@ export async function verifyJWT(token: string): Promise<JWTPayload | null> {
         email: payload.email,
         role: payload.role as UserRole,
         permissions: payload.permissions as EmployeePermission[],
-        companyId: payload.companyId,
+        companyId: typeof payload.companyId === 'string' ? payload.companyId : undefined,
         iat: payload.iat,
         exp: payload.exp,
       };

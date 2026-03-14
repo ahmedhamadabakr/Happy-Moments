@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import { User } from '@/lib/models/User';
-import { Company } from '@/lib/models/Company';
 import { loginSchema } from '@/lib/validations/auth';
 import {
   comparePassword,
@@ -82,23 +81,16 @@ export async function POST(request: NextRequest) {
 
     await user.save();
 
-    // Get company safely
-    let company = null;
-    if (user.company) {
-      company = await Company.findById(user.company);
-    }
-
-    // Create access token safely
+    // Create access token
     const accessToken = await signJWT({
       userId: user._id.toString(),
       email: user.email,
       role: user.role,
       permissions: user.permissions ? [...user.permissions] : [],
-      companyId: user.company ? user.company.toString() : '',
     });
-    
+
     // Set cookies with extended expiry if remember me is checked
-    const accessTokenExpiresIn = rememberMe ? 30 * 24 * 60 * 60 : 24 * 60 * 60; // 30 days or 24 hours
+    const accessTokenExpiresIn = rememberMe ? 30 * 24 * 60 * 60 : 24 * 60 * 60;
     await setAuthCookies(accessToken, refreshTokenString, accessTokenExpiresIn);
 
     return NextResponse.json(
@@ -110,13 +102,6 @@ export async function POST(request: NextRequest) {
             lastName: user.lastName,
             email: user.email,
             role: user.role,
-            company: company
-              ? {
-                  id: company._id,
-                  name: company.name,
-                  email: company.email,
-                }
-              : null,
           },
         },
         'Login successful'

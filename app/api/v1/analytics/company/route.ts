@@ -17,33 +17,11 @@ export async function GET(req: NextRequest) {
 
     await connectDB()
 
-    // Get company-level statistics
-    const totalEvents = await Event.countDocuments({
-      companyId: user.companyId,
-      deletedAt: null,
-    })
-
-    const activeEvents = await Event.countDocuments({
-      companyId: user.companyId,
-      status: 'active',
-      deletedAt: null,
-    })
-
-    const totalContacts = await Contact.countDocuments({
-      companyId: user.companyId,
-      deletedAt: null,
-    })
-
-    // Get total guests across all events
-    const totalGuests = await EventGuest.countDocuments({
-      companyId: user.companyId,
-    })
-
-    // Get attendance statistics
-    const allEvents = await Event.find({
-      companyId: user.companyId,
-      deletedAt: null,
-    }).select('_id')
+    const totalEvents = await Event.countDocuments({ deletedAt: null })
+    const activeEvents = await Event.countDocuments({ status: 'active', deletedAt: null })
+    const totalContacts = await Contact.countDocuments({ deletedAt: null })
+    const totalGuests = await EventGuest.countDocuments({})
+    const allEvents = await Event.find({ deletedAt: null }).select('_id')
 
     const eventIds = allEvents.map(e => e._id)
 
@@ -76,19 +54,11 @@ export async function GET(req: NextRequest) {
       ? Math.round((totalAttended / totalConfirmed) * 100) 
       : 0
 
-    // Get event statistics over time
     const eventsByMonth = await Event.aggregate([
-      {
-        $match: {
-          companyId: new mongoose.Types.ObjectId(user.companyId),
-          deletedAt: null,
-        },
-      },
+      { $match: { deletedAt: null } },
       {
         $group: {
-          _id: {
-            $dateToString: { format: '%Y-%m', date: '$createdAt' },
-          },
+          _id: { $dateToString: { format: '%Y-%m', date: '$createdAt' } },
           count: { $sum: 1 },
         },
       },
@@ -96,14 +66,8 @@ export async function GET(req: NextRequest) {
       { $limit: 12 },
     ])
 
-    // Get top events by attendance
     const topEvents = await Event.aggregate([
-      {
-        $match: {
-          companyId: new mongoose.Types.ObjectId(user.companyId),
-          deletedAt: null,
-        },
-      },
+      { $match: { deletedAt: null } },
       {
         $lookup: {
           from: 'checkins',

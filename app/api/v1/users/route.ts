@@ -25,9 +25,7 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
 
-    const users = await User.find({
-      company: authResult.user.companyId,
-    })
+    const users = await User.find({})
       .select('-password -refreshTokens')
       .populate('createdBy', 'firstName lastName')
       .sort({ createdAt: -1 });
@@ -84,7 +82,6 @@ export async function POST(request: NextRequest) {
       phone: validatedData.phone,
       role: UserRole.EMPLOYEE,
       permissions,
-      company: authResult.user.companyId,
       createdBy: authResult.user.userId,
       isActive: true,
     });

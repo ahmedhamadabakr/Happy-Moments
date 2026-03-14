@@ -27,13 +27,13 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
     const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100)
     const skip = (page - 1) * limit
 
-    const guests = await EventGuest.find({ eventId: id, companyId: user.companyId })
+    const guests = await EventGuest.find({ eventId: id })
       .select('-__v')
       .skip(skip)
       .limit(limit)
       .lean()
 
-    const total = await EventGuest.countDocuments({ eventId: id, companyId: user.companyId })
+    const total = await EventGuest.countDocuments({ eventId: id })
 
     return NextResponse.json({ success: true, data: guests, pagination: { page, limit, total, pages: Math.ceil(total / limit) } })
   } catch (error) {
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
     await connectDB()
     const body = await req.json()
 
-    const event = await Event.findOne({ _id: id, companyId: user.companyId, deletedAt: null })
+    const event = await Event.findOne({ _id: id, deletedAt: null })
     if (!event) return NextResponse.json({ error: 'الفعالية غير موجودة' }, { status: 404 })
     if (event.status === 'closed') return NextResponse.json({ error: 'الفعالية مغلقة' }, { status: 400 })
 
@@ -59,12 +59,11 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
     if (!body.contactIds) {
       const { firstName, lastName, phone, companion } = body
       if (!firstName || !phone) return NextResponse.json({ error: 'الاسم الأول ورقم الهاتف مطلوبان', status: 400 })
-      const phoneExists = await EventGuest.findOne({ snapshotPhone: phone, companyId: user.companyId })
+      const phoneExists = await EventGuest.findOne({ snapshotPhone: phone, eventId: id })
       if (phoneExists) return NextResponse.json({ error: 'رقم الجوال موجود بالفعل' }, { status: 409 })
       const fullName = `${firstName} ${lastName || ''}`.trim()
       const newGuest = await EventGuest.create({
         eventId: id,
-        companyId: user.companyId,
         firstName,
         lastName,
         phone,
@@ -76,14 +75,14 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
         rsvpStatus: 'pending',
         checkInStatus: 'pending',
         invitationStatus: 'pending',
-        contactId: new mongoose.Types.ObjectId() // <-- لكل ضيف يدوي ID فريدة
+        contactId: new mongoose.Types.ObjectId()
       })
       return NextResponse.json({ success: true, data: newGuest })
     }
 
     // إضافة من جهات الاتصال
     const { contactIds } = selectGuestsSchema.parse(body)
-    const contacts = await Contact.find({ _id: { $in: contactIds }, companyId: user.companyId, deletedAt: null })
+    const contacts = await Contact.find({ _id: { $in: contactIds }, deletedAt: null })
     if (!contacts.length) return NextResponse.json({ error: 'لم يتم العثور على جهات اتصال', status: 404 })
 
     let created = 0
@@ -95,7 +94,6 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
       await EventGuest.create({
         eventId: id,
         contactId: contact._id,
-        companyId: user.companyId,
         snapshotName: fullName,
         snapshotPhone: contact.phone,
         snapshotEmail: contact.email,

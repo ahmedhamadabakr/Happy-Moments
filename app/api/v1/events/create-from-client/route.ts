@@ -49,24 +49,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'البيانات الأساسية مطلوبة' }, { status: 400 });
     }
 
-    // --- 2. جلب البيانات المطلوبة ---
     const [client, contacts] = await Promise.all([
-      Client.findOne({ _id: clientId, companyId: session.user.companyId, isActive: true }),
-      Contact.find({ clientId, companyId: session.user.companyId, deletedAt: null }).lean()
+      Client.findOne({ _id: clientId, isActive: true }),
+      Contact.find({ clientId, deletedAt: null }).lean()
     ]);
 
     if (!client) return NextResponse.json({ error: 'العميل غير موجود' }, { status: 404 });
     if (contacts.length === 0) return NextResponse.json({ error: 'لا توجد جهات اتصال' }, { status: 400 });
 
-    // --- 3. رفع القالب الأساسي (مرة واحدة فقط) ---
     const buffer = Buffer.from(await invitationImageFile.arrayBuffer());
-    const templateUrl = await uploadToCloudinary(buffer, `events/templates/${session.user.companyId}`);
+    const templateUrl = await uploadToCloudinary(buffer, `events/templates`);
 
     // --- 4. بدء المعاملة (Transaction) لضمان سلامة البيانات ---
     sessionDb.startTransaction();
 
     const event = new Event({
-      companyId: session.user.companyId,
       clientId: client._id,
       title: formData.get('title'),
       description: formData.get('description'),
@@ -80,16 +77,14 @@ export async function POST(request: NextRequest) {
         width: Number(formData.get('qrWidth')) || 150,
         height: Number(formData.get('qrHeight')) || 150,
       },
-      status: 'processing', // حالة جديدة تعني أن الصور قيد التوليد
+      status: 'processing',
       createdBy: session.user.userId,
       clientViewToken: generateSecureToken(),
     });
 
-    // تحضير بيانات الضيوف (Bulk)
     const guestsData = contacts.map(contact => ({
       eventId: event._id,
       contactId: contact._id,
-      companyId: session.user.companyId,
       snapshotName: `${contact.firstName || ''} ${contact.lastName || ''}`.trim(),
       snapshotPhone: contact.phone,
       invitationToken: generateSecureToken(),
@@ -102,9 +97,7 @@ export async function POST(request: NextRequest) {
 
     await sessionDb.commitTransaction();
 
-    // --- 5. تسجيل النشاط ---
     await ActivityLog.create({
-      companyId: session.user.companyId,
       userId: session.user.userId,
       activityType: 'event_create',
       resourceType: 'event',

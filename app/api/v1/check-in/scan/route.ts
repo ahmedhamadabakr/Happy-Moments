@@ -38,11 +38,7 @@ export async function POST(request: NextRequest) {
 
     await connectDB();
 
-    // البحث عن الضيف
-    const eventGuest = await EventGuest.findOne({
-      qrToken,
-      companyId: session.companyId,
-    }).populate('eventId');
+    const eventGuest = await EventGuest.findOne({ qrToken }).populate('eventId');
 
     if (!eventGuest) {
       return NextResponse.json(
@@ -83,12 +79,10 @@ export async function POST(request: NextRequest) {
 
     await eventGuest.save();
 
-    // تسجيل عملية المسح
     await CheckInLog.create({
       guest: eventGuest._id,
       event: event._id,
-      companyId: session.companyId,
-      scannedBy: session.userId,
+      scannedBy: session.user.userId,
       scannedAt: now,
       scanType: isFirstScan ? 'first' : 'repeated',
       scanNumber: eventGuest.scanCount,

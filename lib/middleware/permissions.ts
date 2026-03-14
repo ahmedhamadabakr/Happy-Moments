@@ -11,7 +11,7 @@ export interface AuthenticatedRequest extends NextRequest {
     email: string;
     role: UserRole;
     permissions: EmployeePermission[];
-    companyId: string;
+    companyId?: string;
   };
 }
 
@@ -44,7 +44,7 @@ export async function requireAuth(request: NextRequest) {
       email: user.email,
       role: user.role,
       permissions: user.permissions || [],
-      companyId: user.company.toString(),
+      companyId: user.company ? user.company.toString() : undefined,
     },
   };
 }

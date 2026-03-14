@@ -111,7 +111,6 @@ export async function POST(
         {
           eventGuestId: eventGuest._id,
           eventId: event._id,
-          companyId: eventGuest.companyId,
           response: 'confirmed',
           respondedAt: new Date(),
         },
@@ -126,7 +125,6 @@ export async function POST(
         {
           eventGuestId: eventGuest._id,
           eventId: event._id,
-          companyId: eventGuest.companyId,
           response: 'declined',
           respondedAt: new Date(),
         },
