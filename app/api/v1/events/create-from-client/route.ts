@@ -107,6 +107,7 @@ export async function POST(request: NextRequest) {
       companyId: session.user.companyId,
       userId: session.user.userId,
       activityType: 'event_create',
+      resourceType: 'event',
       resourceId: event._id,
       details: { count: contacts.length }
     });
