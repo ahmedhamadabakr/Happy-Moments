@@ -1,6 +1,6 @@
 'use client'
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Sparkles, Image as ImageIcon, ArrowRight, Heart } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -82,11 +82,7 @@ export default function GalleryPage() {
                 if (!mounted) return;
                 
                 // تحويل الصور المجمعة إلى قائمة واحدة
-                const grouped = data.data.grouped || {};
-                const images: GalleryImage[] = [];
-                Object.entries(grouped).forEach(([category, imgs]: [string, any]) => {
-                    images.push(...imgs);
-                });
+                const images: GalleryImage[] = Object.values(data.data.grouped || {}).flat() as GalleryImage[];
                 setAllImages(images);
             } catch (e: any) {
                 if (!mounted) return;
@@ -104,12 +100,15 @@ export default function GalleryPage() {
     }, []);
 
     // الحصول على الفئات المتاحة
-    const availableCategories = Array.from(new Set(allImages.map(img => img.category)));
+    const availableCategories = useMemo(() => 
+        Array.from(new Set(allImages.map(img => img.category))), 
+    [allImages]);
 
     // فلترة الصور حسب الفئة المختارة
-    const filteredImages = selectedCategory === 'all' 
+    const filteredImages = useMemo(() => selectedCategory === 'all' 
         ? allImages 
-        : allImages.filter(img => img.category === selectedCategory);
+        : allImages.filter(img => img.category === selectedCategory),
+    [allImages, selectedCategory]);
 
     const toggleFavorite = (id: string) => {
         setFavorites(prev => {
@@ -237,7 +236,7 @@ export default function GalleryPage() {
                                             src={img.imageUrl}
                                             alt={img.title}
                                             fill
-                                            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                                             className="object-contain transition-all duration-700 group-hover:scale-110 drop-shadow-2xl p-6"
                                         />
                                     </div>

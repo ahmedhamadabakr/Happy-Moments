@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store/authStore';
-import { Eye, EyeOff, Mail, Lock, LogIn, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, LogIn } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import { Button } from '@/components/ui/button';
 
 // This is now a "dumb" component. Its only job is to display and submit a form.
 // It does NOT check auth status on its own. The parent page (`/login/page.tsx`) handles that.
@@ -160,28 +161,19 @@ export default function ModernLoginForm() {
             </a>
           </div>
 
-          <button
+          <Button
             type="submit"
-            disabled={loading}
+            loading={loading}
             className={cn(
               'w-full py-4 px-4 rounded-xl font-bold text-white text-base',
               'transition-all transform active:scale-[0.98]',
               'bg-[#F08784] hover:bg-[#D97673] shadow-lg hover:shadow-xl',
-              {'bg-slate-400 cursor-not-allowed hover:bg-slate-400': loading}
+              loading && 'bg-slate-400 cursor-not-allowed hover:bg-slate-400'
             )}
           >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                جاري التحقق...
-              </span>
-            ) : (
-              <span className="flex items-center justify-center gap-2">
-                <LogIn size={20} />
-                تسجيل الدخول
-              </span>
-            )}
-          </button>
+            <LogIn size={20} className="ml-2" />
+            تسجيل الدخول
+          </Button>
         </form>
       </div>
     </div>

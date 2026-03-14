@@ -72,11 +72,7 @@ export default function EventGrid() {
                 }
                 if (!mounted) return;
                 
-                const grouped = data.data.grouped || {};
-                const allImages: GalleryImage[] = [];
-                Object.entries(grouped).forEach(([category, imgs]: [string, any]) => {
-                    allImages.push(...imgs);
-                });
+                const allImages: GalleryImage[] = Object.values(data.data.grouped || {}).flat() as GalleryImage[];
 
                 const shuffled = allImages.sort(() => 0.5 - Math.random());
                 const selected = shuffled.slice(0, 4);
@@ -140,7 +136,7 @@ export default function EventGrid() {
                                         src={img.imageUrl}
                                         alt={img.title}
                                         fill
-                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                                         className="object-contain transition-all duration-700 group-hover:scale-110 drop-shadow-2xl p-4"
                                     />
                                 </div>

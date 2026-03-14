@@ -1,6 +1,7 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
 import { Analytics } from '@vercel/analytics/next'
+import 'tw-animate-css'
 import './globals.css'
 import SessionManager from '@/components/SessionManager'
 
@@ -12,9 +13,15 @@ const geSsTwo = localFont({
   weight: '700',
 });
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#F08784',
+};
+
 export const metadata: Metadata = {
-  title: 'منصة إدارة الفعاليات والدعوات',
-  description: 'منصة متكاملة لإدارة الفعاليات والدعوات وتتبع حضور الضيوف',
+  title: 'هابي مومنتس | منصة إدارة الفعاليات والدعوات',
+  description: 'هابي مومنتس هي منصة كويتية متكاملة لتصميم دعوات التهنئة الإلكترونية وإدارة الفعاليات وتتبع حضور الضيوف بأسلوب عصري وأنيق.',
   generator: 'v0.app'
 };
 
@@ -25,6 +32,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ar" dir="rtl">
+      <head>
+        <link rel="preconnect" href="https://res.cloudinary.com" />
+        <link rel="preconnect" href="https://va.vercel-scripts.com" />
+        {/* Preload the LCP image for faster discovery */}
+        <link rel="preload" href="/herosection1.png" as="image" fetchpriority="high" />
+      </head>
       <body className={geSsTwo.className}>
         <SessionManager>
           {children}

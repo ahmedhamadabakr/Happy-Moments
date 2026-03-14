@@ -84,7 +84,9 @@ export default function HomePage() {
                         alt={`صورة ${index + 1} - هابي مومنتس`}
                         fill
                         className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
                         priority={index === 0}
+                        {...(index === 0 ? { fetchPriority: 'high' } : {})}
                       />
                     </div>
                   ))}
