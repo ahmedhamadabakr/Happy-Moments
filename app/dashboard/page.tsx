@@ -1,6 +1,5 @@
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, Users, Eye, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 
 export const metadata = {

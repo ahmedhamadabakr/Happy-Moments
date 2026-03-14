@@ -15,6 +15,10 @@ export async function GET(req: NextRequest) {
     }
 
     await connectDB()
+    
+    // هذا السطر يضمن أن موديل العميل تم تحميله وتسجيله في Mongoose
+    // يمنع هذا السطر حذف الاستيراد (Tree-shaking) ويحل مشكلة MissingSchemaError
+    const _clientModel = Client;
 
     const searchParams = req.nextUrl.searchParams
     const page = parseInt(searchParams.get('page') || '1')

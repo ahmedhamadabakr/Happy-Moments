@@ -44,7 +44,13 @@ export default function ModernLoginForm() {
         // On successful login, manually trigger a re-check of the auth status.
         // This will update the global state to 'authenticated' and the layout/page will redirect correctly.
         await checkAuth(); 
-        router.push('/dashboard'); // Redirect after state is updated.
+
+        // توجيه المستخدم بناءً على دوره
+        if (data.data?.user?.role === 'manager') {
+          router.push('/dashboard/manager');
+        } else {
+          router.push('/dashboard');
+        }
       } else {
         setError(data.error || 'فشل تسجيل الدخول. يرجى التحقق من بياناتك.');
       }
