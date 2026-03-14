@@ -15,11 +15,11 @@ export type ActivityType =
   | 'client_delete'
 
 export interface IActivityLog extends Document {
-  companyId: mongoose.Types.ObjectId
+  companyId?: mongoose.Types.ObjectId
   userId: mongoose.Types.ObjectId
   activityType: ActivityType
   resourceType: string
-  resourceId: mongoose.Types.ObjectId
+  resourceId?: mongoose.Types.ObjectId
   details: Record<string, any>
   ipAddress?: string
   userAgent?: string
@@ -31,7 +31,7 @@ const activityLogSchema = new Schema<IActivityLog>(
     companyId: {
       type: Schema.Types.ObjectId,
       ref: 'Company',
-      required: true,
+      required: false,
       index: true,
     },
     userId: {
@@ -65,7 +65,7 @@ const activityLogSchema = new Schema<IActivityLog>(
     },
     resourceId: {
       type: Schema.Types.ObjectId,
-      required: true,
+      required: false,
     },
     details: {
       type: Schema.Types.Mixed,
