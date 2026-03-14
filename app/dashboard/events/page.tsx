@@ -7,8 +7,8 @@ import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useApi } from '@/lib/hooks/useApi';
-import { Event } from '@/lib/types';
-import { PlusCircle, Calendar, Sparkles, Clock, Eye, QrCode, Search, Trash2, XCircle, User } from 'lucide-react';
+import { IEvent } from '@/lib/models/Event';
+import { PlusCircle, Calendar, Sparkles, Clock, Eye, QrCode, Search, Trash2, XCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatsCard } from '@/components/shared/StatsCard';
@@ -31,19 +31,15 @@ const EventsGrid = ({
   searchQuery, 
   onClearSearch,
   activeTab, 
-  getStatusColor, 
-  getStatusText, 
   router, 
   onDelete 
 }: { 
   loading: boolean, 
-  events: Event[], 
+  events: IEvent[], 
   limit: number, 
   searchQuery: string, 
   onClearSearch: () => void,
   activeTab: string, 
-  getStatusColor: (status: string) => string, 
-  getStatusText: (status: string) => string, 
   router: any, 
   onDelete: (eventId: string) => void 
 }) => {
@@ -91,14 +87,30 @@ const EventsGrid = ({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {events.map(event => (
-        <Card key={event._id} className="hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-slate-200 rounded-3xl bg-white group overflow-hidden">
+      {events.map((event, idx) => {
+        const eventDate = new Date(event.eventDate);
+        const now = new Date();
+        const isExpired = eventDate < now;
+        const daysLeft = Math.ceil((eventDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        const clientName = (event as any).clientId?.fullName;
+        const eventId = (event as any)._id?.toString();
+
+        return (
+        <Card key={eventId || idx} className="hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-slate-200 rounded-3xl bg-white group overflow-hidden">
           <CardHeader className="p-6 pb-4">
             <div className="flex items-start justify-between mb-3">
               <div className="flex-1">
                 <CardTitle className="text-xl font-bold text-slate-900 line-clamp-2 group-hover:text-[#F08784] transition-colors">
                   {event.title}
                 </CardTitle>
+                {clientName && (
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    <div className="w-4 h-4 rounded-full bg-[#F08784]/20 flex items-center justify-center">
+                      <span className="text-[8px] text-[#F08784] font-black">ع</span>
+                    </div>
+                    <span className="text-sm text-[#F08784] font-semibold">{clientName}</span>
+                  </div>
+                )}
               </div>
               <div className="w-10 h-10 bg-[#F08784]/10 rounded-xl flex items-center justify-center mr-3 group-hover:bg-[#F08784]/20 transition-colors">
                 <Sparkles className="w-5 h-5 text-[#F08784]" />
@@ -108,7 +120,7 @@ const EventsGrid = ({
             <div className="flex items-center gap-2 text-slate-500 mb-2">
               <Clock className="w-4 h-4" />
               <span className="text-sm font-medium">
-                {new Date(event.eventDate).toLocaleDateString('ar-SA', {
+                {eventDate.toLocaleDateString('ar-SA', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric'
@@ -118,27 +130,36 @@ const EventsGrid = ({
 
             {/* نتحقق من وجود بيانات العميل سواء كان الحقل باسم client أو clientId لضمان الظهور */}
             {((event as any).clientId?.fullName || (event as any).client?.fullName) && (
-              <div className="flex items-center gap-2 text-slate-500">
-                <User className="w-4 h-4" />
-                <span className="text-sm font-medium">{(event as any).clientId?.fullName || (event as any).client?.fullName}</span>
+              <div className="flex items-center gap-1.5 mt-1.5">
+                <div className="w-4 h-4 rounded-full bg-[#F08784]/20 flex items-center justify-center">
+                  <span className="text-[8px] text-[#F08784] font-black">ع</span>
+                </div>
+                <span className="text-sm text-[#F08784] font-semibold">{(event as any).clientId?.fullName || (event as any).client?.fullName}</span>
               </div>
             )}
           </CardHeader>
           
           <CardContent className="p-6 pt-0">
-            <p className="text-slate-600 line-clamp-2 mb-6 leading-relaxed min-h-[3rem]">
-              {event.description || 'لا يوجد وصف للفعالية'}
-            </p>
-            
-            <div className="flex items-center justify-between mb-4">
-              <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold border ${getStatusColor(event.status)}`}>
-                <span className="w-1.5 h-1.5 rounded-full bg-current ml-2 animate-pulse" />
-                {getStatusText(event.status)}
-              </div>
+            {/* حالة الدعوة */}
+            <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl mb-4 text-sm font-bold ${
+              isExpired 
+                ? 'bg-slate-100 text-slate-600' 
+                : daysLeft <= 3 
+                  ? 'bg-orange-50 text-orange-600 border border-orange-200'
+                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+            }`}>
+              <span className={`w-2 h-2 rounded-full ${isExpired ? 'bg-slate-400' : daysLeft <= 3 ? 'bg-orange-500 animate-pulse' : 'bg-emerald-500 animate-pulse'}`}></span>
+              {isExpired 
+                ? 'انتهت الفعالية' 
+                : daysLeft === 0 
+                  ? 'اليوم!' 
+                  : daysLeft === 1 
+                    ? 'غداً' 
+                    : `باقي ${daysLeft} يوم`}
             </div>
     
             <div className="flex gap-2">
-              <Link href={`/dashboard/events/${event._id}`} passHref className="flex-1">
+              <Link href={`/dashboard/events/${eventId}`} passHref className="flex-1">
                 <Button 
                   variant="outline" 
                   size="sm"
@@ -152,7 +173,7 @@ const EventsGrid = ({
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={() => router.push(`/dashboard/check-in/${event._id}`)}
+                onClick={() => router.push(`/dashboard/check-in/${eventId}`)}
                 className="border-slate-200 hover:border-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl font-semibold transition-all"
                 title="تسجيل الحضور"
               >
@@ -162,7 +183,7 @@ const EventsGrid = ({
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={() => onDelete(event._id)}
+                onClick={() => onDelete(eventId)}
                 className="border-slate-200 hover:border-rose-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl font-semibold transition-all"
                 title="حذف الفعالية"
               >
@@ -171,7 +192,8 @@ const EventsGrid = ({
             </div>
           </CardContent>
         </Card>
-      ))}
+        );
+      })}
     </div>
   );
 };
@@ -180,7 +202,7 @@ const EventsGrid = ({
 
 export default function EventsListPage() {
   const router = useRouter();
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<IEvent[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('active');
   const [pagination, setPagination] = useState({
@@ -263,7 +285,6 @@ export default function EventsListPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-      case 'draft': return 'bg-violet-50 text-violet-700 border-violet-200';
       case 'closed': return 'bg-slate-50 text-slate-700 border-slate-200';
       default: return 'bg-slate-50 text-slate-700 border-slate-200';
     }
@@ -272,9 +293,8 @@ export default function EventsListPage() {
   const getStatusText = (status: string) => {
     switch (status) {
       case 'active': return 'نشطة';
-      case 'draft': return 'مسودة';
       case 'closed': return 'مغلقة';
-      default: return 'غير محدد';
+      default: return 'نشطة';
     }
   };
 
@@ -351,8 +371,6 @@ export default function EventsListPage() {
                   searchQuery={searchQuery} 
                   onClearSearch={() => setSearchQuery('')}
                   activeTab={activeTab} 
-                  getStatusColor={getStatusColor} 
-                  getStatusText={getStatusText} 
                   router={router} 
                   onDelete={(id) => { setSelectedEvent(id); setDialogOpen(true); }}
                 />

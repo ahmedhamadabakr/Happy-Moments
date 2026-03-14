@@ -43,6 +43,7 @@ export async function GET(req: NextRequest) {
 
     const events = await Event.find(query)
       .select('-__v')
+      .populate('clientId', 'fullName')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
