@@ -8,7 +8,6 @@ export const createEventSchema = z.object({
   eventDate: z.string().or(z.date()),
   eventTime: z.string().optional(),
   location: z.string().max(255, 'الموقع يجب أن لا يتجاوز 255 حرف').optional(),
-  maxGuests: z.number().int().min(1, 'الحد الأقصى للضيوف يجب أن يكون أكثر من 1').optional(),
 })
 
 export const updateEventSchema = createEventSchema.partial()

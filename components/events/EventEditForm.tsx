@@ -119,57 +119,6 @@ export default function EventEditForm({
 
           </div>
 
-          {/* الحد الأقصى للضيوف */}
-
-          <div className="space-y-2">
-
-            <label className="text-sm font-bold text-slate-700">
-              الحد الأقصى للضيوف
-            </label>
-
-            <Input
-              type="number"
-              value={formData.maxGuests || ''}
-              placeholder="مثال: 200"
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  maxGuests: Number(e.target.value)
-                })
-              }
-              className="rounded-xl"
-            />
-
-          </div>
-
-          {/* حالة الفعالية */}
-
-          <div className="space-y-2">
-
-            <label className="text-sm font-bold text-slate-700">
-              حالة الفعالية
-            </label>
-
-            <select
-              value={formData.status || 'draft'}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  status: e.target.value as any
-                })
-              }
-              className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white focus:border-[#F08784] focus:outline-none focus:ring-1 focus:ring-[#F08784]"
-            >
-
-              <option value="draft">مسودة</option>
-              <option value="published">منشور</option>
-              <option value="completed">مكتمل</option>
-              <option value="cancelled">ملغي</option>
-
-            </select>
-
-          </div>
-
         </div>
 
         {/* الوصف */}

@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store/authStore';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import {
   Calendar,
@@ -14,15 +14,8 @@ import {
   UserPlus,
   ImagePlus,
   User,
-  Briefcase,
   X
 } from 'lucide-react';
-
-type Event = {
-  _id: string;
-  title: string;
-  status: string;
-};
 
 interface SidebarProps {
   open: boolean;
@@ -34,10 +27,6 @@ export function DashboardSidebar({ open, setOpen }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { user } = useAuthStore();
-
-  const [showCheckInMenu, setShowCheckInMenu] = useState(false);
-  const [activeEvents, setActiveEvents] = useState<Event[]>([]);
-  const [loadingEvents, setLoadingEvents] = useState(false);
 
   if (!user) return null;
 
@@ -77,52 +66,6 @@ export function DashboardSidebar({ open, setOpen }: SidebarProps) {
   const visibleItems = navigationItems.filter(item =>
     item.role.includes(user.role)
   );
-
-  useEffect(() => {
-
-    if (!showCheckInMenu) return;
-
-    const controller = new AbortController();
-
-    const fetchEvents = async () => {
-
-      try {
-
-        setLoadingEvents(true);
-
-        const res = await fetch('/api/v1/events', {
-          signal: controller.signal
-        });
-
-        const data = await res.json();
-
-        const active = (data.events || []).filter(
-          (event: Event) => event.status === 'active'
-        );
-
-        setActiveEvents(active);
-
-      } catch (error: any) {
-
-        if (error.name !== 'AbortError') {
-          console.error(error);
-        }
-
-      } finally {
-
-        setLoadingEvents(false);
-
-      }
-
-    };
-
-    if (activeEvents.length === 0) {
-      fetchEvents();
-    }
-
-    return () => controller.abort();
-
-  }, [showCheckInMenu]);
 
   return (
 
